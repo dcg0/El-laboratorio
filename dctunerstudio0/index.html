@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#020509">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'">
+  <meta name="description" content="DCtuneRstudio #0: panel web local para leer y registrar telemetría de ECU. Conoce el alcance actual para Speeduino y MegaSquirt, sensores y conexiones.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://dcg0.github.io/El-laboratorio/dctunerstudio0/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DC Laboratory">
+  <meta property="og:title" content="DCtuneRstudio #0 | Telemetría ECU local">
+  <meta property="og:description" content="Una interfaz web local para observar y registrar telemetría ECU, con límites y compatibilidad explicados con claridad.">
+  <meta property="og:image" content="https://dcg0.github.io/El-laboratorio/dctunerstudio0/assets/dc-tuner-studio-card.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>DCtuneRstudio #0 | Telemetría ECU local — DC Laboratory</title>
+  <link rel="icon" href="assets/logo.png">
+  <link rel="preload" as="image" href="assets/dctuner-elephant-hero.webp" fetchpriority="high">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+  <header class="site-header shell">
+    <a class="brand" href="#inicio" aria-label="DC Laboratory, inicio">
+      <img src="assets/logo.png" width="900" height="240" alt="DC Laboratory">
+    </a>
+    <nav class="desktop-nav" aria-label="Navegación principal">
+      <a href="#app">La app</a>
+      <a href="#plataformas">ECU</a>
+      <a href="#sensores">Sensores</a>
+      <a href="#aliados">Talleres</a>
+      <a class="nav-cta" href="#codigo">Código y releases <span aria-hidden="true">↗</span></a>
+    </nav>
+    <details class="mobile-nav">
+      <summary aria-label="Abrir menú de navegación">Menú <span aria-hidden="true">＋</span></summary>
+      <nav aria-label="Navegación móvil">
+        <a href="#app">La app</a>
+        <a href="#plataformas">ECU</a>
+        <a href="#sensores">Sensores</a>
+        <a href="#aliados">Talleres</a>
+        <a href="#codigo">Código y releases</a>
+      </nav>
+    </details>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="inicio" aria-labelledby="hero-title">
+      <div class="hero-inner shell">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true"></span> DC LABORATORY <span aria-hidden="true">/</span> DCTUNERSTUDIO #0</p>
+          <h1 id="hero-title">Datos ECU.<br><em>En claro.</em></h1>
+          <p class="hero-lead">DCtuneRstudio es un panel web local para observar y registrar telemetría que llega desde la ECU por un bridge. Aquí explicamos compatibilidad, sensores y límites actuales.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#flujo">Ver cómo se conecta <span aria-hidden="true">↓</span></a>
+            <a class="button button-quiet" href="#plataformas">Compatibilidad actual <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="hero-status" aria-label="Alcance de la versión actual">
+            <span><i aria-hidden="true"></i> PANEL WEB LOCAL</span>
+            <span>LECTURA DE TELEMETRÍA</span>
+            <span>MAPAS: SIN ESCRITURA / SIN FLASH</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cover-section shell" aria-labelledby="cover-title">
+      <div class="cover-heading">
+        <p class="eyebrow">IMAGEN PRINCIPAL DEL PROYECTO</p>
+        <h2 id="cover-title">DCtuneRstudio <span>#0</span></h2>
+      </div>
+      <figure class="cover-art">
+        <img src="assets/dc-tuner-studio-card.webp" width="1080" height="666" alt="Arte principal de DCtuneRstudio #0: autos en un taller y la identidad visual del proyecto DC Laboratory" fetchpriority="high">
+        <figcaption>La imagen de la tarjeta #0, ahora como portada del proyecto.</figcaption>
+      </figure>
+      <p class="cover-note">El fondo OLED negro y el elefante de circuitos azules son una ilustración de marca; no representan una ECU, un pinout ni una conexión física específica.</p>
+    </section>
+
+    <section class="quickfacts shell" aria-label="Resumen del proyecto">
+      <div><b>01</b><span>Panel servido localmente</span></div>
+      <div><b>02</b><span>Bridge Python + pySerial</span></div>
+      <div><b>03</b><span>Telemetría y gráficas</span></div>
+      <div><b>04</b><span>Registro y exportación CSV</span></div>
+    </section>
+
+    <section class="section shell" id="app" aria-labelledby="app-title">
+      <div class="section-heading">
+        <p class="eyebrow">QUÉ ES DCtuneRstudio</p>
+        <h2 id="app-title">Una app web<br><em>que corre local.</em></h2>
+        <p>La interfaz se abre en un navegador, pero no es un servicio en la nube: el bridge local recibe datos por puerto serie y se los entrega al panel. La ECU sigue leyendo sus propios sensores; el navegador no se conecta directamente a ellos.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-index">01 / OBSERVAR</span>
+          <div class="feature-icon" aria-hidden="true">⌁</div>
+          <h3>Datos con contexto</h3>
+          <p>Reúne variables disponibles en el perfil configurado, como RPM, MAP, temperatura, TPS, AFR, avance o voltaje.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-index">02 / REGISTRAR</span>
+          <div class="feature-icon" aria-hidden="true">▤</div>
+          <h3>Sesiones revisables</h3>
+          <p>Registra telemetría y permite exportar datos CSV para comparar sesiones fuera del vehículo.</p>
+        </article>
+        <article class="feature-card feature-card-accent">
+          <span class="feature-index">03 / ALCANCE REAL</span>
+          <div class="feature-icon" aria-hidden="true">◎</div>
+          <h3>Sin promesas de flash</h3>
+          <p>La versión actual no escribe mapas ni flashea la ECU. El enfoque confirmado es lectura, visualización y registro.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section platform-section" id="plataformas" aria-labelledby="platform-title">
+      <div class="shell">
+        <div class="section-heading narrow">
+          <p class="eyebrow">ECU / FIRMWARE / PROTOCOLO</p>
+          <h2 id="platform-title">Cada plataforma<br><em>tiene sus reglas.</em></h2>
+          <p>Speeduino y MegaSquirt son familias de gestión de motor, no conectores universales. La placa, el firmware, el arnés, el acondicionamiento de señal y el archivo de definición determinan qué puede leerse.</p>
+        </div>
+        <div class="platform-grid">
+          <article class="platform-card speeduino-card">
+            <div class="platform-top"><span class="platform-symbol" aria-hidden="true">S</span><span class="status-pill">RUTA DE TELEMETRÍA IMPLEMENTADA</span></div>
+            <h3>Speeduino</h3>
+            <p>Speeduino es una plataforma abierta de gestión de motor basada en hardware y firmware propios. En el bridge actual hay una ruta serie primaria que interpreta telemetría en vivo.</p>
+            <ul>
+              <li>Campos procesados: RPM, MAP, CLT, AFR, TPS, avance y voltaje.</li>
+              <li>La conexión habitual de configuración usa USB/serie; la velocidad y el puerto deben coincidir con la placa.</li>
+              <li>La app no sustituye el manual de hardware ni verifica por sí sola el cableado.</li>
+            </ul>
+            <a class="text-link" href="https://wiki.speeduino.com/en/Overview" target="_blank" rel="noopener noreferrer">Documentación oficial de Speeduino <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="platform-card megasquirt-card">
+            <div class="platform-top"><span class="platform-symbol" aria-hidden="true">M</span><span class="status-pill status-limited">ALCANCE MVP / NORMALIZADO</span></div>
+            <h3>MegaSquirt / MicroSquirt</h3>
+            <p>La familia MegaSquirt tiene variantes de hardware y firmware. El perfil del MVP recibe datos serie normalizados en CSV o pares <code>KEY=VALUE</code>; no se anuncia un decodificador binario universal para MS1, MS2 y MS3.</p>
+            <ul>
+              <li>Verifica el modelo exacto de ECU, firmware, puerto y archivo INI antes de interpretar señales o mapas.</li>
+              <li>Las entradas y salidas dependen de la versión y de las modificaciones de la placa.</li>
+              <li>La escritura y el flasheo de mapas no están implementados en esta versión.</li>
+            </ul>
+            <a class="text-link" href="https://www.msextra.com/manuals/" target="_blank" rel="noopener noreferrer">Manuales oficiales MegaSquirt <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+        <p class="notice"><strong>Compatibilidad honesta:</strong> la página anterior mencionaba ELM327, Java y escritura de mapas como si fueran funciones confirmadas. Esta versión no promete una ruta ELM327 de extremo a extremo ni flasheo; consulta el código y los paquetes publicados antes de instalar.</p>
+      </div>
+    </section>
+
+    <section class="section shell sensor-section" id="sensores" aria-labelledby="sensor-title">
+      <div class="sensor-copy">
+        <p class="eyebrow">DEL MOTOR AL PANEL</p>
+        <h2 id="sensor-title">Sensores que<br><em>cuentan la historia.</em></h2>
+        <p>Los sensores entregan señales a la ECU. La interfaz puede mostrar los valores que el bridge y el perfil de esa ECU sepan interpretar; no todos aparecen en todos los vehículos.</p>
+        <ul class="sensor-list">
+          <li><b>RPM / CKP-CMP</b><span>Velocidad y sincronía del motor, según el sistema de disparo.</span></li>
+          <li><b>MAP</b><span>Presión del múltiple; su rango depende del sensor y la calibración.</span></li>
+          <li><b>TPS</b><span>Posición de la mariposa o acelerador.</span></li>
+          <li><b>CLT / IAT</b><span>Temperatura del refrigerante y del aire de admisión cuando el perfil las expone.</span></li>
+          <li><b>O₂ / AFR</b><span>Lectura de mezcla; una sonda wideband requiere su controlador adecuado.</span></li>
+          <li><b>Avance / voltaje</b><span>Valores derivados o de sistema disponibles en la telemetría.</span></li>
+        </ul>
+        <p class="small-note">La ilustración es conceptual: no indica pines, colores de cables, voltajes ni un esquema de instalación.</p>
+      </div>
+      <figure class="sensor-visual">
+        <img src="assets/dctuner-ecu-sensors.webp" width="1800" height="1012" alt="Ilustración conceptual de una ECU conectada visualmente a sensores de motor; no representa un pinout real" loading="lazy" decoding="async">
+        <figcaption>ECU y sensores: la compatibilidad depende del hardware y su acondicionamiento.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section flow-section" id="flujo" aria-labelledby="flow-title">
+      <div class="shell">
+        <div class="section-heading narrow">
+          <p class="eyebrow">CONEXIÓN / FLUJO DE DATOS</p>
+          <h2 id="flow-title">Del sensor<br><em>al navegador.</em></h2>
+          <p>Este es el recorrido general. Es una explicación de flujo de telemetría, no un diagrama de pines ni una instrucción para cablear una ECU.</p>
+        </div>
+        <ol class="flow-list">
+          <li><span class="flow-number">01</span><h3>Sensores</h3><p>Envían señales al sistema de control del motor.</p></li>
+          <li><span class="flow-number">02</span><h3>ECU</h3><p>Interpreta entradas y entrega telemetría según hardware y firmware.</p></li>
+          <li><span class="flow-number">03</span><h3>Bridge local</h3><p>DCtuneRstudio usa Python y pySerial para recibir datos por puerto compatible.</p></li>
+          <li><span class="flow-number">04</span><h3>Panel web</h3><p>El navegador local muestra valores y gráficas disponibles.</p></li>
+          <li><span class="flow-number">05</span><h3>Registro</h3><p>Guarda sesiones y exporta CSV para revisión posterior.</p></li>
+        </ol>
+        <div class="protocol-notes">
+          <p><b>Speeduino:</b> el bridge actual interpreta el paquete serie primario de telemetría.</p>
+          <p><b>MegaSquirt:</b> el perfil MVP requiere serial CSV o <code>KEY=VALUE</code> normalizado; confirma la versión y el formato.</p>
+          <p><b>Sin pinout universal:</b> usa el manual de la placa y el diagrama del arnés de tu instalación.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell partners" id="aliados" aria-labelledby="partners-title">
+      <div class="section-heading narrow">
+        <p class="eyebrow">TALLERES / ALIADOS TÉCNICOS</p>
+        <h2 id="partners-title">Del software<br><em>al taller.</em></h2>
+        <p>Para instalaciones o integración, consulta a los especialistas sobre tu vehículo, ECU, placa y alcance del trabajo antes de comprar o conectar componentes.</p>
+      </div>
+      <div class="partner-grid">
+        <article class="partner-card">
+          <div class="partner-mark rojo-mark" aria-hidden="true">ROJO</div>
+          <div>
+            <p class="eyebrow">INGENIERÍA AUTOMOTRIZ</p>
+            <h3>Taller ROJO</h3>
+            <p>Su catálogo describe arneses personalizados, computadoras con placa Speeduino, tableros con ESP/Bluetooth/Wi‑Fi e instalaciones a medida.</p>
+            <a class="button button-primary" href="https://rojo-taller.github.io/ROJO/" target="_blank" rel="noopener noreferrer">Visitar Taller ROJO <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+        <article class="partner-card">
+          <div class="partner-mark sidc-mark" aria-hidden="true">S.I.D.C.</div>
+          <div>
+            <p class="eyebrow">CONTROL / AUTOMATIZACIÓN</p>
+            <h3>S.I.D.C.</h3>
+            <p>Servicios Integrales Cázares presenta ingeniería de tableros de control y automatización con PLC, ESP, Arduino y Raspberry Pi. Consulta directamente si tu trabajo requiere integración automotriz.</p>
+            <a class="button button-quiet" href="https://suministrosintegralesdc.github.io/SolucionesintegralesDC/" target="_blank" rel="noopener noreferrer">Visitar S.I.D.C. <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section download-section" id="codigo" aria-labelledby="code-title">
+      <div class="shell code-grid">
+        <div class="section-heading">
+          <p class="eyebrow">CÓDIGO / PAQUETES</p>
+          <h2 id="code-title">Revisa el origen<br><em>antes de conectar.</em></h2>
+          <p>El código fuente vigente está en el repositorio DCtuneRstudio. Los paquetes v1.0.0 se publicaron en un repositorio de releases anterior; revisa las notas, el sistema requerido y la compatibilidad antes de instalarlos.</p>
+        </div>
+        <div class="code-actions">
+          <a class="code-link" href="https://github.com/dcg0/DCtuneRstudio" target="_blank" rel="noopener noreferrer"><span>REPOSITORIO FUENTE</span><b>DCtuneRstudio <i aria-hidden="true">↗</i></b><small>Código y documentación del proyecto actual</small></a>
+          <a class="code-link" href="https://github.com/dcg0/DC-tuner-studio-/releases/tag/dctunerstudio-v1.0.0" target="_blank" rel="noopener noreferrer"><span>PAQUETES PUBLICADOS</span><b>Release v1.0.0 <i aria-hidden="true">↗</i></b><small>Repositorio de releases anterior; confirma requisitos antes de usar</small></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell faq" id="faq" aria-labelledby="faq-title">
+      <div class="section-heading">
+        <p class="eyebrow">ANTES DE CONECTAR</p>
+        <h2 id="faq-title">Preguntas<br><em>importantes.</em></h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>¿La app está hospedada en internet?<span aria-hidden="true">＋</span></summary>
+          <p>No es un servicio SaaS. La interfaz web se sirve localmente con el bridge; para telemetría real hace falta el equipo, el puerto serie y una ECU compatible con el perfil disponible.</p>
+        </details>
+        <details>
+          <summary>¿DCtuneRstudio escribe o flashea mapas?<span aria-hidden="true">＋</span></summary>
+          <p>No. La capacidad de escribir o flashear mapas no está implementada en la versión actual. No conectes la app esperando modificar calibraciones.</p>
+        </details>
+        <details>
+          <summary>¿Puedo conectar cualquier sensor directamente?<span aria-hidden="true">＋</span></summary>
+          <p>No. Los sensores se conectan a entradas específicas de la ECU, y cada entrada puede requerir un tipo de señal o acondicionamiento. Confirma el manual de tu placa y el arnés. Una wideband necesita su controlador correspondiente.</p>
+        </details>
+        <details>
+          <summary>¿Qué necesito para MegaSquirt?<span aria-hidden="true">＋</span></summary>
+          <p>El modelo exacto, su firmware, el formato serial y el archivo de definición importan. El perfil actual no afirma compatibilidad binaria universal con MS1/MS2/MS3.</p>
+        </details>
+        <details>
+          <summary>¿Es seguro ajustar mientras conduzco?<span aria-hidden="true">＋</span></summary>
+          <p>No hagas cambios ni manipules conexiones mientras el vehículo está en movimiento. Diagnóstico, cableado y calibración deben realizarse con el vehículo detenido y por una persona competente.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a class="brand" href="#inicio" aria-label="Volver al inicio"><img src="assets/logo.png" width="900" height="240" alt="DC Laboratory"></a>
+    <p>DCtuneRstudio #0<br><span>Telemetría local · ECU · DC Laboratory · © 2026</span></p>
+    <div class="footer-links">
+      <a href="https://github.com/dcg0/DCtuneRstudio" target="_blank" rel="noopener noreferrer">Código fuente ↗</a>
+      <a href="https://github.com/dcg0/El-laboratorio/tree/main/dctunerstudio0" target="_blank" rel="noopener noreferrer">Código de esta ficha ↗</a>
+    </div>
+  </footer>
+  <script src="assets/nav.js" defer></script>
+</body>
+</html>
