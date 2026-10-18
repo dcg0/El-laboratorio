@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Sitemap: https://dcg0.github.io/El-laboratorio/sitemap.xml

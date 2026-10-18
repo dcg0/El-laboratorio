@@ -1,0 +1,4 @@
+url: https://dcg0.github.io
+baseurl: /El-laboratorio
+include:
+  - .well-known
