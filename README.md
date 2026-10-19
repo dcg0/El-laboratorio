@@ -101,7 +101,7 @@ Análisis y ejecución de comandos directos para etiquetas y dispositivos NFC.
 
 ### Acceso al Portal
 El sitio público de **DC-laboratory** se despliega automáticamente en GitHub Pages:
-* 🌐 **URL Oficial:** [https://dcg0.github.io/DC-laboratory/](https://dcg0.github.io/DC-laboratory/)
+* 🌐 **URL Oficial:** [**[https://dcg0.github.io/El-laboratorio/]
 
 ### Compilación y Ejecución
 Para clonar el proyecto y desplegar el entorno localmente:
