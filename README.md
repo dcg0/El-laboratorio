@@ -30,7 +30,7 @@ En este repositorio convergemos el desarrollo de firmware en **C++ (arduino-cli)
 ### 1. 🤖 Taller de Inteligencia Artificial & Agentes (`/lucy`)
 Desarrollo y personalización de agentes autónomos locales ejecutados bajo entornos Ollama.
 * **Agente Lucy (`SOUL.md` & `Modelfile`):** Configuración de personalidad, contexto técnico y automatización de procesos para asistencia en diagnóstico y programación.
-* **Integración Local:** Modelos optimizados para ejecución eficiente en arquitectura host (Dell Dual-Core, 16GB RAM) y nodos secundarios en red Tailscale.
+* **Integración Local:** Modelos optimizados para ejecución eficiente en arquitectura host ( Dual-Core, 16GB RAM) y nodos secundarios en red T.
 
 <p align="center">
   <img src="./3.png" width="400" alt="Cyberpunk Tech Persona 1" />
