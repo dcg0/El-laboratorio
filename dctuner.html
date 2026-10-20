@@ -1,26 +1,354 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; base-uri &#x27;none&#x27;; object-src &#x27;none&#x27;; frame-src &#x27;none&#x27;; form-action &#x27;self&#x27;; script-src &#x27;self&#x27;; worker-src &#x27;self&#x27;; manifest-src &#x27;self&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; font-src &#x27;self&#x27; https://fonts.gstatic.com; img-src &#x27;self&#x27; data: https:; media-src &#x27;self&#x27;; connect-src &#x27;self&#x27;; upgrade-insecure-requests">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#05080e">
-  <title>DCtuneRstudio | Herramienta de diagnóstico ECU</title>
-  <style>@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');:root{--bg:#05080e;--panel:#101b2a;--line:#234a60;--text:#eff7fc;--muted:#9db3c5;--cyan:#00ccff;--green:#00e89b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(700px 400px at 90% 0,#00ccff24,transparent 65%),var(--bg);color:var(--text);font:15px Manrope,sans-serif}.shell{width:min(940px,calc(100% - 40px));margin:auto}.back{display:inline-flex;margin:28px 0;color:var(--cyan);font:600 11px 'DM Mono',monospace;letter-spacing:.09em}.hero{padding:42px 0 58px;display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}.tag{color:var(--green);font:600 10px 'DM Mono',monospace;letter-spacing:.13em}.tag:before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;background:var(--green);border-radius:50%;box-shadow:0 0 10px var(--green)}h1{font:900 clamp(54px,8vw,100px)/.84 'Barlow Condensed',sans-serif;letter-spacing:-.05em;text-transform:uppercase;margin:20px 0}h1 span{color:var(--cyan)}.lead{color:var(--muted);line-height:1.75}.visual{width:100%;border:1px solid var(--line);border-radius:15px;box-shadow:0 20px 60px #0008}.downloads{padding:30px;margin-bottom:70px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#101b2b,#0a1019)}h2{font:800 35px 'Barlow Condensed',sans-serif;letter-spacing:-.01em;text-transform:uppercase;margin:0 0 8px}.downloads p{color:var(--muted);margin:0 0 22px;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.download{display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid #2a5d77;border-radius:10px;background:#06131d}.download:hover{border-color:var(--cyan);transform:translateY(-3px);transition:.2s}.download small{color:var(--cyan);font:600 10px 'DM Mono',monospace;letter-spacing:.1em}.download strong{font-size:18px}.download span{color:var(--muted);font-size:12px}.repo{display:inline-flex;padding:12px 14px;border:1px solid var(--line);border-radius:7px;color:var(--cyan);font:600 10px 'DM Mono',monospace;letter-spacing:.05em}@media(max-width:650px){.shell{width:min(100% - 30px,580px)}.hero{display:flex;flex-direction:column;padding-top:20px}.grid{grid-template-columns:1fr}}</style>
-<meta name="description" content="DCtuneRstudio es una herramienta multiplataforma de diagnóstico y sintonización automotriz para proyectos ECU y de taller.">
-<link rel="canonical" href="https://dcg0.github.io/El-laboratorio/dctuner.html">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="DC Laboratory">
-<meta property="og:title" content="DCtuneRstudio | Herramienta de diagnóstico ECU">
-<meta property="og:description" content="DCtuneRstudio es una herramienta multiplataforma de diagnóstico y sintonización automotriz para proyectos ECU y de taller.">
-<meta property="og:url" content="https://dcg0.github.io/El-laboratorio/dctuner.html">
-<meta property="og:image" content="https://dcg0.github.io/El-laboratorio/dctunerrojo.jpg">
-<meta property="og:image:alt" content="Panel de DCtuneRstudio">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="DCtuneRstudio | Herramienta de diagnóstico ECU">
-<meta name="twitter:description" content="DCtuneRstudio es una herramienta multiplataforma de diagnóstico y sintonización automotriz para proyectos ECU y de taller.">
-<meta name="twitter:image" content="https://dcg0.github.io/El-laboratorio/dctunerrojo.jpg">
-<meta name="twitter:image:alt" content="Panel de DCtuneRstudio">
-<link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>DCtuneRstudio | 32 bits, web, 64 bits y Raspberry Pi</title>
+  <meta name="description" content="Explora las variantes de DCtuneRstudio para sistemas de 32 y 64 bits, el portal web de descargas y Raspberry Pi. Imágenes y paquetes directos por plataforma.">
+  <link rel="canonical" href="https://dcg0.github.io/El-laboratorio/dctuner.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DC Laboratory">
+  <meta property="og:title" content="DCtuneRstudio | Versiones y descargas">
+  <meta property="og:description" content="Versiones para PC de 32/64 bits, portal web y Raspberry Pi, con descargas por arquitectura.">
+  <meta property="og:url" content="https://dcg0.github.io/El-laboratorio/dctuner.html">
+  <meta property="og:image" content="https://dcg0.github.io/El-laboratorio/assets/tuner-blue-32bit.png">
+  <meta property="og:image:alt" content="DC Tuner Studio en azul, en un taller de diagnóstico ECU">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DCtuneRstudio | Versiones y descargas">
+  <meta name="twitter:description" content="Versiones para PC de 32/64 bits, portal web y Raspberry Pi, con descargas por arquitectura.">
+  <meta name="twitter:image" content="https://dcg0.github.io/El-laboratorio/assets/tuner-blue-32bit.png">
+  <meta name="twitter:image:alt" content="DC Tuner Studio en azul, en un taller de diagnóstico ECU">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+    :root {
+      color-scheme: dark;
+      --page: #05080e;
+      --panel: rgba(8, 14, 23, .88);
+      --line: rgba(152, 181, 207, .22);
+      --text: #f1f7fc;
+      --muted: #a6b7c7;
+      --active-rgb: 31, 170, 255;
+      --blue: #32baff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--page);
+      color: var(--text);
+      font: 15px/1.65 Manrope, sans-serif;
+    }
+    a { color: inherit; }
+    .atmosphere {
+      position: fixed;
+      z-index: 0;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #ambient-image {
+      position: absolute;
+      inset: -3%;
+      background-image: linear-gradient(rgba(3, 7, 13, .70), rgba(3, 7, 13, .82)), url('assets/tuner-blue-32bit.png');
+      background-position: center;
+      background-size: cover;
+      filter: saturate(.78) blur(1px);
+      opacity: .23;
+      transform: scale(1.03);
+      transition: opacity .65s ease;
+    }
+    #ambient-image.is-fading { opacity: .025; }
+    #ambient-tint {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 82% 4%, rgba(var(--active-rgb), .30), transparent 58%),
+        linear-gradient(180deg, rgba(3, 7, 13, .24), rgba(3, 7, 13, .62));
+      transition: background 1s ease;
+    }
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 0 0 64px;
+    }
+    .back {
+      display: inline-flex;
+      margin: 25px 0 6px;
+      color: #8edbff;
+      font: 500 10px 'DM Mono', monospace;
+      letter-spacing: .13em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .back:hover, .repo-link:hover { color: #fff; }
+    .hero { padding: 34px 0 24px; }
+    .eyebrow, .edition-label, .button-kicker {
+      color: #9fdcff;
+      font: 500 10px 'DM Mono', monospace;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin: 0 9px 1px 0;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 13px var(--blue);
+      content: '';
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin: 15px 0 13px;
+      font: 900 clamp(48px, 8vw, 92px)/.88 'Barlow Condensed', sans-serif;
+      letter-spacing: -.045em;
+      text-transform: uppercase;
+    }
+    h1 span { color: var(--blue); }
+    .hero-copy { max-width: 850px; margin-bottom: 20px; color: var(--muted); }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .quick-nav { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 25px; }
+    .quick-nav a, .repo-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(6, 12, 20, .70);
+      color: #dbeaf6;
+      font: 500 10px 'DM Mono', monospace;
+      letter-spacing: .04em;
+      text-decoration: none;
+      transition: border-color .2s ease, color .2s ease, transform .2s ease;
+    }
+    .quick-nav a:hover, .repo-link:hover { border-color: var(--blue); transform: translateY(-2px); }
+    .edition {
+      --edition-accent: var(--blue);
+      --edition-rgb: 31, 170, 255;
+      margin: 28px 0;
+      overflow: hidden;
+      border: 1px solid rgba(var(--edition-rgb), .38);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(7, 14, 23, .90), rgba(5, 9, 15, .86));
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .32), 0 0 35px rgba(var(--edition-rgb), .08);
+      backdrop-filter: blur(10px);
+    }
+    .edition--blue { --edition-accent: #32baff; --edition-rgb: 31, 170, 255; }
+    .edition--web { --edition-accent: #e7f3fc; --edition-rgb: 215, 232, 246; }
+    .edition--red { --edition-accent: #ff5362; --edition-rgb: 255, 67, 86; }
+    .edition--pi { --edition-accent: #a6e9b7; --edition-rgb: 131, 211, 156; }
+    .edition-heading { padding: clamp(22px, 4vw, 38px) clamp(20px, 4vw, 42px) 18px; }
+    .edition-label { color: var(--edition-accent); }
+    .edition h2 {
+      margin: 8px 0 10px;
+      font: 800 clamp(34px, 5vw, 56px)/.96 'Barlow Condensed', sans-serif;
+      letter-spacing: -.015em;
+      text-transform: uppercase;
+    }
+    .edition h2 span { color: var(--edition-accent); }
+    .edition-description { max-width: 930px; margin: 0; color: #c3d0dc; line-height: 1.8; }
+    .edition-visual {
+      position: relative;
+      margin: 0;
+      overflow: hidden;
+      background: rgba(0, 0, 0, .38);
+    }
+    .edition-visual::after {
+      position: absolute;
+      inset: auto 0 0;
+      height: 26%;
+      background: linear-gradient(transparent, rgba(3, 7, 12, .52));
+      content: '';
+      pointer-events: none;
+    }
+    .edition-visual img { display: block; width: 100%; height: auto; }
+    .edition-content { padding: 22px clamp(20px, 4vw, 42px) 34px; }
+    .edition-note {
+      max-width: 940px;
+      margin: 0 0 20px;
+      padding: 13px 15px;
+      border-left: 3px solid var(--edition-accent);
+      background: rgba(var(--edition-rgb), .075);
+      color: #c3d0dc;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 225px), 1fr));
+      gap: 12px;
+    }
+    .download-button {
+      display: flex;
+      min-height: 148px;
+      flex-direction: column;
+      gap: 7px;
+      padding: 17px 18px;
+      border: 1px solid rgba(var(--edition-rgb), .38);
+      border-radius: 13px;
+      background: linear-gradient(145deg, rgba(10, 21, 33, .94), rgba(5, 11, 19, .97));
+      color: var(--text);
+      text-decoration: none;
+      animation: softBlink 2.6s ease-in-out infinite;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .download-button:hover, .download-button:focus-visible {
+      border-color: var(--edition-accent);
+      background: linear-gradient(145deg, rgba(var(--edition-rgb), .16), rgba(5, 11, 19, .97));
+      outline: 2px solid rgba(var(--edition-rgb), .55);
+      outline-offset: 2px;
+      transform: translateY(-3px);
+      animation-play-state: paused;
+    }
+    .download-button .button-kicker { color: var(--edition-accent); font-size: 9px; }
+    .download-button strong { font: 700 25px/1.05 'Barlow Condensed', sans-serif; text-transform: uppercase; }
+    .download-button .button-detail { color: #aebdca; font-size: 11px; line-height: 1.55; }
+    .download-button .button-action {
+      margin-top: auto;
+      padding-top: 8px;
+      color: var(--edition-accent);
+      font: 500 10px 'DM Mono', monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .edition--web .download-button:first-child { border-style: dashed; }
+    .footer-note {
+      margin: 32px 0 0;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(5, 10, 17, .82);
+      color: #a9b7c4;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+    .footer-note a { color: #a9ddfb; }
+    @keyframes softBlink {
+      0%, 100% { box-shadow: 0 0 0 rgba(var(--edition-rgb), 0); }
+      50% { box-shadow: 0 0 20px rgba(var(--edition-rgb), .20); }
+    }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 560px); }
+      .hero { padding-top: 22px; }
+      .edition { margin: 20px 0; border-radius: 16px; }
+      .edition-heading { padding-bottom: 15px; }
+      .edition-content { padding-bottom: 24px; }
+      .download-grid { grid-template-columns: 1fr; }
+      .download-button { min-height: 128px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
 </head>
-<body><main class="shell"><a class="back" href="./">← DC LABORATORY</a><section class="hero"><div><p class="tag">ECU TOOL · OPEN SOURCE</p><h1>DC<span>tuneR</span>studio</h1><p class="lead">Un clon mejorado de TunerStudio MS para diagnóstico, mapas, telemetría y análisis ECU. Funciona en múltiples plataformas y no requiere dependencias externas para iniciar.</p><p><a class="repo" href="https://github.com/dcg0/DCtuneRstudio" target="_blank" rel="noopener">Ver repositorio oficial ↗</a></p></div><img class="visual" src="dctunerrojo.jpg" alt="Panel de DCtuneRstudio"></section><section class="downloads"><h2>Descarga oficial · 32 bits</h2><p>Paquetes directos listos para descargar desde el repositorio oficial. Elige el sistema operativo de tu estación de trabajo.</p><div class="grid"><a class="download" href="https://github.com/dcg0/DCtuneRstudio/raw/refs/heads/main/releases/DCtuneRstudio-linux-i386.zip"><small>DEBIAN / LINUX</small><strong>Linux 32 bits</strong><span>Archivo ZIP · i386 · descarga directa ↓</span></a><a class="download" href="https://github.com/dcg0/DCtuneRstudio/raw/refs/heads/main/releases/DCtuneRstudio-windows-x86.zip"><small>MICROSOFT WINDOWS</small><strong>Windows 32 bits</strong><span>Archivo ZIP · x86 · descarga directa ↓</span></a></div></section></main></body></html>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div id="ambient-image"></div>
+    <div id="ambient-tint"></div>
+  </div>
+  <main class="shell">
+    <a class="back" href="./">← Volver a DC Laboratory</a>
+    <header class="hero">
+      <p class="eyebrow">DC LABORATORY · GUÍA DE PLATAFORMAS</p>
+      <h1>DCtuneRstudio <span>por versión</span></h1>
+      <p class="hero-copy">Elige el paquete que corresponde al sistema y a la arquitectura de tu equipo. Aquí están reunidas las versiones para PC de 32 y 64 bits, el portal web de DC Tuner Studio y los paquetes para Raspberry Pi. Las imágenes cambian con cada sección y tiñen suavemente el fondo mientras recorres la página.</p>
+      <div class="hero-actions">
+        <a class="repo-link" href="https://github.com/dcg0/DCtuneRstudio" target="_blank" rel="noopener">Repositorio principal ↗</a>
+        <a class="repo-link" href="https://github.com/dcg0/DCtuneRstudio/tree/main/releases" target="_blank" rel="noopener">Ver paquetes publicados ↗</a>
+      </div>
+      <nav class="quick-nav" aria-label="Secciones de DCtuneRstudio">
+        <a href="#version-32">01 · 32 bits</a>
+        <a href="#version-web">02 · Web</a>
+        <a href="#version-64">03 · 64 bits</a>
+        <a href="#version-pi">04 · Raspberry Pi</a>
+      </nav>
+    </header>
+
+    <section class="edition edition--blue" id="version-32" data-tuner-section data-image="assets/tuner-blue-32bit.png" data-rgb="31, 170, 255">
+      <header class="edition-heading">
+        <p class="edition-label">01 · AZUL / PC DE 32 BITS</p>
+        <h2>DC Tuner Studio <span>32 bits</span></h2>
+        <p class="edition-description">Para computadoras cuyo sistema operativo sea de 32 bits: Windows x86 o Linux i386. Los paquetes incluyen los componentes locales de DCtuneRstudio para trabajar con la interfaz y el puente serie; elige Windows o Linux y confirma que la arquitectura del sistema coincide antes de instalar.</p>
+      </header>
+      <figure class="edition-visual"><img src="assets/tuner-blue-32bit.png" alt="Imagen azul de DC Tuner Studio en un taller; representa la variante para PC de 32 bits" width="1080" height="662" fetchpriority="high"></figure>
+      <div class="edition-content">
+        <p class="edition-note"><strong>Compatibilidad:</strong> Windows 32 bits requiere Python x86. En Linux se necesita Python 3, Flask, pySerial y permisos para el puerto serie. Para diagnóstico real, conecta una ECU compatible mediante USB/serie; la página no inventa lecturas de motor.</p>
+        <div class="download-grid" aria-label="Descargas de 32 bits">
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-linux-i386.zip" target="_blank" rel="noopener"><span class="button-kicker">DEBIAN / LINUX · 32 BITS</span><strong>Linux i386 · ZIP</strong><span class="button-detail">Paquete comprimido para Linux de 32 bits.</span><span class="button-action">Descargar ZIP ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-linux-i386.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">DEBIAN / LINUX · 32 BITS</span><strong>Linux i386 · TAR.GZ</strong><span class="button-detail">Archivo comprimido alternativo para Linux i386.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-windows-x86.zip" target="_blank" rel="noopener"><span class="button-kicker">WINDOWS · 32 BITS</span><strong>Windows x86 · ZIP</strong><span class="button-detail">Paquete para Windows de 32 bits; usa Python x86.</span><span class="button-action">Descargar ZIP ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-windows-x86.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">WINDOWS · 32 BITS</span><strong>Windows x86 · TAR.GZ</strong><span class="button-detail">Archivo comprimido alternativo para Windows x86.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="edition edition--web" id="version-web" data-tuner-section data-image="assets/tuner-web-white.png" data-rgb="215, 232, 246">
+      <header class="edition-heading">
+        <p class="edition-label">02 · BLANCO / VERSIÓN WEB</p>
+        <h2>DC Tuner Studio <span>en la web</span></h2>
+        <p class="edition-description">Abre el portal web oficial desde el navegador para consultar DC Tuner Studio y acceder a sus descargas. El sitio es una página estática: los paquetes que ofrece son ejecutables para Linux y Windows de 64 bits. La página web no puede acceder por sí sola al USB o al puerto serie local; para trabajar con una ECU real se utiliza el puente local incluido en el paquete correspondiente.</p>
+      </header>
+      <figure class="edition-visual"><img src="assets/tuner-web-white.png" alt="Imagen blanca de DC Tuner Studio en un laboratorio automotriz; representa el portal web" width="1080" height="668" loading="lazy" decoding="async"></figure>
+      <div class="edition-content">
+        <p class="edition-note"><strong>Portal web:</strong> se abre en línea sin instalar un servidor de página. Para telemetría de una ECU, consulta los requisitos del paquete y conecta el equipo con el puente local; el portal público no tiene acceso al hardware de tu computadora.</p>
+        <div class="download-grid" aria-label="Portal web y sus descargas">
+          <a class="download-button" href="https://dcg0.github.io/DC-tuner-studio-site/" target="_blank" rel="noopener"><span class="button-kicker">PÁGINA OFICIAL</span><strong>Abrir versión web</strong><span class="button-detail">Visita el portal público de DC Tuner Studio y revisa sus instrucciones.</span><span class="button-action">Abrir página ↗</span></a>
+          <a class="download-button" href="https://dcg0.github.io/DC-tuner-studio-site/downloads/DC-Tuner-Studio-Linux-x86_64" target="_blank" rel="noopener"><span class="button-kicker">PORTAL WEB · LINUX X86_64</span><strong>Linux x86_64</strong><span class="button-detail">Ejecutable publicado en el sitio oficial de descargas.</span><span class="button-action">Descargar ejecutable ↓</span></a>
+          <a class="download-button" href="https://dcg0.github.io/DC-tuner-studio-site/downloads/dc-tuner-studio-linux-portable.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">PORTAL WEB · LINUX</span><strong>Linux portable</strong><span class="button-detail">Paquete TAR.GZ para Linux x86_64.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+          <a class="download-button" href="https://dcg0.github.io/DC-tuner-studio-site/downloads/DC-Tuner-Studio-Windows-x86_64.exe" target="_blank" rel="noopener"><span class="button-kicker">PORTAL WEB · WINDOWS X86_64</span><strong>Windows x64</strong><span class="button-detail">Ejecutable .EXE publicado en la página de DC Tuner Studio.</span><span class="button-action">Descargar EXE ↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="edition edition--red" id="version-64" data-tuner-section data-image="assets/tuner-red-64bit.png" data-rgb="255, 67, 86">
+      <header class="edition-heading">
+        <p class="edition-label">03 · ROJO / PC DE 64 BITS</p>
+        <h2>DCtuneRstudio <span>64 bits</span></h2>
+        <p class="edition-description">Para estaciones actuales con Windows x64 o Linux AMD64. Esta arquitectura permite instalar el paquete de 64 bits correspondiente y utilizar el puente local, la interfaz de diagnóstico, la telemetría y las herramientas de revisión de tablas y registros que forman parte del proyecto. Selecciona el sistema operativo exacto antes de descargar.</p>
+      </header>
+      <figure class="edition-visual"><img src="assets/tuner-red-64bit.png" alt="Imagen roja de DC Tuner Studio en un taller; representa las variantes de 64 bits" width="1080" height="660" loading="lazy" decoding="async"></figure>
+      <div class="edition-content">
+        <p class="edition-note"><strong>Antes de instalar:</strong> AMD64 corresponde a Linux de 64 bits y x64 a Windows de 64 bits. Los paquetes ZIP y TAR.GZ se sirven directamente desde la carpeta de descargas del repositorio DCtuneRstudio.</p>
+        <div class="download-grid" aria-label="Descargas de 64 bits">
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-linux-amd64.zip" target="_blank" rel="noopener"><span class="button-kicker">DEBIAN / LINUX · 64 BITS</span><strong>Linux AMD64 · ZIP</strong><span class="button-detail">Paquete comprimido para distribuciones Linux x86_64.</span><span class="button-action">Descargar ZIP ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-linux-amd64.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">DEBIAN / LINUX · 64 BITS</span><strong>Linux AMD64 · TAR.GZ</strong><span class="button-detail">Archivo comprimido alternativo para Linux de 64 bits.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-windows-x64.zip" target="_blank" rel="noopener"><span class="button-kicker">WINDOWS · 64 BITS</span><strong>Windows x64 · ZIP</strong><span class="button-detail">Paquete para Windows de 64 bits; usa Python x64.</span><span class="button-action">Descargar ZIP ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-windows-x64.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">WINDOWS · 64 BITS</span><strong>Windows x64 · TAR.GZ</strong><span class="button-detail">Archivo comprimido alternativo para Windows x64.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="edition edition--pi" id="version-pi" data-tuner-section data-image="assets/tuner-raspberry-black.png" data-rgb="131, 211, 156">
+      <header class="edition-heading">
+        <p class="edition-label">04 · NEGRO / RASPBERRY PI</p>
+        <h2>DCtuneRstudio <span>Raspberry Pi</span></h2>
+        <p class="edition-description">Convierte una Raspberry Pi compatible en una estación compacta para el entorno DCtuneRstudio. Hay paquetes para Raspberry Pi OS de 64 bits (ARM64) y de 32 bits (ARMv7). Conecta la ECU por USB/serie, confirma primero la arquitectura instalada y sigue las instrucciones incluidas en el paquete para configurar el puente local.</p>
+      </header>
+      <figure class="edition-visual"><img src="assets/tuner-raspberry-black.png" alt="Imagen negra de DC Tuner Studio en un taller; representa la variante para Raspberry Pi" width="1080" height="622" loading="lazy" decoding="async"></figure>
+      <div class="edition-content">
+        <p class="edition-note"><strong>Requisitos:</strong> Raspberry Pi OS debe coincidir con ARM64 o ARMv7. El puente local requiere Python 3, Flask, pySerial y permisos de acceso al puerto serie. No instales un paquete ARM en una PC x86 ni elijas ARM64 si tu sistema es de 32 bits.</p>
+        <div class="download-grid" aria-label="Descargas para Raspberry Pi">
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-raspberry-arm64.zip" target="_blank" rel="noopener"><span class="button-kicker">RASPBERRY PI OS · 64 BITS</span><strong>ARM64 · ZIP</strong><span class="button-detail">Paquete ZIP para Raspberry Pi OS de 64 bits.</span><span class="button-action">Descargar ZIP ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-raspberry-arm64.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">RASPBERRY PI OS · 64 BITS</span><strong>ARM64 · TAR.GZ</strong><span class="button-detail">Archivo TAR.GZ alternativo para sistemas ARM64.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-raspberry-armv7.zip" target="_blank" rel="noopener"><span class="button-kicker">RASPBERRY PI OS · 32 BITS</span><strong>ARMv7 · ZIP</strong><span class="button-detail">Paquete ZIP para Raspberry Pi OS de 32 bits.</span><span class="button-action">Descargar ZIP ↓</span></a>
+          <a class="download-button" href="https://raw.githubusercontent.com/dcg0/DCtuneRstudio/main/releases/DCtuneRstudio-raspberry-armv7.tar.gz" target="_blank" rel="noopener"><span class="button-kicker">RASPBERRY PI OS · 32 BITS</span><strong>ARMv7 · TAR.GZ</strong><span class="button-detail">Archivo TAR.GZ alternativo para sistemas ARMv7.</span><span class="button-action">Descargar TAR.GZ ↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Los paquetes para Windows, Linux y Raspberry Pi no son APK de Android. Verifica la arquitectura y consulta las <a href="https://github.com/dcg0/DCtuneRstudio" target="_blank" rel="noopener">notas y el código fuente de DCtuneRstudio ↗</a> antes de instalar o conectar una ECU.</p>
+  </main>
+  <script src="assets/dctuner-ambience.js" defer></script>
+</body>
+</html>
