@@ -10,6 +10,27 @@ const ceil = (value) => Math.max(1, Math.ceil(value));
 const round10 = (value) => Math.ceil(value / 10) * 10;
 const categoryLabel = { tablero: 'tablero', madera: 'madera', aluminio: 'perfil de aluminio', metal: 'PTR', lamina: 'lámina' };
 
+function updateSidcButtonColor() {
+  const button = document.querySelector('.sidc-cta');
+  if (!button) return;
+
+  const hour = new Date().getHours();
+  const periods = hour >= 6 && hour < 12
+    ? { name: 'mañana', color: '#ffd166', glow: '#ffd16666' }
+    : hour >= 12 && hour < 18
+      ? { name: 'día', color: '#16d4ff', glow: '#16d4ff66' }
+      : hour >= 18 && hour < 22
+        ? { name: 'tarde', color: '#ff8a4c', glow: '#ff8a4c66' }
+        : { name: 'noche', color: '#b58cff', glow: '#b58cff66' };
+
+  button.style.setProperty('--cta-color', periods.color);
+  button.style.setProperty('--cta-glow', periods.glow);
+  button.dataset.timePeriod = periods.name;
+}
+
+updateSidcButtonColor();
+setInterval(updateSidcButtonColor, 60 * 1000);
+
 function fillMaterials() {
   const groups = { tablero: 'Tableros', madera: 'Madera', aluminio: 'Perfiles de aluminio', metal: 'PTR y metal', lamina: 'Lámina' };
   Object.entries(groups).forEach(([category, label]) => {
