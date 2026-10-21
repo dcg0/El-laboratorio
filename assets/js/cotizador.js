@@ -135,6 +135,8 @@ const undoSketchButton = $('#undo-sketch');
 const clearSketchButton = $('#clear-sketch');
 const sendSketchButton = $('#send-sketch');
 const sketchColorButtons = document.querySelectorAll('[data-sketch-color]');
+const stickerTools = document.querySelectorAll('[data-sticker]');
+const stickerLayer = $('#sketch-stickers');
 let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
@@ -185,6 +187,71 @@ function restoreSketchState(dataUrl) {
   };
   image.src = dataUrl;
 }
+
+function addSketchSticker(type) {
+  const sticker = document.createElement('div');
+  const count = stickerLayer.children.length;
+  sticker.className = 'sketch-sticker';
+  sticker.dataset.sticker = type;
+  sticker.style.left = `${24 + (count % 5) * 110}px`;
+  sticker.style.top = `${24 + Math.floor(count / 5) * 78}px`;
+  sticker.style.width = type === 'llantas-industriales' ? '92px' : '116px';
+  sticker.style.height = type === 'llantas-industriales' ? '92px' : '58px';
+  sticker.textContent = type.replaceAll('-', ' ').toUpperCase();
+
+  const remove = document.createElement('button');
+  remove.className = 'sticker-remove';
+  remove.type = 'button';
+  remove.setAttribute('aria-label', 'Quitar pieza');
+  remove.textContent = '×';
+  remove.addEventListener('pointerdown', (event) => event.stopPropagation());
+  remove.addEventListener('click', () => sticker.remove());
+
+  const resize = document.createElement('span');
+  resize.className = 'sticker-resize';
+  resize.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = sticker.offsetWidth;
+    const startHeight = sticker.offsetHeight;
+    const move = (moveEvent) => {
+      sticker.style.width = `${Math.max(55, startWidth + moveEvent.clientX - startX)}px`;
+      sticker.style.height = `${Math.max(38, startHeight + moveEvent.clientY - startY)}px`;
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop, { once: true });
+  });
+
+  sticker.append(remove, resize);
+  stickerLayer.appendChild(sticker);
+  sticker.addEventListener('pointerdown', (event) => {
+    if (event.target === remove || event.target === resize) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startLeft = sticker.offsetLeft;
+    const startTop = sticker.offsetTop;
+    const move = (moveEvent) => {
+      const layerRect = stickerLayer.getBoundingClientRect();
+      sticker.style.left = `${Math.max(0, Math.min(layerRect.width - sticker.offsetWidth, startLeft + moveEvent.clientX - startX))}px`;
+      sticker.style.top = `${Math.max(0, Math.min(layerRect.height - sticker.offsetHeight, startTop + moveEvent.clientY - startY))}px`;
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop, { once: true });
+  });
+}
+
+stickerTools.forEach((tool) => tool.addEventListener('click', () => addSketchSticker(tool.dataset.sticker)));
 
 if (sketchCanvas && sketchContext) {
   sketchColorButtons.forEach((button) => {
