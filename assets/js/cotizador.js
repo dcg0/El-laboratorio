@@ -129,6 +129,89 @@ function calculate(event) {
   $('#quote-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+const sketchCanvas = $('#project-sketch');
+const sketchContext = sketchCanvas?.getContext('2d');
+const undoSketchButton = $('#undo-sketch');
+const clearSketchButton = $('#clear-sketch');
+let sketchHistory = [];
+let sketchDrawing = false;
+
+function paintSketchPaper() {
+  const rect = sketchCanvas.getBoundingClientRect();
+  sketchContext.fillStyle = '#ffffff';
+  sketchContext.fillRect(0, 0, rect.width, rect.height);
+  sketchContext.strokeStyle = '#172536';
+  sketchContext.lineWidth = 3;
+  sketchContext.lineCap = 'round';
+  sketchContext.lineJoin = 'round';
+}
+
+function resizeSketchCanvas() {
+  if (!sketchCanvas || !sketchContext) return;
+  const snapshot = sketchCanvas.width ? sketchCanvas.toDataURL() : null;
+  const rect = sketchCanvas.getBoundingClientRect();
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  sketchCanvas.width = Math.round(rect.width * ratio);
+  sketchCanvas.height = Math.round(rect.height * ratio);
+  sketchContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+  paintSketchPaper();
+  if (snapshot) {
+    const image = new Image();
+    image.onload = () => sketchContext.drawImage(image, 0, 0, rect.width, rect.height);
+    image.src = snapshot;
+  }
+}
+
+function sketchPoint(event) {
+  const rect = sketchCanvas.getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+}
+
+function saveSketchState() {
+  sketchHistory.push(sketchCanvas.toDataURL());
+  if (sketchHistory.length > 20) sketchHistory.shift();
+}
+
+function restoreSketchState(dataUrl) {
+  const rect = sketchCanvas.getBoundingClientRect();
+  const image = new Image();
+  image.onload = () => {
+    paintSketchPaper();
+    sketchContext.drawImage(image, 0, 0, rect.width, rect.height);
+  };
+  image.src = dataUrl;
+}
+
+if (sketchCanvas && sketchContext) {
+  resizeSketchCanvas();
+  window.addEventListener('resize', resizeSketchCanvas);
+  sketchCanvas.addEventListener('pointerdown', (event) => {
+    saveSketchState();
+    sketchDrawing = true;
+    sketchCanvas.setPointerCapture(event.pointerId);
+    const point = sketchPoint(event);
+    sketchContext.beginPath();
+    sketchContext.moveTo(point.x, point.y);
+  });
+  sketchCanvas.addEventListener('pointermove', (event) => {
+    if (!sketchDrawing) return;
+    const point = sketchPoint(event);
+    sketchContext.lineTo(point.x, point.y);
+    sketchContext.stroke();
+  });
+  const stopSketch = () => { sketchDrawing = false; sketchContext.closePath(); };
+  sketchCanvas.addEventListener('pointerup', stopSketch);
+  sketchCanvas.addEventListener('pointercancel', stopSketch);
+  clearSketchButton.addEventListener('click', () => {
+    saveSketchState();
+    paintSketchPaper();
+  });
+  undoSketchButton.addEventListener('click', () => {
+    const previous = sketchHistory.pop();
+    if (previous) restoreSketchState(previous);
+  });
+}
+
 async function loadCatalog() {
   try {
     const response = await fetch('assets/data/ferreteria-monterrey.json');
