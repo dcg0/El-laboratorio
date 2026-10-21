@@ -3890,12 +3890,17 @@ function renderSelect() {
     el.onclick = () => { state.focus = ROSTER.indexOf(c); if (!locked) confirmPick(); else { Audio.sfx.menu(); renderSelect(); } };
     grid.appendChild(el);
   });
-  /* Tarjeta sorpresa: solo puede entregar uno de estos cuatro personajes. */
+  /* Tarjeta sorpresa: entrega personajes normales o, tras desbloquearlos, los dos secretos. */
   const randomIdx = ROSTER.length;
   const randomPool = ROSTER.map((c) => c.id);
 function pickRandomCardResult() {
   const roll = Math.random();
-  if (roll < 0.50) return CHAR[randomPool[Math.floor(Math.random() * randomPool.length)]];
+  const normal = () => CHAR[randomPool[Math.floor(Math.random() * randomPool.length)]];
+  /* MIGUEL 1 y MIGUEL 2 no existen en tarjetas: permanecen secretos hasta
+   * completar toda la ruta arcade. Después del desbloqueo, RANDOM conserva
+   * exactamente 50% normal, 30% MIGUEL 1 y 20% MIGUEL 2. */
+  if (roll < 0.50) return normal();
+  if (!isMiguel1Unlocked() || !isMiguel2Unlocked()) return normal();
   if (roll < 0.80) return CHAR.miguel1;
   return CHAR.miguel2;
 }
