@@ -6,6 +6,7 @@
 - [x] El cotizador pregunta tipo de proyecto, ancho, fondo, alto, material principal, acabado, componentes y especificaciones adicionales.
 - [x] Se pueden seleccionar motores, lámparas, pistones, gabinetes, control/PLC y sensores con cantidades.
 - [x] Se pueden agregar cortes, corte con prensa, maquinados, pintura de taller y diseño/planos.
-- [x] El cálculo estima materiales, componentes, desperdicio, fijaciones, adhesivo, acabado, mano de obra y un rango de variación.
+- [x] Se incorporan referencias internas de herramientas, brocas, arcos de segueta, sierras, gabinetes metálicos, gabinetes de poliéster y accesorios eléctricos.
+- [x] El cálculo estima materiales, componentes, herramientas, desperdicio, fijaciones, adhesivo, acabado, mano de obra y un rango de variación.
 - [x] La interfaz indica que todos los importes son una estimación y que el precio real debe consultarse directamente con el Ing. Daniel C.G.
 - [ ] Conectar una revisión técnica o formulario de envío para que el Ing. Daniel C.G. reciba el proyecto descrito y sus especificaciones.

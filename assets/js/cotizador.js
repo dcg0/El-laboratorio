@@ -69,10 +69,12 @@ function calculate(event) {
   const paintUnits = finish === 'paint' ? ceil((2 * area + (4 * height * 0.15)) / 4) : 0;
   const hardwareTotal = screwUnits * screws.price + glueUnits * glue.price + paintUnits * paint.price;
   const components = checkedItems('#components', true);
+  const tools = checkedItems('#tools');
   const services = checkedItems('#extras');
   const componentsTotal = components.reduce((sum, entry) => sum + entry.item.price * entry.quantity, 0);
+  const toolsTotal = tools.reduce((sum, entry) => sum + entry.item.price, 0);
   const servicesTotal = services.reduce((sum, entry) => sum + entry.item.price, 0);
-  const subtotal = mainTotal + hardwareTotal + componentsTotal + servicesTotal;
+  const subtotal = mainTotal + hardwareTotal + componentsTotal + toolsTotal + servicesTotal;
   const labor = round10(subtotal * 0.35);
   const contingency = round10((subtotal + labor) * 0.10);
   const total = subtotal + labor + contingency;
@@ -91,6 +93,7 @@ function calculate(event) {
     [`${glueUnits} envase(s) de adhesivo`, glueUnits * glue.price],
     ...(paintUnits ? [[`${paintUnits} lata(s) de acabado`, paintUnits * paint.price]] : []),
     ...components.map(({ item, quantity }) => [`${quantity} × ${item.name}`, item.price * quantity]),
+    ...tools.map(({ item }) => [item.name, item.price]),
     ...services.map(({ item }) => [item.name, item.price]),
     ...(componentDetails ? [['Especificaciones recibidas', 0]] : []),
     ['Mano de obra estimada · 35%', labor],
@@ -114,7 +117,7 @@ async function loadCatalog() {
 form.addEventListener('submit', calculate);
 $('#reset-form').addEventListener('click', () => {
   form.reset();
-  document.querySelectorAll('#components input, #extras input').forEach((input) => { input.checked = false; });
+  document.querySelectorAll('#components input, #tools input, #extras input').forEach((input) => { input.checked = false; });
   $('#quote-result').hidden = true;
   $('#quote-empty').hidden = false;
 });
