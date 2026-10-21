@@ -207,6 +207,19 @@ function addSketchSticker(type) {
   remove.addEventListener('pointerdown', (event) => event.stopPropagation());
   remove.addEventListener('click', () => sticker.remove());
 
+  const rotate = document.createElement('button');
+  rotate.className = 'sticker-rotate';
+  rotate.type = 'button';
+  rotate.setAttribute('aria-label', 'Rotar pieza');
+  rotate.title = 'Rotar pieza 15°';
+  rotate.textContent = '↻';
+  let rotation = 0;
+  rotate.addEventListener('pointerdown', (event) => event.stopPropagation());
+  rotate.addEventListener('click', () => {
+    rotation = (rotation + 15) % 360;
+    sticker.style.transform = `rotate(${rotation}deg)`;
+  });
+
   const resize = document.createElement('span');
   resize.className = 'sticker-resize';
   resize.addEventListener('pointerdown', (event) => {
@@ -228,10 +241,10 @@ function addSketchSticker(type) {
     window.addEventListener('pointerup', stop, { once: true });
   });
 
-  sticker.append(remove, resize);
+  sticker.append(remove, rotate, resize);
   stickerLayer.appendChild(sticker);
   sticker.addEventListener('pointerdown', (event) => {
-    if (event.target === remove || event.target === resize) return;
+    if (event.target === remove || event.target === rotate || event.target === resize) return;
     event.preventDefault();
     const startX = event.clientX;
     const startY = event.clientY;
