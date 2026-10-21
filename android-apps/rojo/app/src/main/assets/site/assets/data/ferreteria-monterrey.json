@@ -1,0 +1,304 @@
+{
+  "catalog": "Catálogo interno de referencia para estimaciones",
+  "city": "Monterrey, Nuevo León",
+  "checkedAt": "2026-10-20",
+  "currency": "MXN",
+  "notice": "Todos los importes son referencias para estimación. El precio real se consulta directamente con el Ing. Daniel C.G.",
+  "products": [
+    {
+      "id": "mdf-12",
+      "name": "Panel MDF 12 mm · 1.22 × 2.44 m",
+      "category": "tablero",
+      "unit": "panel",
+      "price": 409,
+      "areaM2": 2.9768,
+      "calculation": "panel"
+    },
+    {
+      "id": "mdf-15",
+      "name": "Panel MDF 15 mm · 1.22 × 2.44 m",
+      "category": "tablero",
+      "unit": "panel",
+      "price": 499,
+      "areaM2": 2.9768,
+      "calculation": "panel"
+    },
+    {
+      "id": "mdf-18",
+      "name": "Panel MDF 18 mm · 1.22 × 2.44 m",
+      "category": "tablero",
+      "unit": "panel",
+      "price": 795,
+      "areaM2": 2.9768,
+      "calculation": "panel"
+    },
+    {
+      "id": "pino-4x4",
+      "name": "Madera de pino tratada · pieza de 2.44 m",
+      "category": "madera",
+      "unit": "pieza",
+      "price": 449,
+      "lengthM": 2.44,
+      "calculation": "linear"
+    },
+    {
+      "id": "aluminio-40",
+      "name": "Perfil de aluminio estructural 40 × 40 · barra 6 m",
+      "category": "aluminio",
+      "unit": "barra",
+      "price": 980,
+      "lengthM": 6,
+      "calculation": "linear"
+    },
+    {
+      "id": "ptr-1x1",
+      "name": "PTR de acero 1 × 1 · barra 6 m",
+      "category": "metal",
+      "unit": "barra",
+      "price": 680,
+      "lengthM": 6,
+      "calculation": "linear"
+    },
+    {
+      "id": "lamina-galv",
+      "name": "Lámina galvanizada · hoja 1.22 × 2.44 m",
+      "category": "lamina",
+      "unit": "hoja",
+      "price": 520,
+      "areaM2": 2.9768,
+      "calculation": "panel"
+    },
+    {
+      "id": "screws-100",
+      "name": "Tornillería y fijaciones · paquete de referencia",
+      "category": "ferreteria",
+      "unit": "paquete",
+      "price": 189,
+      "calculation": "hardware"
+    },
+    {
+      "id": "glue-1kg",
+      "name": "Adhesivo para ensamble · envase 1 kg",
+      "category": "adhesivo",
+      "unit": "envase",
+      "price": 225,
+      "calculation": "hardware"
+    },
+    {
+      "id": "paint-1l",
+      "name": "Pintura o esmalte · lata de 1 L",
+      "category": "acabado",
+      "unit": "lata",
+      "price": 315,
+      "calculation": "hardware"
+    },
+    {
+      "id": "motor",
+      "name": "Motor o motoreductor · módulo de referencia",
+      "category": "componente",
+      "unit": "unidad",
+      "price": 1800,
+      "calculation": "component"
+    },
+    {
+      "id": "lamparas",
+      "name": "Lámparas o iluminación · módulo de referencia",
+      "category": "componente",
+      "unit": "unidad",
+      "price": 350,
+      "calculation": "component"
+    },
+    {
+      "id": "pistones",
+      "name": "Pistones o actuadores · módulo de referencia",
+      "category": "componente",
+      "unit": "unidad",
+      "price": 650,
+      "calculation": "component"
+    },
+    {
+      "id": "gabinete",
+      "name": "Gabinete o envolvente · módulo de referencia",
+      "category": "componente",
+      "unit": "unidad",
+      "price": 1200,
+      "calculation": "component"
+    },
+    {
+      "id": "control",
+      "name": "Control eléctrico / PLC · módulo de referencia",
+      "category": "componente",
+      "unit": "unidad",
+      "price": 2200,
+      "calculation": "component"
+    },
+    {
+      "id": "sensores",
+      "name": "Sensores y cableado · módulo de referencia",
+      "category": "componente",
+      "unit": "kit",
+      "price": 450,
+      "calculation": "component"
+    },
+    {
+      "id": "maquinado",
+      "name": "Maquinado y fabricación especial",
+      "category": "servicio",
+      "unit": "servicio",
+      "price": 850,
+      "calculation": "service"
+    },
+    {
+      "id": "cortes",
+      "name": "Cortes y preparación de material",
+      "category": "servicio",
+      "unit": "servicio",
+      "price": 120,
+      "calculation": "service"
+    },
+    {
+      "id": "corte-prensa",
+      "name": "Corte con prensa",
+      "category": "servicio",
+      "unit": "servicio",
+      "price": 250,
+      "calculation": "service"
+    },
+    {
+      "id": "pintura-servicio",
+      "name": "Pintura y acabado de taller",
+      "category": "servicio",
+      "unit": "servicio",
+      "price": 650,
+      "calculation": "service"
+    },
+    {
+      "id": "diseno",
+      "name": "Diseño, planos y despiece",
+      "category": "servicio",
+      "unit": "servicio",
+      "price": 500,
+      "calculation": "service"
+    },
+    {
+      "id": "llave-impacto",
+      "name": "Llave de impacto brushless y desatornillador inalámbrico 20 V",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 891.58,
+      "calculation": "component"
+    },
+    {
+      "id": "arco-segueta",
+      "name": "Arco ajustable para segueta de 12 pulgadas",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 67.16,
+      "calculation": "component"
+    },
+    {
+      "id": "arco-aluminio",
+      "name": "Arco mini para segueta de aluminio",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 54.29,
+      "calculation": "component"
+    },
+    {
+      "id": "broca-hss-12",
+      "name": "Broca HSS de acero de alta velocidad 1/2 × 6",
+      "category": "herramienta",
+      "unit": "pieza",
+      "price": 84.45,
+      "calculation": "component"
+    },
+    {
+      "id": "broca-hss-14",
+      "name": "Broca HSS de acero de alta velocidad 1/4 × 4",
+      "category": "herramienta",
+      "unit": "pieza",
+      "price": 22.5,
+      "calculation": "component"
+    },
+    {
+      "id": "sierra-cinta",
+      "name": "Sierra cinta bimetálica 44-7/8 × 1/2",
+      "category": "herramienta",
+      "unit": "pieza",
+      "price": 273.41,
+      "calculation": "component"
+    },
+    {
+      "id": "sierra-sable",
+      "name": "Sierra sable bimetálica 12 pulgadas",
+      "category": "herramienta",
+      "unit": "pieza",
+      "price": 100.46,
+      "calculation": "component"
+    },
+    {
+      "id": "gabinete-700",
+      "name": "Gabinete metálico 700 × 500 × 250 mm",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 2335.78,
+      "calculation": "component"
+    },
+    {
+      "id": "gabinete-1200",
+      "name": "Gabinete metálico 1200 × 800 × 300 mm",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 6182.1,
+      "calculation": "component"
+    },
+    {
+      "id": "gabinete-1000",
+      "name": "Gabinete metálico 1000 × 800 × 300 mm",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 5230.67,
+      "calculation": "component"
+    },
+    {
+      "id": "gabinete-600",
+      "name": "Gabinete metálico 600 × 400 × 250 mm",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 1640.94,
+      "calculation": "component"
+    },
+    {
+      "id": "gabinete-poliester",
+      "name": "Gabinete de poliéster 800 × 600 × 300 mm",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 5395.62,
+      "calculation": "component"
+    },
+    {
+      "id": "contacto-doble",
+      "name": "Contacto doble aterrizado 15 A / 125 V",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 48.6,
+      "calculation": "component"
+    },
+    {
+      "id": "apagador-contacto",
+      "name": "Apagador y contacto 15 A / 125 V",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 115.54,
+      "calculation": "component"
+    },
+    {
+      "id": "contacto-usb",
+      "name": "Contacto doble con USB y USB-C 15 A / 125 V",
+      "category": "herramienta",
+      "unit": "unidad",
+      "price": 380.02,
+      "calculation": "component"
+    }
+  ]
+}
