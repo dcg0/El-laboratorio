@@ -1,0 +1,17 @@
+{
+  "store": "The Home Depot México · Torres, Nuevo León",
+  "city": "Monterrey, Nuevo León",
+  "checkedAt": "2026-10-20",
+  "currency": "MXN",
+  "notice": "Precios públicos consultados el 20 de octubre de 2026. Pueden cambiar por inventario, promoción, tienda y cuenta profesional.",
+  "products": [
+    {"id":"mdf-12","name":"Panel MDF 12 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":409,"sku":"287019","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf/mdf-trupan-12mm-122-x-244-287019","areaM2":2.9768},
+    {"id":"mdf-15","name":"Panel MDF 15 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":499,"sku":"287122","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf/mdf-trupan-15mm-122-x-244-287122","areaM2":2.9768},
+    {"id":"mdf-18","name":"Panel MDF 18 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":795,"sku":"287130","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf/mdf-trupan-18mm-122-x-244-287130","areaM2":2.9768},
+    {"id":"pino-4x4","name":"Polín de madera tratada 4 × 4 × 8 pies","category":"madera","unit":"pieza","price":449,"sku":"926942","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/madera-dimensionada/madera-dimensionada-madera-dimensionada/madera-tratada-4x4x8-pies-926942","lengthM":2.44},
+    {"id":"screws-100","name":"Tornillo Phillips para madera · paquete 100 piezas","category":"ferreteria","unit":"paquete","price":189,"sku":"35049","url":"https://pro.homedepot.com.mx/pro/ferreteria/ferreteria-general/tornillos-tuercas-y-arandelas/tornillo-madera-phillips-6x-1-1-2-caja-con-100-981671","pieces":100},
+    {"id":"glue-1kg","name":"Resistol 850 Hidro · 1 kg","category":"adhesivo","unit":"envase","price":225,"sku":"216212","url":"https://pro.homedepot.com.mx/pro/pinturas/adhesivos-selladores-y-silicones/adhesivos-y-pegamentos-adhesivos-selladores-y-silicones/resistol-850-hidro-1-kg-216212","capacityKg":1},
+    {"id":"paint-1l","name":"Esmalte Berel Summa · 1 L","category":"acabado","unit":"lata","price":315,"sku":"809600","url":"https://pro.homedepot.com.mx/pro/pinturas/acabados-para-superficies/esmaltes-acabados-para-superficies/pintura-esmale-summa-neutra-1-l-809600","capacityL":1}
+  ],
+  "source": "https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf"
+}
