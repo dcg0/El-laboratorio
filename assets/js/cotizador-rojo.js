@@ -143,8 +143,8 @@ const sketchPaper = document.querySelector('.sketch-paper');
 const toggleGrid = $('#toggle-grid');
 const snapGrid = $('#snap-grid');
 const gridSize = 20;
-const builtInStickerImages = { rack: 'assets/sketch-pieces/rack.png', motor: 'assets/sketch-pieces/motor.png', alternador: 'assets/sketch-pieces/alternador.png' };
-const builtInStickerSizes = { rack: ['100px', '170px'], motor: ['160px', '115px'], alternador: ['115px', '140px'] };
+const builtInStickerImages = { rack: 'assets/sketch-pieces/rack.png', motor: 'assets/sketch-pieces/motor.png', alternador: 'assets/sketch-pieces/alternador.png', 'perfil-aluminio': 'assets/sketch-pieces/aluminio.png', madera: 'assets/sketch-pieces/madera.png', 'malla-metalica': 'assets/sketch-pieces/malla.png', lamina: 'assets/sketch-pieces/lamina.png', 'llantas-industriales': 'assets/sketch-pieces/llanta.png', resortes: 'assets/sketch-pieces/resorte.png', lamparas: 'assets/sketch-pieces/lampara.png', gabinetes: 'assets/sketch-pieces/gabinete.png' };
+const builtInStickerSizes = { rack: ['100px', '170px'], motor: ['160px', '115px'], alternador: ['115px', '140px'], 'perfil-aluminio': ['120px', '122px'], madera: ['74px', '170px'], 'malla-metalica': ['140px', '124px'], lamina: ['110px', '135px'], 'llantas-industriales': ['95px', '120px'], resortes: ['75px', '170px'], lamparas: ['105px', '139px'], gabinetes: ['110px', '143px'] };
 let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
@@ -310,6 +310,7 @@ const stickerExportColors = {
   lamparas: '#fff4b8',
   gabinetes: '#b9c5cd',
   rack: '#d1d7db',
+  madera: '#b77b45',
   motor: '#1595d1',
   alternador: '#9099a0'
 };
