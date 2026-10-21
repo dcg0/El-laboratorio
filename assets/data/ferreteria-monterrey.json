@@ -1,17 +1,24 @@
 {
-  "store": "The Home Depot México · Torres, Nuevo León",
+  "catalog": "Catálogo interno de referencia para estimaciones",
   "city": "Monterrey, Nuevo León",
   "checkedAt": "2026-10-20",
   "currency": "MXN",
-  "notice": "Precios públicos consultados el 20 de octubre de 2026. Pueden cambiar por inventario, promoción, tienda y cuenta profesional.",
+  "notice": "Todos los importes son referencias para estimación. El precio real se consulta directamente con el Ing. Daniel C.G.",
   "products": [
-    {"id":"mdf-12","name":"Panel MDF 12 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":409,"sku":"287019","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf/mdf-trupan-12mm-122-x-244-287019","areaM2":2.9768},
-    {"id":"mdf-15","name":"Panel MDF 15 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":499,"sku":"287122","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf/mdf-trupan-15mm-122-x-244-287122","areaM2":2.9768},
-    {"id":"mdf-18","name":"Panel MDF 18 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":795,"sku":"287130","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf/mdf-trupan-18mm-122-x-244-287130","areaM2":2.9768},
-    {"id":"pino-4x4","name":"Polín de madera tratada 4 × 4 × 8 pies","category":"madera","unit":"pieza","price":449,"sku":"926942","url":"https://pro.homedepot.com.mx/pro/materiales-de-construccion/madera-dimensionada/madera-dimensionada-madera-dimensionada/madera-tratada-4x4x8-pies-926942","lengthM":2.44},
-    {"id":"screws-100","name":"Tornillo Phillips para madera · paquete 100 piezas","category":"ferreteria","unit":"paquete","price":189,"sku":"35049","url":"https://pro.homedepot.com.mx/pro/ferreteria/ferreteria-general/tornillos-tuercas-y-arandelas/tornillo-madera-phillips-6x-1-1-2-caja-con-100-981671","pieces":100},
-    {"id":"glue-1kg","name":"Resistol 850 Hidro · 1 kg","category":"adhesivo","unit":"envase","price":225,"sku":"216212","url":"https://pro.homedepot.com.mx/pro/pinturas/adhesivos-selladores-y-silicones/adhesivos-y-pegamentos-adhesivos-selladores-y-silicones/resistol-850-hidro-1-kg-216212","capacityKg":1},
-    {"id":"paint-1l","name":"Esmalte Berel Summa · 1 L","category":"acabado","unit":"lata","price":315,"sku":"809600","url":"https://pro.homedepot.com.mx/pro/pinturas/acabados-para-superficies/esmaltes-acabados-para-superficies/pintura-esmale-summa-neutra-1-l-809600","capacityL":1}
-  ],
-  "source": "https://pro.homedepot.com.mx/pro/materiales-de-construccion/paneles-de-madera/mdf"
+    {"id":"mdf-12","name":"Panel MDF 12 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":409,"areaM2":2.9768,"calculation":"panel"},
+    {"id":"mdf-15","name":"Panel MDF 15 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":499,"areaM2":2.9768,"calculation":"panel"},
+    {"id":"mdf-18","name":"Panel MDF 18 mm · 1.22 × 2.44 m","category":"tablero","unit":"panel","price":795,"areaM2":2.9768,"calculation":"panel"},
+    {"id":"pino-4x4","name":"Madera de pino tratada · pieza de 2.44 m","category":"madera","unit":"pieza","price":449,"lengthM":2.44,"calculation":"linear"},
+    {"id":"aluminio-40","name":"Perfil de aluminio estructural 40 × 40 · barra 6 m","category":"aluminio","unit":"barra","price":980,"lengthM":6,"calculation":"linear"},
+    {"id":"ptr-1x1","name":"PTR de acero 1 × 1 · barra 6 m","category":"metal","unit":"barra","price":680,"lengthM":6,"calculation":"linear"},
+    {"id":"lamina-galv","name":"Lámina galvanizada · hoja 1.22 × 2.44 m","category":"lamina","unit":"hoja","price":520,"areaM2":2.9768,"calculation":"panel"},
+    {"id":"screws-100","name":"Tornillería y fijaciones · paquete de referencia","category":"ferreteria","unit":"paquete","price":189,"calculation":"hardware"},
+    {"id":"glue-1kg","name":"Adhesivo para ensamble · envase 1 kg","category":"adhesivo","unit":"envase","price":225,"calculation":"hardware"},
+    {"id":"paint-1l","name":"Pintura o esmalte · lata de 1 L","category":"acabado","unit":"lata","price":315,"calculation":"hardware"},
+    {"id":"maquinado","name":"Maquinado y fabricación especial","category":"servicio","unit":"servicio","price":850,"calculation":"service"},
+    {"id":"cortes","name":"Cortes y preparación de material","category":"servicio","unit":"servicio","price":120,"calculation":"service"},
+    {"id":"corte-prensa","name":"Corte con prensa","category":"servicio","unit":"servicio","price":250,"calculation":"service"},
+    {"id":"pintura-servicio","name":"Pintura y acabado de taller","category":"servicio","unit":"servicio","price":650,"calculation":"service"},
+    {"id":"diseno","name":"Diseño, planos y despiece","category":"servicio","unit":"servicio","price":500,"calculation":"service"}
+  ]
 }
