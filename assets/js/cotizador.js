@@ -139,6 +139,10 @@ const sketchColorButtons = document.querySelectorAll('[data-sketch-color]');
 const stickerTools = document.querySelectorAll('[data-sticker]');
 const stickerLayer = $('#sketch-stickers');
 const pngStickerInput = $('#png-sticker-input');
+const sketchPaper = document.querySelector('.sketch-paper');
+const toggleGrid = $('#toggle-grid');
+const snapGrid = $('#snap-grid');
+const gridSize = 20;
 let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
@@ -241,8 +245,10 @@ function addSketchSticker(type, imageSource = null) {
     const startWidth = sticker.offsetWidth;
     const startHeight = sticker.offsetHeight;
     const move = (moveEvent) => {
-      sticker.style.width = `${Math.max(55, startWidth + moveEvent.clientX - startX)}px`;
-      sticker.style.height = `${Math.max(38, startHeight + moveEvent.clientY - startY)}px`;
+      const nextWidth = Math.max(55, startWidth + moveEvent.clientX - startX);
+      const nextHeight = Math.max(38, startHeight + moveEvent.clientY - startY);
+      sticker.style.width = `${snapGrid.checked ? Math.round(nextWidth / gridSize) * gridSize : nextWidth}px`;
+      sticker.style.height = `${snapGrid.checked ? Math.round(nextHeight / gridSize) * gridSize : nextHeight}px`;
     };
     const stop = () => {
       window.removeEventListener('pointermove', move);
@@ -263,8 +269,10 @@ function addSketchSticker(type, imageSource = null) {
     const startTop = sticker.offsetTop;
     const move = (moveEvent) => {
       const layerRect = stickerLayer.getBoundingClientRect();
-      sticker.style.left = `${Math.max(0, Math.min(layerRect.width - sticker.offsetWidth, startLeft + moveEvent.clientX - startX))}px`;
-      sticker.style.top = `${Math.max(0, Math.min(layerRect.height - sticker.offsetHeight, startTop + moveEvent.clientY - startY))}px`;
+      const nextLeft = Math.max(0, Math.min(layerRect.width - sticker.offsetWidth, startLeft + moveEvent.clientX - startX));
+      const nextTop = Math.max(0, Math.min(layerRect.height - sticker.offsetHeight, startTop + moveEvent.clientY - startY));
+      sticker.style.left = `${snapGrid.checked ? Math.round(nextLeft / gridSize) * gridSize : nextLeft}px`;
+      sticker.style.top = `${snapGrid.checked ? Math.round(nextTop / gridSize) * gridSize : nextTop}px`;
     };
     const stop = () => {
       window.removeEventListener('pointermove', move);
@@ -282,6 +290,10 @@ pngStickerInput.addEventListener('change', () => {
     if (file.type === 'image/png') addSketchSticker('uploaded-image', URL.createObjectURL(file));
   });
   pngStickerInput.value = '';
+});
+
+toggleGrid.addEventListener('change', () => {
+  sketchPaper.classList.toggle('grid-off', !toggleGrid.checked);
 });
 
 const stickerExportColors = {
