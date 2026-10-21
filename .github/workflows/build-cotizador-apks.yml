@@ -29,8 +29,8 @@ jobs:
       - name: Collect APKs
         run: |
           mkdir -p dist
-          cp android-apps/sidc/app/build/outputs/apk/debug/app-debug.apk dist/cotizador-sidc-v1.0.6.apk
-          cp android-apps/rojo/app/build/outputs/apk/debug/app-debug.apk dist/cotizador-rojo-v1.0.6.apk
+          cp android-apps/sidc/app/build/outputs/apk/debug/app-debug.apk dist/cotizador-sidc-v1.0.7.apk
+          cp android-apps/rojo/app/build/outputs/apk/debug/app-debug.apk dist/cotizador-rojo-v1.0.7.apk
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
