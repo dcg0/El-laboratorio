@@ -143,6 +143,7 @@ const sketchPaper = document.querySelector('.sketch-paper');
 const toggleGrid = $('#toggle-grid');
 const snapGrid = $('#snap-grid');
 const gridSize = 20;
+const builtInStickerImages = { rack: 'assets/sketch-pieces/rack.png' };
 let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
@@ -195,19 +196,20 @@ function restoreSketchState(dataUrl) {
 }
 
 function addSketchSticker(type, imageSource = null) {
+  const resolvedImageSource = imageSource || builtInStickerImages[type] || null;
   const sticker = document.createElement('div');
   const count = stickerLayer.children.length;
   sticker.className = 'sketch-sticker';
   sticker.dataset.sticker = type;
   sticker.style.left = `${24 + (count % 5) * 110}px`;
   sticker.style.top = `${24 + Math.floor(count / 5) * 78}px`;
-  sticker.style.width = imageSource ? '150px' : (type === 'llantas-industriales' ? '92px' : '116px');
-  sticker.style.height = imageSource ? '110px' : (type === 'llantas-industriales' ? '92px' : '58px');
-  if (imageSource) {
-    sticker.classList.add('uploaded-image');
+  sticker.style.width = resolvedImageSource ? (type === 'rack' ? '100px' : '150px') : (type === 'llantas-industriales' ? '92px' : '116px');
+  sticker.style.height = resolvedImageSource ? (type === 'rack' ? '170px' : '110px') : (type === 'llantas-industriales' ? '92px' : '58px');
+  if (resolvedImageSource) {
+    sticker.classList.add('image-sticker', 'uploaded-image');
     const image = document.createElement('img');
-    image.src = imageSource;
-    image.alt = 'PNG insertado en el boceto';
+    image.src = resolvedImageSource;
+    image.alt = type === 'rack' ? 'Rack insertado en el boceto' : 'PNG insertado en el boceto';
     sticker.appendChild(image);
   } else {
     sticker.textContent = type.replaceAll('-', ' ').toUpperCase();
@@ -304,7 +306,8 @@ const stickerExportColors = {
   'llantas-industriales': '#26343e',
   resortes: '#d7b86a',
   lamparas: '#fff4b8',
-  gabinetes: '#b9c5cd'
+  gabinetes: '#b9c5cd',
+  rack: '#d1d7db'
 };
 
 function createSketchExportBlob() {
@@ -331,7 +334,7 @@ function createSketchExportBlob() {
         exportContext.rotate(rotation);
         exportContext.strokeStyle = '#172536';
         exportContext.lineWidth = 2;
-        if (type === 'uploaded-image') {
+        if (sticker.classList.contains('image-sticker')) {
           const image = sticker.querySelector('img');
           if (image?.complete) exportContext.drawImage(image, -width / 2, -height / 2, width, height);
         } else {
