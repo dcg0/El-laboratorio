@@ -134,6 +134,7 @@ const sketchContext = sketchCanvas?.getContext('2d');
 const undoSketchButton = $('#undo-sketch');
 const clearSketchButton = $('#clear-sketch');
 const sendSketchButton = $('#send-sketch');
+const downloadSketchButton = $('#download-sketch');
 const sketchColorButtons = document.querySelectorAll('[data-sketch-color]');
 const stickerTools = document.querySelectorAll('[data-sticker]');
 const stickerLayer = $('#sketch-stickers');
@@ -217,6 +218,7 @@ function addSketchSticker(type) {
   rotate.addEventListener('pointerdown', (event) => event.stopPropagation());
   rotate.addEventListener('click', () => {
     rotation = (rotation + 15) % 360;
+    sticker.dataset.rotation = rotation;
     sticker.style.transform = `rotate(${rotation}deg)`;
   });
 
@@ -266,6 +268,67 @@ function addSketchSticker(type) {
 
 stickerTools.forEach((tool) => tool.addEventListener('click', () => addSketchSticker(tool.dataset.sticker)));
 
+const stickerExportColors = {
+  'perfil-aluminio': '#dce7ed',
+  ptr: '#c8d2d8',
+  'malla-metalica': '#b8c4ca',
+  lamina: '#f1f4f6',
+  'llantas-industriales': '#26343e',
+  resortes: '#d7b86a',
+  lamparas: '#fff4b8',
+  gabinetes: '#b9c5cd'
+};
+
+function createSketchExportBlob() {
+  return new Promise((resolve) => {
+    const rect = sketchCanvas.getBoundingClientRect();
+    const scale = 2;
+    const exportCanvas = document.createElement('canvas');
+    const exportContext = exportCanvas.getContext('2d');
+    exportCanvas.width = Math.round(rect.width * scale);
+    exportCanvas.height = Math.round(rect.height * scale);
+    exportContext.scale(scale, scale);
+    const baseImage = new Image();
+    baseImage.onload = () => {
+      exportContext.drawImage(baseImage, 0, 0, rect.width, rect.height);
+      [...stickerLayer.children].forEach((sticker) => {
+        const type = sticker.dataset.sticker;
+        const width = sticker.offsetWidth;
+        const height = sticker.offsetHeight;
+        const x = sticker.offsetLeft + width / 2;
+        const y = sticker.offsetTop + height / 2;
+        const rotation = Number(sticker.dataset.rotation || 0) * Math.PI / 180;
+        exportContext.save();
+        exportContext.translate(x, y);
+        exportContext.rotate(rotation);
+        exportContext.fillStyle = stickerExportColors[type] || '#e8f1f7';
+        exportContext.strokeStyle = '#172536';
+        exportContext.lineWidth = 2;
+        exportContext.fillRect(-width / 2, -height / 2, width, height);
+        exportContext.strokeRect(-width / 2, -height / 2, width, height);
+        exportContext.fillStyle = type === 'llantas-industriales' ? '#fff' : '#172536';
+        exportContext.font = '700 11px DM Mono, monospace';
+        exportContext.textAlign = 'center';
+        exportContext.textBaseline = 'middle';
+        exportContext.fillText(type.replaceAll('-', ' ').toUpperCase(), 0, 0, Math.max(35, width - 16));
+        exportContext.restore();
+      });
+      exportCanvas.toBlob(resolve, 'image/png');
+    };
+    baseImage.src = sketchCanvas.toDataURL('image/png');
+  });
+}
+
+function downloadSketchBlob(blob) {
+  if (!blob) return;
+  const url = URL.createObjectURL(blob);
+  const download = document.createElement('a');
+  download.href = url;
+  download.download = 'boceto-proyecto-sidc.png';
+  download.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 if (sketchCanvas && sketchContext) {
   sketchColorButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -297,29 +360,27 @@ if (sketchCanvas && sketchContext) {
     saveSketchState();
     paintSketchPaper();
   });
-  sendSketchButton.addEventListener('click', () => {
-    sketchCanvas.toBlob(async (blob) => {
-      if (!blob) return;
-      const file = new File([blob], 'boceto-proyecto-sidc.png', { type: 'image/png' });
-      const message = 'Hola, envío el boceto de mi proyecto para solicitar una cotización.';
-      const canShareFile = navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }));
+  downloadSketchButton.addEventListener('click', async () => {
+    downloadSketchBlob(await createSketchExportBlob());
+  });
+  sendSketchButton.addEventListener('click', async () => {
+    const blob = await createSketchExportBlob();
+    if (!blob) return;
+    const file = new File([blob], 'boceto-proyecto-sidc.png', { type: 'image/png' });
+    const message = 'Hola, envío el boceto de mi proyecto para solicitar una cotización.';
+    const canShareFile = navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }));
 
-      if (canShareFile) {
-        try {
-          await navigator.share({ title: 'Boceto de proyecto S.I.D.C.', text: message, files: [file] });
-          return;
-        } catch (error) {
-          if (error.name === 'AbortError') return;
-        }
+    if (canShareFile) {
+      try {
+        await navigator.share({ title: 'Boceto de proyecto S.I.D.C.', text: message, files: [file] });
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
       }
+    }
 
-      const download = document.createElement('a');
-      download.href = URL.createObjectURL(blob);
-      download.download = 'boceto-proyecto-sidc.png';
-      download.click();
-      URL.revokeObjectURL(download.href);
-      window.open(`https://wa.me/528116710029?text=${encodeURIComponent(`${message} Adjunta el archivo boceto-proyecto-sidc.png a este chat.`)}`, '_blank', 'noopener,noreferrer');
-    }, 'image/png');
+    downloadSketchBlob(blob);
+    window.open(`https://wa.me/528116710029?text=${encodeURIComponent(`${message} Adjunta el archivo boceto-proyecto-sidc.png a este chat.`)}`, '_blank', 'noopener,noreferrer');
   });
   undoSketchButton.addEventListener('click', () => {
     const previous = sketchHistory.pop();
