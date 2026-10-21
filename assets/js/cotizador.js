@@ -134,6 +134,8 @@ const sketchContext = sketchCanvas?.getContext('2d');
 const undoSketchButton = $('#undo-sketch');
 const clearSketchButton = $('#clear-sketch');
 const sendSketchButton = $('#send-sketch');
+const sketchColorButtons = document.querySelectorAll('[data-sketch-color]');
+let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
 
@@ -141,8 +143,9 @@ function paintSketchPaper() {
   const rect = sketchCanvas.getBoundingClientRect();
   sketchContext.fillStyle = '#ffffff';
   sketchContext.fillRect(0, 0, rect.width, rect.height);
-  sketchContext.strokeStyle = '#172536';
-  sketchContext.lineWidth = 3;
+  sketchContext.strokeStyle = sketchColor;
+  sketchContext.globalCompositeOperation = 'source-over';
+  sketchContext.lineWidth = 6;
   sketchContext.lineCap = 'round';
   sketchContext.lineJoin = 'round';
 }
@@ -184,6 +187,13 @@ function restoreSketchState(dataUrl) {
 }
 
 if (sketchCanvas && sketchContext) {
+  sketchColorButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      sketchColor = button.dataset.sketchColor;
+      sketchColorButtons.forEach((item) => item.classList.toggle('active', item === button));
+      sketchContext.strokeStyle = sketchColor;
+    });
+  });
   resizeSketchCanvas();
   window.addEventListener('resize', resizeSketchCanvas);
   sketchCanvas.addEventListener('pointerdown', (event) => {
