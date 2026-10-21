@@ -133,6 +133,7 @@ const sketchCanvas = $('#project-sketch');
 const sketchContext = sketchCanvas?.getContext('2d');
 const undoSketchButton = $('#undo-sketch');
 const clearSketchButton = $('#clear-sketch');
+const sendSketchButton = $('#send-sketch');
 let sketchHistory = [];
 let sketchDrawing = false;
 
@@ -205,6 +206,30 @@ if (sketchCanvas && sketchContext) {
   clearSketchButton.addEventListener('click', () => {
     saveSketchState();
     paintSketchPaper();
+  });
+  sendSketchButton.addEventListener('click', () => {
+    sketchCanvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const file = new File([blob], 'boceto-proyecto-sidc.png', { type: 'image/png' });
+      const message = 'Hola, envío el boceto de mi proyecto para solicitar una cotización.';
+      const canShareFile = navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }));
+
+      if (canShareFile) {
+        try {
+          await navigator.share({ title: 'Boceto de proyecto S.I.D.C.', text: message, files: [file] });
+          return;
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+        }
+      }
+
+      const download = document.createElement('a');
+      download.href = URL.createObjectURL(blob);
+      download.download = 'boceto-proyecto-sidc.png';
+      download.click();
+      URL.revokeObjectURL(download.href);
+      window.open(`https://wa.me/528116710029?text=${encodeURIComponent(`${message} Adjunta el archivo boceto-proyecto-sidc.png a este chat.`)}`, '_blank', 'noopener,noreferrer');
+    }, 'image/png');
   });
   undoSketchButton.addEventListener('click', () => {
     const previous = sketchHistory.pop();
