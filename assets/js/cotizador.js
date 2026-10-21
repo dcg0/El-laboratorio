@@ -79,7 +79,8 @@ function calculate(event) {
   const contingency = round10((subtotal + labor) * 0.10);
   const travelAndContingency = 200;
   const finalContingency = round10((subtotal + labor + contingency + travelAndContingency) * 0.10);
-  const total = subtotal + labor + contingency + travelAndContingency + finalContingency;
+  const designFee = round10((subtotal + labor + contingency + travelAndContingency + finalContingency) * 0.09);
+  const total = subtotal + labor + contingency + travelAndContingency + finalContingency + designFee;
   const projectTitle = project.length > 52 ? `${project.slice(0, 52)}…` : project;
 
   $('#quote-empty').hidden = true;
@@ -101,7 +102,8 @@ function calculate(event) {
     ['Mano de obra estimada · 49%', labor],
     ['Margen de desperdicio y variación · 10%', contingency],
     ['Viáticos, imprevistos y gastos operativos', travelAndContingency],
-    ['10% final por imprevistos, viáticos, consultas y gastos adicionales', finalContingency]
+    ['10% final por imprevistos, viáticos, consultas y gastos adicionales', finalContingency],
+    ['Diseño integral de todo el proyecto · 9%', designFee]
   ].map(([label, value]) => `<li><span>${label}</span><strong>${value ? money.format(value) : '—'}</strong></li>`).join('');
   $('#quote-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
