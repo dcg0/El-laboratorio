@@ -143,7 +143,8 @@ const sketchPaper = document.querySelector('.sketch-paper');
 const toggleGrid = $('#toggle-grid');
 const snapGrid = $('#snap-grid');
 const gridSize = 20;
-const builtInStickerImages = { rack: 'assets/sketch-pieces/rack.png' };
+const builtInStickerImages = { rack: 'assets/sketch-pieces/rack.png', motor: 'assets/sketch-pieces/motor.png', alternador: 'assets/sketch-pieces/alternador.png' };
+const builtInStickerSizes = { rack: ['100px', '170px'], motor: ['160px', '115px'], alternador: ['115px', '140px'] };
 let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
@@ -203,8 +204,9 @@ function addSketchSticker(type, imageSource = null) {
   sticker.dataset.sticker = type;
   sticker.style.left = `${24 + (count % 5) * 110}px`;
   sticker.style.top = `${24 + Math.floor(count / 5) * 78}px`;
-  sticker.style.width = resolvedImageSource ? (type === 'rack' ? '100px' : '150px') : (type === 'llantas-industriales' ? '92px' : '116px');
-  sticker.style.height = resolvedImageSource ? (type === 'rack' ? '170px' : '110px') : (type === 'llantas-industriales' ? '92px' : '58px');
+  const builtInSize = builtInStickerSizes[type];
+  sticker.style.width = resolvedImageSource ? (builtInSize?.[0] || '150px') : (type === 'llantas-industriales' ? '92px' : '116px');
+  sticker.style.height = resolvedImageSource ? (builtInSize?.[1] || '110px') : (type === 'llantas-industriales' ? '92px' : '58px');
   if (resolvedImageSource) {
     sticker.classList.add('image-sticker', 'uploaded-image');
     const image = document.createElement('img');
@@ -307,7 +309,9 @@ const stickerExportColors = {
   resortes: '#d7b86a',
   lamparas: '#fff4b8',
   gabinetes: '#b9c5cd',
-  rack: '#d1d7db'
+  rack: '#d1d7db',
+  motor: '#1595d1',
+  alternador: '#9099a0'
 };
 
 function createSketchExportBlob() {
