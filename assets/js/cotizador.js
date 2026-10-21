@@ -138,6 +138,7 @@ const downloadSketchButton = $('#download-sketch');
 const sketchColorButtons = document.querySelectorAll('[data-sketch-color]');
 const stickerTools = document.querySelectorAll('[data-sticker]');
 const stickerLayer = $('#sketch-stickers');
+const pngStickerInput = $('#png-sticker-input');
 let sketchColor = '#111827';
 let sketchHistory = [];
 let sketchDrawing = false;
@@ -189,16 +190,24 @@ function restoreSketchState(dataUrl) {
   image.src = dataUrl;
 }
 
-function addSketchSticker(type) {
+function addSketchSticker(type, imageSource = null) {
   const sticker = document.createElement('div');
   const count = stickerLayer.children.length;
   sticker.className = 'sketch-sticker';
   sticker.dataset.sticker = type;
   sticker.style.left = `${24 + (count % 5) * 110}px`;
   sticker.style.top = `${24 + Math.floor(count / 5) * 78}px`;
-  sticker.style.width = type === 'llantas-industriales' ? '92px' : '116px';
-  sticker.style.height = type === 'llantas-industriales' ? '92px' : '58px';
-  sticker.textContent = type.replaceAll('-', ' ').toUpperCase();
+  sticker.style.width = imageSource ? '150px' : (type === 'llantas-industriales' ? '92px' : '116px');
+  sticker.style.height = imageSource ? '110px' : (type === 'llantas-industriales' ? '92px' : '58px');
+  if (imageSource) {
+    sticker.classList.add('uploaded-image');
+    const image = document.createElement('img');
+    image.src = imageSource;
+    image.alt = 'PNG insertado en el boceto';
+    sticker.appendChild(image);
+  } else {
+    sticker.textContent = type.replaceAll('-', ' ').toUpperCase();
+  }
 
   const remove = document.createElement('button');
   remove.className = 'sticker-remove';
@@ -268,6 +277,13 @@ function addSketchSticker(type) {
 
 stickerTools.forEach((tool) => tool.addEventListener('click', () => addSketchSticker(tool.dataset.sticker)));
 
+pngStickerInput.addEventListener('change', () => {
+  [...pngStickerInput.files].forEach((file) => {
+    if (file.type === 'image/png') addSketchSticker('uploaded-image', URL.createObjectURL(file));
+  });
+  pngStickerInput.value = '';
+});
+
 const stickerExportColors = {
   'perfil-aluminio': '#dce7ed',
   ptr: '#c8d2d8',
@@ -301,16 +317,21 @@ function createSketchExportBlob() {
         exportContext.save();
         exportContext.translate(x, y);
         exportContext.rotate(rotation);
-        exportContext.fillStyle = stickerExportColors[type] || '#e8f1f7';
         exportContext.strokeStyle = '#172536';
         exportContext.lineWidth = 2;
-        exportContext.fillRect(-width / 2, -height / 2, width, height);
-        exportContext.strokeRect(-width / 2, -height / 2, width, height);
-        exportContext.fillStyle = type === 'llantas-industriales' ? '#fff' : '#172536';
-        exportContext.font = '700 11px DM Mono, monospace';
-        exportContext.textAlign = 'center';
-        exportContext.textBaseline = 'middle';
-        exportContext.fillText(type.replaceAll('-', ' ').toUpperCase(), 0, 0, Math.max(35, width - 16));
+        if (type === 'uploaded-image') {
+          const image = sticker.querySelector('img');
+          if (image?.complete) exportContext.drawImage(image, -width / 2, -height / 2, width, height);
+        } else {
+          exportContext.fillStyle = stickerExportColors[type] || '#e8f1f7';
+          exportContext.fillRect(-width / 2, -height / 2, width, height);
+          exportContext.strokeRect(-width / 2, -height / 2, width, height);
+          exportContext.fillStyle = type === 'llantas-industriales' ? '#fff' : '#172536';
+          exportContext.font = '700 11px DM Mono, monospace';
+          exportContext.textAlign = 'center';
+          exportContext.textBaseline = 'middle';
+          exportContext.fillText(type.replaceAll('-', ' ').toUpperCase(), 0, 0, Math.max(35, width - 16));
+        }
         exportContext.restore();
       });
       exportCanvas.toBlob(resolve, 'image/png');
