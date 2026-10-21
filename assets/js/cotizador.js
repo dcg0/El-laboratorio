@@ -26,14 +26,26 @@ function fillMaterials() {
   catalogStatus.innerHTML = `Referencias internas de materiales y servicios · actualizadas ${catalog.checkedAt}.`;
 }
 
+function checkedItems(container, withQuantity = false) {
+  return [...document.querySelectorAll(`${container} input[type="checkbox"]:checked`)].map((input) => {
+    const item = product(input.value);
+    const quantityInput = document.querySelector(`${container} .component-qty[data-component="${input.value}"]`);
+    const quantity = withQuantity && quantityInput ? Math.max(1, Number(quantityInput.value) || 1) : 1;
+    return item ? { item, quantity } : null;
+  }).filter(Boolean);
+}
+
 function calculate(event) {
   event.preventDefault();
+  const project = $('#project').value.trim();
+  const projectType = $('#project-type').value;
+  const componentDetails = $('#component-details').value.trim();
   const width = Number($('#width').value) / 100;
   const depth = Number($('#depth').value) / 100;
   const height = Number($('#height').value) / 100;
   const finish = $('#finish').value;
   const selected = product(materialSelect.value);
-  if (!selected || !width || !depth || !height) return;
+  if (!project || !selected || !width || !depth || !height) return;
 
   const area = width * depth;
   const waste = 1.12;
@@ -56,27 +68,34 @@ function calculate(event) {
   const glueUnits = finish === 'natural' ? ceil(mainUnits / 2) : Math.max(1, ceil(mainUnits / 3));
   const paintUnits = finish === 'paint' ? ceil((2 * area + (4 * height * 0.15)) / 4) : 0;
   const hardwareTotal = screwUnits * screws.price + glueUnits * glue.price + paintUnits * paint.price;
-  const selectedExtras = [...document.querySelectorAll('#extras input:checked')].map((input) => product(input.value)).filter(Boolean);
-  const extrasTotal = selectedExtras.reduce((sum, item) => sum + item.price, 0);
-  const subtotal = mainTotal + hardwareTotal + extrasTotal;
+  const components = checkedItems('#components', true);
+  const services = checkedItems('#extras');
+  const componentsTotal = components.reduce((sum, entry) => sum + entry.item.price * entry.quantity, 0);
+  const servicesTotal = services.reduce((sum, entry) => sum + entry.item.price, 0);
+  const subtotal = mainTotal + hardwareTotal + componentsTotal + servicesTotal;
   const labor = round10(subtotal * 0.35);
   const contingency = round10((subtotal + labor) * 0.10);
   const total = subtotal + labor + contingency;
+  const projectTitle = project.length > 52 ? `${project.slice(0, 52)}…` : project;
 
   $('#quote-empty').hidden = true;
   $('#quote-result').hidden = false;
   $('#quote-total').textContent = money.format(total);
   $('#quote-range').textContent = `${money.format(total * 0.9)} – ${money.format(total * 1.1)}`;
-  $('#quote-meta').textContent = `${Math.round(width * 100)} × ${Math.round(depth * 100)} × ${Math.round(height * 100)} cm · ${selected.name}`;
+  $('#quote-meta').textContent = projectTitle;
   $('#quote-materials').innerHTML = [
+    [`Tipo de proyecto · ${projectType}`, 0],
+    [`Medidas · ${Math.round(width * 100)} × ${Math.round(depth * 100)} × ${Math.round(height * 100)} cm`, 0],
     [mainLabel, mainTotal],
     [`${screwUnits} paquete(s) de fijaciones`, screwUnits * screws.price],
     [`${glueUnits} envase(s) de adhesivo`, glueUnits * glue.price],
     ...(paintUnits ? [[`${paintUnits} lata(s) de acabado`, paintUnits * paint.price]] : []),
-    ...selectedExtras.map((item) => [item.name, item.price]),
+    ...components.map(({ item, quantity }) => [`${quantity} × ${item.name}`, item.price * quantity]),
+    ...services.map(({ item }) => [item.name, item.price]),
+    ...(componentDetails ? [['Especificaciones recibidas', 0]] : []),
     ['Mano de obra estimada · 35%', labor],
     ['Margen de desperdicio y variación · 10%', contingency]
-  ].map(([label, value]) => `<li><span>${label}</span><strong>${money.format(value)}</strong></li>`).join('');
+  ].map(([label, value]) => `<li><span>${label}</span><strong>${value ? money.format(value) : '—'}</strong></li>`).join('');
   $('#quote-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -95,7 +114,7 @@ async function loadCatalog() {
 form.addEventListener('submit', calculate);
 $('#reset-form').addEventListener('click', () => {
   form.reset();
-  document.querySelectorAll('#extras input').forEach((input) => { input.checked = false; });
+  document.querySelectorAll('#components input, #extras input').forEach((input) => { input.checked = false; });
   $('#quote-result').hidden = true;
   $('#quote-empty').hidden = false;
 });
