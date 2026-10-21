@@ -16,11 +16,11 @@ function updateSidcButtonColor() {
 
   const hour = new Date().getHours();
   const periods = hour >= 6 && hour < 12
-    ? { name: 'mañana', color: '#ffd166', glow: '#ffd16666' }
+    ? { name: 'mañana', color: '#ffffff', glow: '#ffffff66' }
     : hour >= 12 && hour < 18
       ? { name: 'día', color: '#16d4ff', glow: '#16d4ff66' }
       : hour >= 18 && hour < 22
-        ? { name: 'tarde', color: '#ff8a4c', glow: '#ff8a4c66' }
+        ? { name: 'tarde', color: '#16d4ff', glow: '#16d4ff66' }
         : { name: 'noche', color: '#b58cff', glow: '#b58cff66' };
 
   button.style.setProperty('--cta-color', periods.color);
