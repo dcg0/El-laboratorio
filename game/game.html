@@ -779,7 +779,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
  *     tres bancos (resoluciones distintas) se vean del mismo porte. --- */
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
-  refresh: { spriteFacesRight: true, frames: Array.from({length: 6}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
+  refresh: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
   kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal, drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
@@ -871,14 +871,14 @@ const POSE = {
     launcherP: 6, launcherK: 5, assistP: 6, assistK: 5, win: 7,
   },
   refresh: {
-    idle: 0, walk: [0, 1], crouch: 4, jump: 2, fall: 3,
-    sLP: 0, sMP: 1, sHP: 1, sLK: 2, sMK: 3, sHK: 3,
-    cLP: 0, cMP: 1, cHP: 4, cLK: 2, cMK: 3, cHK: 4,
-    jLP: 2, jMP: 5, jHP: 5, jLK: 2, jMK: 3, jHK: 5,
-    dashF: 5, dashB: 0, block: 0, blockLow: 4, blockAir: 2,
-    hit: 1, hitLow: 4, hitAir: 2, down: 4, getUp: 0,
-    specialP: 4, specialK: 3, hyper: 5, hyperAlt: 1,
-    launcherP: 1, launcherK: 3, assistP: 4, assistK: 5, win: 0,
+    idle: 0, walk: [0, 1], crouch: 5, jump: 4, fall: 6,
+    sLP: 1, sMP: 2, sHP: 7, sLK: 3, sMK: 5, sHK: 6,
+    cLP: 1, cMP: 2, cHP: 6, cLK: 3, cMK: 5, cHK: 7,
+    jLP: 3, jMP: 4, jHP: 8, jLK: 5, jMK: 6, jHK: 8,
+    dashF: 1, dashB: 0, block: 0, blockLow: 5, blockAir: 4,
+    hit: 1, hitLow: 5, hitAir: 4, down: 8, getUp: 0,
+    specialP: 7, specialK: 8, hyper: 8, hyperAlt: 7,
+    launcherP: 7, launcherK: 6, assistP: 7, assistK: 8, win: 0,
   },
   dcnormal: {
     idle: 0, walk: [0, 1], crouch: 4, jump: 2, fall: 6,
