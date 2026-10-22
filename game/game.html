@@ -779,7 +779,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
  *     tres bancos (resoluciones distintas) se vean del mismo porte. --- */
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
-  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 10}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 305, feetPad: 8, recolor: [] },
+  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal, drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
   dcazul: { frames: Array.from({length: 6}, (_, i) => `assets/sprites/dcazul/dcazul-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
@@ -788,7 +788,7 @@ const BANKS = {
   wiznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   mistikwiz: { frames: [...SPRITE_DATA.mistikwiz, 'assets/sprites/mistikwiz/mistikwiz-walk.png'], drawH: 306, feetPad: 5, recolor: [] },
   dcakuma: { frames: SPRITE_DATA.dcakuma, drawH: 306, feetPad: 5, recolor: [] },
-  crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 455, feetPad: 6, recolor: [] },
+  crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 390, feetPad: 6, recolor: [] },
   wizz:   { frames: ['assets/sprites/wizz_sin_fondo.png'], drawH: 306, feetPad: 6,  recolor: [] },
   wizznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   wmistiko: { frames: Array.from({length: 9}, (_, i) => `assets/sprites/wmistiko/wmistiko-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
@@ -797,7 +797,7 @@ const BANKS = {
   toto:   { frames: SPRITE_DATA.toto,     drawH: 292, feetPad: 5, recolor: [] },
   wero:   { frames: SPRITE_DATA.wero,     drawH: 292, feetPad: 5, recolor: [] },
   yiyo:   { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/yiyo/yiyo-${String(i + 1).padStart(2, '0')}.png`), drawH: 300, feetPad: 6, recolor: [] },
-  aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron/aron-${String(i + 1).padStart(2, '0')}.png`), drawH: 285, feetPad: 6, recolor: [] },
+  aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron/aron-${String(i + 1).padStart(2, '0')}.png`), drawH: 300, feetPad: 6, recolor: [] },
   dandy: { spriteFacesRight: true, frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
   miguelnew: { spriteFacesRight: true, frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
   victor: { spriteFacesRight: true, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
@@ -1110,7 +1110,16 @@ const Art = {
   },
 };
 
-POSE.kato = { ...POSE.dc, idle: 0, walk: [0, 10], win: 0 };
+POSE.kato = {
+  idle: 1, walk: [1, 11], crouch: 10, jump: 4, fall: 8,
+  sLP: 9, sMP: 7, sHP: 3, sLK: 5, sMK: 8, sHK: 4,
+  cLP: 10, cMP: 7, cHP: 3, cLK: 10, cMK: 8, cHK: 5,
+  jLP: 4, jMP: 6, jHP: 4, jLK: 5, jMK: 8, jHK: 4,
+  dashF: 4, dashB: 1, block: 3, blockLow: 10, blockAir: 4,
+  hit: 9, hitLow: 10, hitAir: 4, down: 10, getUp: 1,
+  specialP: 7, specialK: 8, hyper: 3, hyperAlt: 6,
+  launcherP: 3, launcherK: 5, assistP: 7, assistK: 8, win: 1
+};
 /* ======================= DEFINICIÓN DE MOVIMIENTOS ====================== */
 /* Origen de coordenadas = pies del luchador, +x hacia adelante, -y hacia
  * arriba. Todos los tiempos están en fotogramas a 60 Hz. */
@@ -1544,6 +1553,8 @@ class Fighter {
     this.dashFrame = 0;
     this.flashTimer = 0;
     this.guardPushTimer = 0;
+    this.guardHoldFrames = 0;
+    this.guardBreakTimer = 0;
     this.lastTap = { left: -99, right: -99, up: -99, down: -99 };
     this.doubleJumpAvailable = true;
     this.specialEvadeTimer = 0;
@@ -1700,6 +1711,7 @@ class Fighter {
     this.armor = Math.max(0, this.armor - 1);
     this.flashTimer = Math.max(0, this.flashTimer - 1);
     this.guardPushTimer = Math.max(0, this.guardPushTimer - 1);
+    this.guardBreakTimer = Math.max(0, this.guardBreakTimer - 1);
     this.getupInvuln = Math.max(0, this.getupInvuln - 1);
     this.specialEvadeTimer = Math.max(0, this.specialEvadeTimer - 1);
     this.stateFrame++;
@@ -1803,8 +1815,33 @@ class Fighter {
 
     /* Atrás ya no bloquea automáticamente: permite caminar libremente hacia
      * cualquier lado. El bloqueo queda reservado para la acción explícita. */
+    /* Guardia universal: atrás + abajo = guardia baja agachada; atrás sola = guardia alta. */
     this.blocking = false;
     this.blockingLow = false;
+    if (this.onGround && back && !tapA && !wantHyper) {
+      this.blocking = true;
+      this.blockingLow = !!d.down;
+      this.guardHoldFrames++;
+      this.vx = 0;
+      this.setFreeState(this.blockingLow ? STATE.CROUCH : STATE.IDLE);
+      if (this.guardHoldFrames >= 180) { // 3 segundos de guardia continua
+        this.guardHoldFrames = 0;
+        this.guardBreakTimer = 120; // 2 segundos inconsciente
+        this.state = STATE.HITSTUN;
+        this.stateFrame = 0;
+        this.stunFrames = 120;
+        this.hitstunAirOK = true;
+        this.move = null;
+        this.vx = 0;
+        this.vy = 0;
+        this.blocking = false;
+        this.blockingLow = false;
+        Audio.sfx.hit();
+        return;
+      }
+      return;
+    }
+    this.guardHoldFrames = 0;
 
     /* --- super salto: abajo y luego arriba dentro de la ventana --- */
     if (this.onGround && input.tapDir.up && this.lastTap.down !== undefined && world.frame - this.lastTap.down <= PHYS.superJumpWindow) {
@@ -2333,7 +2370,8 @@ class Fighter {
     g.translate(this.x, this.y + (art.feetPad || 0));
     if (flip) g.scale(-1, 1);
     let filter = '';
-    if (this.flashTimer > 0 && (this.flashTimer % 4) < 2) filter += 'brightness(2.6) saturate(0.2) ';
+    if (this.guardBreakTimer > 0 && (this.guardBreakTimer % 10) < 5) filter += 'brightness(1.75) saturate(2.8) sepia(1) hue-rotate(300deg) drop-shadow(0 0 18px #ff1738) ';
+    else if (this.flashTimer > 0 && (this.flashTimer % 4) < 2) filter += 'brightness(2.6) saturate(0.2) ';
     if (this.invuln > 0) g.globalAlpha *= 0.72;
     if (this.state === STATE.ATTACK && this.move && (this.move.type === 'hyper')) filter += `drop-shadow(0 0 18px ${this.move.color}) `;
     if (filter) g.filter = filter;
