@@ -112,8 +112,8 @@
   .result .stats{margin-top:1.6vh;font-size:clamp(.75rem,1.2vw,.98rem);letter-spacing:.14em;color:#00e6ff;text-align:center;line-height:2;}
 
   /* --- Tablero arcade --- */
-  #arcade-deck{position:relative;isolation:isolate;flex:none;width:min(100vw,2200px);aspect-ratio:1080/400;min-height:118px;max-height:500px;background:var(--board-image) center/100% 100% no-repeat;touch-action:none;user-select:none;}
-  .deck-action{position:absolute;z-index:2;border:0;padding:0;color:rgba(8,10,20,.88);font:bold clamp(8px,1.05vw,16px) Arial,sans-serif;display:grid;place-items:center;cursor:pointer;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;border-radius:50%;background:rgba(255,255,255,.05);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;transition:transform .07s,background .07s,box-shadow .07s;}
+  #arcade-deck{position:relative;isolation:isolate;flex:none;width:min(100vw,2200px);aspect-ratio:1080/400;min-height:118px;max-height:500px;background:transparent;touch-action:none;user-select:none;}
+  .deck-action{position:absolute;z-index:2;border:0;padding:0;color:rgba(8,10,20,.88);font:bold clamp(8px,1.05vw,16px) Arial,sans-serif;display:grid;place-items:center;cursor:pointer;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;border-radius:50%;background:rgba(255,255,255,.10);box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;transition:transform .07s,background .07s,box-shadow .07s;}
   .deck-action:active,.deck-action.pressed{transform:scale(.9);background:rgba(42,210,255,.38);box-shadow:0 0 20px #53d9ff,0 0 0 3px rgba(255,255,255,.5) inset;}
   .deck-joystick{position:absolute;left:0;top:0;width:32%;height:100%;border-radius:50%;z-index:2;}
   .deck-action{width:10.4%;aspect-ratio:1;}
@@ -129,7 +129,7 @@
   .stick-down{left:35.5%;bottom:5%;}
   .stick-direction{position:absolute;z-index:3;width:29%;height:29%;border-radius:50%;background:rgba(255,255,255,.03);border:0;font-size:clamp(10px,1.9vw,24px);color:rgba(255,255,255,.22);cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;}
   .stick-direction:active,.stick-direction.pressed{background:rgba(31,222,188,.3);color:rgba(255,255,255,.9);box-shadow:0 0 15px rgba(31,222,188,.85);}
-  .deck-caption{position:absolute;left:24%;right:1%;bottom:1.5%;text-align:center;color:#f2edd2;text-shadow:0 2px 4px #000;font:900 clamp(6px,.72vw,11px) Arial,sans-serif;letter-spacing:.12em;pointer-events:none;}
+  .deck-caption{display:none;position:absolute;left:24%;right:1%;bottom:1.5%;text-align:center;color:#f2edd2;text-shadow:0 2px 4px #000;font:900 clamp(6px,.72vw,11px) Arial,sans-serif;letter-spacing:.12em;pointer-events:none;}
   #promo-poster{flex:none;width:min(100vw,1080px);margin:0 auto 24px;line-height:0;box-shadow:0 0 32px #000;}
   #promo-poster img{display:block;width:100%;height:auto;}
 
@@ -149,10 +149,21 @@
   }
   #fullscreen-fab{border-color:#ffd21f;background:radial-gradient(circle at 35% 28%,#806b1f 0%,#241d12 55%,#090711 100%);box-shadow:0 0 0 4px rgba(255,210,31,.16),0 0 20px rgba(255,210,31,.56),inset 0 0 12px rgba(255,210,31,.3);}
   #back-fab{border-color:#ff6c7c;background:radial-gradient(circle at 35% 28%,#9a314f 0%,#251022 55%,#090711 100%);box-shadow:0 0 0 4px rgba(255,64,96,.16),0 0 20px rgba(255,58,91,.56),inset 0 0 12px rgba(255,58,91,.3);}
+  #fullscreen-fab{width:42px;height:42px;min-width:42px;opacity:.48;border-width:1px;box-shadow:0 0 0 2px rgba(255,210,31,.1),0 0 12px rgba(255,210,31,.28);}
+  #fullscreen-fab .music-glyph{font-size:1.15rem;}
+  #fullscreen-fab .music-label{font-size:.38rem;margin-top:1px;}
+  #fullscreen-fab:hover,#fullscreen-fab:focus-visible,#fullscreen-fab:active{opacity:.9;}
   #back-fab[hidden],#fullscreen-fab[hidden]{display:none!important}
+  /* Pantalla completa: el escenario llena el dispositivo y el tablero queda
+     superpuesto abajo, sin tapar los botones del juego. */
   #stage:fullscreen{width:100vw;height:100vh;max-width:none;aspect-ratio:auto;border-radius:0;}
   #stage:fullscreen canvas{object-fit:contain;}
-  :fullscreen ~ #arcade-deck,:fullscreen ~ .music-control-row,:fullscreen ~ #promo-poster{display:none!important;}
+  #stage:fullscreen ~ #arcade-deck{display:block;position:fixed;left:0;right:0;bottom:0;width:100vw;height:clamp(118px,25vh,230px);max-height:none;min-height:0;z-index:10000;background:none;pointer-events:none;}
+  #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction,#stage:fullscreen ~ #arcade-deck .deck-joystick{pointer-events:auto;}
+  #stage:fullscreen ~ #promo-poster{display:none!important;}
+  #stage:fullscreen ~ .music-control-row{position:fixed;top:7px;right:7px;width:auto;min-height:0;padding:0;background:none;border:0;z-index:10001;pointer-events:none;}
+  #stage:fullscreen ~ .music-control-row #music-fab,#stage:fullscreen ~ .music-control-row #back-fab{display:none;}
+  #stage:fullscreen ~ .music-control-row #fullscreen-fab{display:flex;pointer-events:auto;}
   #music-fab .music-image,#back-fab .back-image{position:absolute;inset:7px;width:calc(100% - 14px);height:calc(100% - 14px);object-fit:cover;border-radius:50%;opacity:.92;pointer-events:none;}
   #music-fab .music-glyph,#music-fab .music-label,#back-fab .back-glyph,#back-fab .back-label{position:relative;z-index:1;}
   #music-fab .music-glyph,#back-fab .back-glyph{font-family:Arial,sans-serif;font-size:clamp(1.7rem,4.4vw,2.7rem);line-height:.9}
@@ -171,6 +182,14 @@
   .deck-chip span{font-size:clamp(.5rem,.85vw,.66rem);letter-spacing:.06em;color:var(--neon-yellow);}
   .deck-chip.tag{border-color:rgba(255,43,214,.65);}
   .deck-chip.tag b{color:#ffd9f4;}
+  @media (orientation:portrait) and (max-width:600px){
+    #stage:fullscreen ~ #arcade-deck{height:22vh;}
+    #stage:fullscreen ~ #arcade-deck .deck-action{width:13%;}
+  }
+  @media (orientation:landscape) and (max-width:900px){
+    #stage:fullscreen ~ #arcade-deck{height:28vh;}
+    #stage:fullscreen ~ #arcade-deck .deck-action{width:9%;}
+  }
   @media(max-width:900px){
     .char-grid{grid-template-columns:repeat(6,minmax(48px,1fr));width:min(96vw,760px);padding:10px;gap:5px;}
   }
