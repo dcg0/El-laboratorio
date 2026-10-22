@@ -24,7 +24,7 @@
   }
   #cabinet{width:100%;min-height:100svh;display:flex;flex-direction:column;align-items:center;background:linear-gradient(180deg,#070615 0%,#10101b 38%,#050509 100%);}
   #stage{
-    position:relative;flex:none;width:min(100vw,177.7778vh);height:auto;max-width:2560px;aspect-ratio:16/9;
+    position:relative;flex:none;width:min(100%,177.7778vh);height:auto;max-width:2560px;aspect-ratio:16/9;
     background:#000;border-radius:0 0 14px 14px;overflow:hidden;
     box-shadow:0 0 0 2px rgba(0,230,255,0.35), 0 0 48px rgba(255,43,214,0.25), 0 0 90px rgba(0,230,255,0.2);
   }
@@ -112,7 +112,7 @@
   .result .stats{margin-top:1.6vh;font-size:clamp(.75rem,1.2vw,.98rem);letter-spacing:.14em;color:#00e6ff;text-align:center;line-height:2;}
 
   /* --- Tablero arcade --- */
-  #arcade-deck{position:relative;isolation:isolate;flex:none;width:min(100vw,2200px);aspect-ratio:1080/400;min-height:118px;max-height:500px;background:var(--board-image) center/100% 100% no-repeat;touch-action:none;user-select:none;}
+  #arcade-deck{position:relative;isolation:isolate;flex:none;width:min(100%,2200px);aspect-ratio:1080/400;min-height:118px;max-height:500px;background:var(--board-image) center/100% 100% no-repeat;touch-action:none;user-select:none;}
   .deck-action{position:absolute;z-index:2;border:0;padding:0;color:rgba(8,10,20,.88);font:bold clamp(8px,1.05vw,16px) Arial,sans-serif;display:grid;place-items:center;cursor:pointer;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;border-radius:50%;background:rgba(255,255,255,.10);box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;transition:transform .07s,background .07s,box-shadow .07s;}
   .deck-action:active,.deck-action.pressed{transform:scale(.9);background:rgba(42,210,255,.38);box-shadow:0 0 20px #53d9ff,0 0 0 3px rgba(255,255,255,.5) inset;}
   .deck-joystick{position:absolute;left:0;top:0;width:32%;height:100%;border-radius:50%;z-index:2;}
