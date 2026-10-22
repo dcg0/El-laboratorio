@@ -3668,6 +3668,7 @@ const Game = {
   losses: 0,
   arcadeComplete: false,
   arcadeDifficulty: 'normal',
+  morganSceneShown: false,
   paused: false,
   p1: { picks: [], step: 0, focus: 0 },
   p2: { picks: [], step: 0, focus: 0 },
@@ -3683,6 +3684,7 @@ const Game = {
     this.wins = 0;
     this.losses = 0;
     this.arcadeComplete = false;
+    this.morganSceneShown = false;
     this.world = null;
   },
 
@@ -3773,6 +3775,15 @@ const Game = {
   onFightEnd() {
     const w = this.world;
     if (this.mode === 'practice') { return; }
+    /* Tras derrotar a MIGUEL 2, Morgan cruza la pantalla lentamente de ida y
+     * vuelta antes de continuar con las cinemáticas y los desbloqueos. El
+     * sprite dedicado se carga si se añade después; el respaldo conserva el
+     * flujo funcional mientras morgan.png todavía no está disponible. */
+    if (this.mode === 'arcade' && w.winner === 1 && w.bossId === 'miguel2' && !this.morganSceneShown) {
+      this.morganSceneShown = true;
+      this.showMorganFlight(() => this.onFightEnd());
+      return;
+    }
     if (this.mode === 'arcade') {
       if (w.winner === 1) {
         this.wins++;
@@ -3823,6 +3834,53 @@ const Game = {
     }
   },
 
+  showMorganFlight(done) {
+    const stage = $('stage');
+    if (!stage) { done(); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;inset:0;z-index:47;overflow:hidden;background:linear-gradient(180deg,rgba(3,5,25,.98),rgba(12,8,35,.92));display:grid;place-items:center;';
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes morganFlyAcross {
+        0% { transform:translateX(-42vw) translateY(10px) scaleX(1) rotate(-2deg); }
+        24% { transform:translateX(-12vw) translateY(-18px) scaleX(1) rotate(2deg); }
+        50% { transform:translateX(42vw) translateY(8px) scaleX(-1) rotate(-1deg); }
+        74% { transform:translateX(12vw) translateY(-15px) scaleX(-1) rotate(2deg); }
+        100% { transform:translateX(-42vw) translateY(10px) scaleX(1) rotate(-2deg); }
+      }
+      @keyframes morganGlow { 0%,100%{opacity:.55} 50%{opacity:1} }
+    `;
+    const glow = document.createElement('div');
+    glow.style.cssText = 'position:absolute;width:38vw;height:18vw;border-radius:50%;background:radial-gradient(ellipse,rgba(87,218,255,.45),transparent 68%);filter:blur(18px);animation:morganGlow 2.8s ease-in-out infinite;';
+    const img = document.createElement('img');
+    img.alt = 'Morgan volando';
+    img.style.cssText = 'position:absolute;width:min(31vw,360px);max-height:50vh;object-fit:contain;image-rendering:auto;animation:morganFlyAcross 12s ease-in-out 2;filter:drop-shadow(0 0 18px #59e6ff);';
+    let usedFallback = false;
+    img.onerror = () => {
+      if (usedFallback) return;
+      usedFallback = true;
+      img.src = 'assets/sprites/miguel1-air.png';
+    };
+    img.src = 'assets/sprites/morgan.png';
+    const title = document.createElement('div');
+    title.textContent = 'MORGAN · VUELO FINAL';
+    title.style.cssText = 'position:absolute;top:9%;left:0;right:0;text-align:center;color:#7cecff;font:900 clamp(22px,4vw,42px) Impact,sans-serif;letter-spacing:.16em;text-shadow:0 0 14px #168cff,3px 3px 0 #071126;';
+    const note = document.createElement('div');
+    note.textContent = 'IDA Y VUELTA · LA RUTA CONTINÚA';
+    note.style.cssText = 'position:absolute;bottom:13%;left:0;right:0;text-align:center;color:#fff;font:900 clamp(12px,2vw,19px) Impact,sans-serif;letter-spacing:.1em;text-shadow:2px 2px 0 #000;';
+    const skip = document.createElement('button');
+    skip.textContent = 'CONTINUAR';
+    skip.style.cssText = 'position:absolute;bottom:5%;left:50%;transform:translateX(-50%);padding:9px 20px;background:rgba(8,5,28,.86);color:#fff;border:2px solid #59e6ff;border-radius:8px;font:900 15px Impact,sans-serif;cursor:pointer;';
+    let finished = false;
+    let timer;
+    const finish = () => { if (finished) return; finished = true; clearTimeout(timer); overlay.remove(); done(); };
+    skip.onclick = finish;
+    img.addEventListener('animationend', finish, { once: true });
+    timer = setTimeout(finish, 24500);
+    overlay.append(style, glow, img, title, note, skip);
+    stage.appendChild(overlay);
+    setTimeout(() => skip.focus(), 0);
+  },
   showResult(title, lines) {
     $('resultTitle').textContent = title;
     $('resultStats').innerHTML = lines.map((l) => `<div>${l}</div>`).join('');
