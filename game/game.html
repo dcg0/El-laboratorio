@@ -779,7 +779,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
  *     tres bancos (resoluciones distintas) se vean del mismo porte. --- */
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
-  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 10}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 330, feetPad: 8, recolor: [] },
+  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 10}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 305, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal, drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
   dcazul: { frames: Array.from({length: 6}, (_, i) => `assets/sprites/dcazul/dcazul-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
@@ -788,7 +788,7 @@ const BANKS = {
   wiznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   mistikwiz: { frames: [...SPRITE_DATA.mistikwiz, 'assets/sprites/mistikwiz/mistikwiz-walk.png'], drawH: 306, feetPad: 5, recolor: [] },
   dcakuma: { frames: SPRITE_DATA.dcakuma, drawH: 306, feetPad: 5, recolor: [] },
-  crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
+  crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 455, feetPad: 6, recolor: [] },
   wizz:   { frames: ['assets/sprites/wizz_sin_fondo.png'], drawH: 306, feetPad: 6,  recolor: [] },
   wizznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   wmistiko: { frames: Array.from({length: 9}, (_, i) => `assets/sprites/wmistiko/wmistiko-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
@@ -796,8 +796,8 @@ const BANKS = {
   manuelin:{ frames: SPRITE_DATA.manuelin, drawH: 292, feetPad: 5, recolor: [] },
   toto:   { frames: SPRITE_DATA.toto,     drawH: 292, feetPad: 5, recolor: [] },
   wero:   { frames: SPRITE_DATA.wero,     drawH: 292, feetPad: 5, recolor: [] },
-  yiyo:   { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/yiyo/yiyo-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
-  aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron/aron-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
+  yiyo:   { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/yiyo/yiyo-${String(i + 1).padStart(2, '0')}.png`), drawH: 300, feetPad: 6, recolor: [] },
+  aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron/aron-${String(i + 1).padStart(2, '0')}.png`), drawH: 285, feetPad: 6, recolor: [] },
   dandy: { spriteFacesRight: true, frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
   miguelnew: { spriteFacesRight: true, frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
   victor: { spriteFacesRight: true, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
