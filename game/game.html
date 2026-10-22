@@ -139,7 +139,7 @@
     background:linear-gradient(180deg,rgba(5,4,18,.96),rgba(2,2,10,.98));
     border-top:1px solid rgba(0,230,255,.2);
   }
-  #music-fab,#back-fab{
+  #music-fab,#back-fab,#fullscreen-fab{
     position:relative;flex:0 0 auto;width:clamp(70px,12vw,100px);height:clamp(70px,12vw,100px);border-radius:50%;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     border:3px solid #78f3ff;color:#fff;font-family:inherit;font-weight:900;cursor:pointer;
@@ -147,8 +147,12 @@
     box-shadow:0 0 0 4px rgba(0,230,255,.18),0 0 24px rgba(0,230,255,.72),inset 0 0 14px rgba(0,230,255,.38);
     text-shadow:0 1px 5px #000;
   }
+  #fullscreen-fab{border-color:#ffd21f;background:radial-gradient(circle at 35% 28%,#806b1f 0%,#241d12 55%,#090711 100%);box-shadow:0 0 0 4px rgba(255,210,31,.16),0 0 20px rgba(255,210,31,.56),inset 0 0 12px rgba(255,210,31,.3);}
   #back-fab{border-color:#ff6c7c;background:radial-gradient(circle at 35% 28%,#9a314f 0%,#251022 55%,#090711 100%);box-shadow:0 0 0 4px rgba(255,64,96,.16),0 0 20px rgba(255,58,91,.56),inset 0 0 12px rgba(255,58,91,.3);}
-  #back-fab[hidden]{display:none!important}
+  #back-fab[hidden],#fullscreen-fab[hidden]{display:none!important}
+  #stage:fullscreen{width:100vw;height:100vh;max-width:none;aspect-ratio:auto;border-radius:0;}
+  #stage:fullscreen canvas{object-fit:contain;}
+  :fullscreen ~ #arcade-deck,:fullscreen ~ .music-control-row,:fullscreen ~ #promo-poster{display:none!important;}
   #music-fab .music-image,#back-fab .back-image{position:absolute;inset:7px;width:calc(100% - 14px);height:calc(100% - 14px);object-fit:cover;border-radius:50%;opacity:.92;pointer-events:none;}
   #music-fab .music-glyph,#music-fab .music-label,#back-fab .back-glyph,#back-fab .back-label{position:relative;z-index:1;}
   #music-fab .music-glyph,#back-fab .back-glyph{font-family:Arial,sans-serif;font-size:clamp(1.7rem,4.4vw,2.7rem);line-height:.9}
@@ -301,6 +305,9 @@
 </section>
 
 <section class="music-control-row" aria-label="Control de música y asistencias">
+  <button id="fullscreen-fab" type="button" aria-label="Ampliar el juego a pantalla completa" aria-pressed="false">
+    <span class="music-glyph" aria-hidden="true">⛶</span><span class="music-label">AMPLIAR</span>
+  </button>
   <button id="music-fab" type="button" aria-label="Reproducir o pausar la música" aria-pressed="false">
     <img class="music-image" src="assets/icono.png" alt="">
     <span class="music-glyph" aria-hidden="true">♫</span><span class="music-label">ROLA2</span>
@@ -4042,6 +4049,26 @@ function installBindings() {
 
   const back = $('back-fab');
   if (back) back.addEventListener('click', () => { Audio.sfx.menu(); Game.world = null; setScreen('menu'); });
+
+  const fullscreen = $('fullscreen-fab');
+  if (fullscreen) {
+    const syncFullscreen = () => {
+      const active = document.fullscreenElement === $('stage');
+      fullscreen.setAttribute('aria-pressed', String(active));
+      fullscreen.querySelector('.music-label').textContent = active ? 'SALIR' : 'AMPLIAR';
+      fullscreen.title = active ? 'Salir de pantalla completa' : 'Ampliar juego';
+    };
+    fullscreen.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await $('stage').requestFullscreen();
+      } catch (_) { /* El navegador puede bloquear fullscreen sin gesto válido. */ }
+      syncFullscreen();
+    });
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    syncFullscreen();
+  }
 
   const music = $('music-fab');
   if (music) {
