@@ -742,7 +742,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
  *     tres bancos (resoluciones distintas) se vean del mismo porte. --- */
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
-  kato:    { frames: [...Array.from({length: 10}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 306, feetPad: 8, recolor: [] },
+  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 10}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 330, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal, drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
   dcazul: { frames: Array.from({length: 6}, (_, i) => `assets/sprites/dcazul/dcazul-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
@@ -751,7 +751,7 @@ const BANKS = {
   wiznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   mistikwiz: { frames: [...SPRITE_DATA.mistikwiz, 'assets/sprites/mistikwiz/mistikwiz-walk.png'], drawH: 306, feetPad: 5, recolor: [] },
   dcakuma: { frames: SPRITE_DATA.dcakuma, drawH: 306, feetPad: 5, recolor: [] },
-  crater: { frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
+  crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
   wizz:   { frames: ['assets/sprites/wizz_sin_fondo.png'], drawH: 306, feetPad: 6,  recolor: [] },
   wizznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   wmistiko: { frames: Array.from({length: 9}, (_, i) => `assets/sprites/wmistiko/wmistiko-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
@@ -759,11 +759,11 @@ const BANKS = {
   manuelin:{ frames: SPRITE_DATA.manuelin, drawH: 292, feetPad: 5, recolor: [] },
   toto:   { frames: SPRITE_DATA.toto,     drawH: 292, feetPad: 5, recolor: [] },
   wero:   { frames: SPRITE_DATA.wero,     drawH: 292, feetPad: 5, recolor: [] },
-  yiyo:   { frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/yiyo/yiyo-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
-  aron: { frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron/aron-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
-  dandy: { frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
-  miguelnew: { frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
-  victor: { frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
+  yiyo:   { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/yiyo/yiyo-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
+  aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron/aron-${String(i + 1).padStart(2, '0')}.png`), drawH: 330, feetPad: 6, recolor: [] },
+  dandy: { spriteFacesRight: true, frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
+  miguelnew: { spriteFacesRight: true, frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
+  victor: { spriteFacesRight: true, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
 };
 
 /* --- Plantilla de personajes jugables (paletas del mismo material). --- */
@@ -793,7 +793,7 @@ const BOSS_ROSTER = [
 const CHAR = Object.fromEntries([...ROSTER, ...BOSS_ROSTER].map((c) => [c.id, c]));
 const SELECT_PORTRAITS = {
   /* Ilustraciones coloridas de Drive: se usan exclusivamente en las tarjetas. */
-  kato: 'assets/portraits/DC.jpg',
+  kato: 'assets/portraits/kato.png',
   dc: 'assets/portraits/DC.jpg', dcb: 'assets/portraits/TU.png', dcr: 'assets/portraits/TU.png',
   wz: 'assets/portraits/Wizz-2.png', wzm: 'assets/portraits/Wizz-2.png',
   manuelin: 'assets/portraits/Manuelin-1.png',
@@ -2274,7 +2274,10 @@ class Fighter {
      * lado del equipo, para que la IA también mire correctamente al rival. */
     /* CRATER y WERO necesitaban invertirse para mirar al oponente.
      * El resto conserva exactamente su orientación anterior. */
-    const spriteFacesRight = true;
+    /* Cada banco declara su orientación original. Los nuevos personajes
+     * fueron preparados mirando a la derecha; se invierten únicamente cuando
+     * el rival está a la izquierda. WIZZ conserva su excepción histórica. */
+    const spriteFacesRight = art.spriteFacesRight ?? true;
     const normalWizzReverse = this.char.bank === 'wizznew';
     const baseFlip = spriteFacesRight ? this.facing === -1 : this.facing === 1;
     const flip = normalWizzReverse ? !baseFlip : baseFlip;
@@ -3419,7 +3422,7 @@ function drawFight(g, world) {
     g.globalAlpha = alpha;
     g.globalCompositeOperation = 'lighter';
     g.translate(a.x, a.y + (art.feetPad || 0));
-    const spriteFacesRight = true;
+    const spriteFacesRight = art.spriteFacesRight ?? true;
     const baseFlip = spriteFacesRight ? a.facing === -1 : a.facing === 1;
     const flip = CHAR[a.charId].bank === 'wizznew' ? !baseFlip : baseFlip;
     if (flip) g.scale(-1, 1);
