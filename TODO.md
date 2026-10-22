@@ -10,3 +10,5 @@
 - [x] El cálculo estima materiales, componentes, herramientas, desperdicio, fijaciones, adhesivo, acabado, mano de obra y un rango de variación.
 - [x] La interfaz indica que todos los importes son una estimación y que el precio real debe consultarse directamente con el Ing. Daniel C.G.
 - [ ] Conectar una revisión técnica o formulario de envío para que el Ing. Daniel C.G. reciba el proyecto descrito y sus especificaciones.
+
+- [x] El juego que abre la tarjeta DCvsWIZZ muestra el tablero arcade con joystick y seis botones de ataque, también al ampliar a pantalla completa, y conserva las asignaciones táctiles actuales.

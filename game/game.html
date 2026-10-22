@@ -112,7 +112,7 @@
   .result .stats{margin-top:1.6vh;font-size:clamp(.75rem,1.2vw,.98rem);letter-spacing:.14em;color:#00e6ff;text-align:center;line-height:2;}
 
   /* --- Tablero arcade --- */
-  #arcade-deck{position:relative;isolation:isolate;flex:none;width:min(100vw,2200px);aspect-ratio:1080/400;min-height:118px;max-height:500px;background:transparent;touch-action:none;user-select:none;}
+  #arcade-deck{position:relative;isolation:isolate;flex:none;width:min(100vw,2200px);aspect-ratio:1080/400;min-height:118px;max-height:500px;background:var(--board-image) center/100% 100% no-repeat;touch-action:none;user-select:none;}
   .deck-action{position:absolute;z-index:2;border:0;padding:0;color:rgba(8,10,20,.88);font:bold clamp(8px,1.05vw,16px) Arial,sans-serif;display:grid;place-items:center;cursor:pointer;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;border-radius:50%;background:rgba(255,255,255,.10);box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;transition:transform .07s,background .07s,box-shadow .07s;}
   .deck-action:active,.deck-action.pressed{transform:scale(.9);background:rgba(42,210,255,.38);box-shadow:0 0 20px #53d9ff,0 0 0 3px rgba(255,255,255,.5) inset;}
   .deck-joystick{position:absolute;left:0;top:0;width:32%;height:100%;border-radius:50%;z-index:2;}
@@ -154,23 +154,16 @@
   #fullscreen-fab .music-label{font-size:.38rem;margin-top:1px;}
   #fullscreen-fab:hover,#fullscreen-fab:focus-visible,#fullscreen-fab:active{opacity:.9;}
   #back-fab[hidden],#fullscreen-fab[hidden]{display:none!important}
-  /* Pantalla completa: el escenario llena el dispositivo y el tablero queda
-     superpuesto abajo, sin tapar los botones del juego. */
-  #stage:fullscreen{width:100vw;height:100vh;max-width:none;aspect-ratio:auto;border-radius:0;}
-  #stage:fullscreen canvas{object-fit:contain;}
-  #stage:fullscreen ~ #arcade-deck{display:block;position:fixed;left:0;right:0;bottom:0;width:100vw;height:clamp(118px,25vh,230px);max-height:none;min-height:0;z-index:10000;background:none;pointer-events:none;}
-  #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction,#stage:fullscreen ~ #arcade-deck .deck-joystick{pointer-events:auto;}
-  /* En fullscreen horizontal solo quedan puntos táctiles muy leves sobre el juego. */
-  #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction{
-    background:transparent;border-color:transparent;box-shadow:none;color:rgba(255,255,255,.30);opacity:.48;
-  }
-  #stage:fullscreen ~ #arcade-deck .deck-action:active,#stage:fullscreen ~ #arcade-deck .stick-direction:active{
-    background:rgba(255,255,255,.12);color:rgba(255,255,255,.9);opacity:.9;
-  }
-  #stage:fullscreen ~ #promo-poster{display:none!important;}
-  #stage:fullscreen ~ .music-control-row{position:fixed;top:7px;right:7px;width:auto;min-height:0;padding:0;background:none;border:0;z-index:10001;pointer-events:none;}
-  #stage:fullscreen ~ .music-control-row #music-fab,#stage:fullscreen ~ .music-control-row #back-fab{display:none;}
-  #stage:fullscreen ~ .music-control-row #fullscreen-fab{display:flex;pointer-events:auto;}
+  /* El gabinete completo entra en fullscreen: los hermanos del escenario no
+     pertenecían al top layer y el navegador ocultaba el tablero y SALIR. */
+  #cabinet:fullscreen{height:100vh;height:100dvh;min-height:0;overflow:hidden;}
+  #cabinet:fullscreen #stage{flex:1 1 0;min-height:0;width:100%;height:auto;max-width:none;aspect-ratio:auto;border-radius:0;}
+  #cabinet:fullscreen canvas{object-fit:contain;}
+  #cabinet:fullscreen #arcade-deck{width:min(100%,108vh,1000px);width:min(100%,108dvh,1000px);min-height:0;max-height:none;}
+  #cabinet:fullscreen #promo-poster{display:none!important;}
+  #cabinet:fullscreen .music-control-row{position:absolute;top:7px;right:7px;width:auto;min-height:0;padding:0;background:none;border:0;z-index:10001;pointer-events:none;}
+  #cabinet:fullscreen #music-fab,#cabinet:fullscreen #back-fab{display:none;}
+  #cabinet:fullscreen #fullscreen-fab{display:flex;pointer-events:auto;}
   #music-fab .music-image,#back-fab .back-image{position:absolute;inset:7px;width:calc(100% - 14px);height:calc(100% - 14px);object-fit:cover;border-radius:50%;opacity:.92;pointer-events:none;}
   #music-fab .music-glyph,#music-fab .music-label,#back-fab .back-glyph,#back-fab .back-label{position:relative;z-index:1;}
   #music-fab .music-glyph,#back-fab .back-glyph{font-family:Arial,sans-serif;font-size:clamp(1.7rem,4.4vw,2.7rem);line-height:.9}
@@ -189,18 +182,6 @@
   .deck-chip span{font-size:clamp(.5rem,.85vw,.66rem);letter-spacing:.06em;color:var(--neon-yellow);}
   .deck-chip.tag{border-color:rgba(255,43,214,.65);}
   .deck-chip.tag b{color:#ffd9f4;}
-  @media (orientation:portrait) and (max-width:600px){
-    /* Vertical: conserva el tablero táctil como estaba, con sus puntos visibles. */
-    #stage:fullscreen ~ #arcade-deck{height:22vh;}
-    #stage:fullscreen ~ #arcade-deck .deck-action{width:13%;}
-    #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction{
-      background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;color:rgba(255,255,255,.38);opacity:1;
-    }
-  }
-  @media (orientation:landscape) and (max-width:900px){
-    #stage:fullscreen ~ #arcade-deck{height:28vh;}
-    #stage:fullscreen ~ #arcade-deck .deck-action{width:9%;}
-  }
   @media(max-width:900px){
     .char-grid{grid-template-columns:repeat(6,minmax(48px,1fr));width:min(96vw,760px);padding:10px;gap:5px;}
   }
@@ -4240,7 +4221,7 @@ function installBindings() {
   const fullscreen = $('fullscreen-fab');
   if (fullscreen) {
     const syncFullscreen = () => {
-      const active = document.fullscreenElement === $('stage');
+      const active = document.fullscreenElement === $('cabinet');
       fullscreen.setAttribute('aria-pressed', String(active));
       fullscreen.querySelector('.music-label').textContent = active ? 'SALIR' : 'AMPLIAR';
       fullscreen.title = active ? 'Salir de pantalla completa' : 'Ampliar juego';
@@ -4249,7 +4230,7 @@ function installBindings() {
       e.preventDefault();
       try {
         if (document.fullscreenElement) await document.exitFullscreen();
-        else await $('stage').requestFullscreen();
+        else await $('cabinet').requestFullscreen();
       } catch (_) { /* El navegador puede bloquear fullscreen sin gesto válido. */ }
       syncFullscreen();
     });
