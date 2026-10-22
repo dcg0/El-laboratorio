@@ -779,6 +779,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
  *     tres bancos (resoluciones distintas) se vean del mismo porte. --- */
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
+  refresh: { spriteFacesRight: true, frames: Array.from({length: 6}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
   kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato/kato-${i + 1}.png`), 'assets/sprites/kato/kato-walk.png'], drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal, drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
@@ -811,6 +812,7 @@ const ROSTER = [
   { id: 'victor', name: 'VICTOR', bank: 'victor', hue: null, chroma: '#7c5cff', chroma2: '#d7cfff' },
   { id: 'kato',  name: 'KATO',     bank: 'kato',     hue: 0.78,  chroma: '#9b4dff', chroma2: '#e0b3ff' },
   { id: 'dc',    name: 'DC',       bank: 'dcnormal', hue: null,   chroma: '#168cff', chroma2: '#8fd8ff' },
+  { id: 'refresh', name: 'Refresh', bank: 'refresh', hue: null, chroma: '#168cff', chroma2: '#dff8ff' },
   { id: 'dcb',   name: 'DC AZUL',  bank: 'dcazul',   hue: 0.58,  chroma: '#168cff', chroma2: '#8fd8ff' },
   { id: 'mistikwiz', name: 'MISTIKWIZ', bank: 'mistikwiz', hue: null, chroma: '#b44cff', chroma2: '#f1a7ff' },
   { id: 'crater', name: 'CrATtEr', bank: 'crater', hue: null, chroma: '#ff6a2a', chroma2: '#ffd21f' },
@@ -831,7 +833,7 @@ const CHAR = Object.fromEntries([...ROSTER, ...BOSS_ROSTER].map((c) => [c.id, c]
 const SELECT_PORTRAITS = {
   /* Ilustraciones coloridas de Drive: se usan exclusivamente en las tarjetas. */
   kato: 'assets/portraits/kato.png',
-  dc: 'assets/portraits/DC.jpg', dcb: 'assets/portraits/TU.png', dcr: 'assets/portraits/TU.png',
+  dc: 'assets/portraits/DC.jpg', refresh: 'assets/portraits/refresh.png', dcb: 'assets/portraits/TU.png', dcr: 'assets/portraits/TU.png',
   wz: 'assets/portraits/Wizz-2.png', wzm: 'assets/portraits/Wizz-2.png',
   manuelin: 'assets/portraits/Manuelin-1.png',
   toto: 'assets/portraits/Toto-1.png',
@@ -867,6 +869,16 @@ const POSE = {
     hit: 1, hitLow: 2, hitAir: 3, down: 5, getUp: 7,
     specialP: 6, specialK: 5, hyper: 0, hyperAlt: 4,
     launcherP: 6, launcherK: 5, assistP: 6, assistK: 5, win: 7,
+  },
+  refresh: {
+    idle: 0, walk: [0, 1], crouch: 4, jump: 2, fall: 3,
+    sLP: 0, sMP: 1, sHP: 1, sLK: 2, sMK: 3, sHK: 3,
+    cLP: 0, cMP: 1, cHP: 4, cLK: 2, cMK: 3, cHK: 4,
+    jLP: 2, jMP: 5, jHP: 5, jLK: 2, jMK: 3, jHK: 5,
+    dashF: 5, dashB: 0, block: 0, blockLow: 4, blockAir: 2,
+    hit: 1, hitLow: 4, hitAir: 2, down: 4, getUp: 0,
+    specialP: 4, specialK: 3, hyper: 5, hyperAlt: 1,
+    launcherP: 1, launcherK: 3, assistP: 4, assistK: 5, win: 0,
   },
   dcnormal: {
     idle: 0, walk: [0, 1], crouch: 4, jump: 2, fall: 6,
@@ -1220,7 +1232,7 @@ function buildMoves(bank) {
 
   // Los bancos de sprites tienen nombres propios, pero comparten familias de movimientos.
   const profile = {
-    kato: 'dc', dcnormal: 'dc', dcazul: 'dc', dcrojo: 'dc', dcakuma: 'dc', crater: 'dc',
+    refresh: 'dc', kato: 'dc', dcnormal: 'dc', dcazul: 'dc', dcrojo: 'dc', dcakuma: 'dc', crater: 'dc',
     wiznew: 'wizz', mistikwiz: 'wizz', wizznew: 'wizz', wmistiko: 'wizz',
     dcBlack: 'noir', miguel2: 'noir',
   }[bank] || bank;
@@ -1373,7 +1385,7 @@ function assistMove(bank, type) {
 }
 
 const MOVES = {
-  dc: buildMoves('dc'), kato: buildMoves('kato'), dcnormal: buildMoves('dcnormal'), dcazul: buildMoves('dcazul'),
+  dc: buildMoves('dc'), refresh: buildMoves('refresh'), kato: buildMoves('kato'), dcnormal: buildMoves('dcnormal'), dcazul: buildMoves('dcazul'),
   dcrojo: buildMoves('dcrojo'), dcakuma: buildMoves('dcakuma'), crater: buildMoves('crater'),
   wiznew: buildMoves('wiznew'), wizz: buildMoves('wizz'), wizznew: buildMoves('wizznew'),
   mistikwiz: buildMoves('mistikwiz'), wmistiko: buildMoves('wmistiko'),
