@@ -213,6 +213,30 @@
     #promo-poster{margin-bottom:0;}
     .music-control-row{padding:8px 8px 12px;gap:8px;}
   }
+
+  /* --- Selector de personajes a pantalla completa --- */
+  #screen-select{justify-content:flex-start;align-items:stretch;padding:1.2vh 1.4vw 1.5vh;overflow:hidden;background:linear-gradient(180deg,rgba(7,8,30,.97),rgba(2,3,16,.99));}
+  #screen-select::before{background:radial-gradient(ellipse at 50% 0%,rgba(0,230,255,.18),rgba(3,4,20,.96) 70%);}
+  #screen-select .title{font-size:clamp(1.35rem,3.6vw,3rem);flex:0 0 auto;margin-bottom:.4vh;}
+  #screen-select .ts-head{flex:0 0 auto;font-size:clamp(.9rem,1.8vw,1.45rem);color:#9fe9ff;text-align:center;}
+  #screen-select .char-grid{width:100%;max-width:none;height:calc(100% - 8.4rem);max-height:none;flex:1 1 auto;margin:.8vh 0 0;padding:clamp(10px,1.1vw,20px);grid-template-columns:repeat(8,minmax(74px,1fr));grid-auto-rows:minmax(108px,1fr);gap:clamp(7px,.8vw,14px);overflow-y:auto;overflow-x:hidden;border-width:3px;border-radius:12px;align-content:start;}
+  #screen-select .char-card{min-height:108px;aspect-ratio:1/1.06;border-width:3px;border-radius:8px;background:linear-gradient(160deg,rgba(0,230,255,.16),rgba(255,43,214,.16));}
+  #screen-select .char-card:hover,#screen-select .char-card.focused{transform:translateY(-3px) scale(1.045);}
+  #screen-select .char-card img{padding:4px;}
+  #screen-select .char-card .cname{font-size:clamp(.62rem,1vw,1rem);padding:.45em .16em;}
+  #screen-select .hint[data-testid="select-hint"]{display:block;flex:0 0 auto;margin:.7vh 0 0;color:#c9f7ff;font-size:clamp(.58rem,1vw,.85rem);letter-spacing:.12em;}
+  @media(max-width:900px){
+    #screen-select .char-grid{grid-template-columns:repeat(6,minmax(70px,1fr));grid-auto-rows:minmax(102px,1fr);height:calc(100% - 7.6rem);}
+  }
+  @media(max-width:600px){
+    #screen-select{padding:.9vh 1.5vw 1.2vh;}
+    #screen-select .title{font-size:clamp(1rem,5vw,1.65rem);}
+    #screen-select .char-grid{grid-template-columns:repeat(4,minmax(66px,1fr));grid-auto-rows:minmax(92px,1fr);height:calc(100% - 6.2rem);gap:5px;padding:7px;}
+    #screen-select .char-card{min-height:92px;}
+    #screen-select .char-card .cname{font-size:clamp(.48rem,2.3vw,.72rem);}
+    #screen-select .hint[data-testid="select-hint"]{font-size:clamp(.48rem,2vw,.68rem);letter-spacing:.04em;}
+  }
+
 </style>
 </head>
 <body>
