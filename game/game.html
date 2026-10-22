@@ -160,6 +160,13 @@
   #stage:fullscreen canvas{object-fit:contain;}
   #stage:fullscreen ~ #arcade-deck{display:block;position:fixed;left:0;right:0;bottom:0;width:100vw;height:clamp(118px,25vh,230px);max-height:none;min-height:0;z-index:10000;background:none;pointer-events:none;}
   #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction,#stage:fullscreen ~ #arcade-deck .deck-joystick{pointer-events:auto;}
+  /* En fullscreen horizontal solo quedan puntos táctiles muy leves sobre el juego. */
+  #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction{
+    background:transparent;border-color:transparent;box-shadow:none;color:rgba(255,255,255,.30);opacity:.48;
+  }
+  #stage:fullscreen ~ #arcade-deck .deck-action:active,#stage:fullscreen ~ #arcade-deck .stick-direction:active{
+    background:rgba(255,255,255,.12);color:rgba(255,255,255,.9);opacity:.9;
+  }
   #stage:fullscreen ~ #promo-poster{display:none!important;}
   #stage:fullscreen ~ .music-control-row{position:fixed;top:7px;right:7px;width:auto;min-height:0;padding:0;background:none;border:0;z-index:10001;pointer-events:none;}
   #stage:fullscreen ~ .music-control-row #music-fab,#stage:fullscreen ~ .music-control-row #back-fab{display:none;}
@@ -183,8 +190,12 @@
   .deck-chip.tag{border-color:rgba(255,43,214,.65);}
   .deck-chip.tag b{color:#ffd9f4;}
   @media (orientation:portrait) and (max-width:600px){
+    /* Vertical: conserva el tablero táctil como estaba, con sus puntos visibles. */
     #stage:fullscreen ~ #arcade-deck{height:22vh;}
     #stage:fullscreen ~ #arcade-deck .deck-action{width:13%;}
+    #stage:fullscreen ~ #arcade-deck .deck-action,#stage:fullscreen ~ #arcade-deck .stick-direction{
+      background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;color:rgba(255,255,255,.38);opacity:1;
+    }
   }
   @media (orientation:landscape) and (max-width:900px){
     #stage:fullscreen ~ #arcade-deck{height:28vh;}
