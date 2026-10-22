@@ -237,6 +237,13 @@
         <button data-testid="btn-practice" data-action="practice">PRÁCTICA <span class="kbd">3</span></button>
         <button data-testid="btn-controls" data-action="controls">CONTROLES Y MOVIMIENTOS <span class="kbd">4</span></button>
       </div>
+      <div id="arcade-difficulty" aria-label="Dificultad del arcade" style="margin:16px auto 0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:520px;align-items:center;">
+        <span style="width:100%;font:900 12px Impact,sans-serif;letter-spacing:.18em;color:#9fe9ff;">DIFICULTAD ARCADE</span>
+        <button type="button" data-difficulty="easy" style="padding:8px 14px;cursor:pointer;">FÁCIL</button>
+        <button type="button" data-difficulty="normal" style="padding:8px 14px;cursor:pointer;">NORMAL</button>
+        <button type="button" data-difficulty="hard" style="padding:8px 14px;cursor:pointer;">DIFÍCIL</button>
+        <strong id="difficulty-status" style="font:900 12px Arial,sans-serif;color:#fff;min-width:90px;">NORMAL</strong>
+      </div>
       <div class="credit-line">6 BOTONES · CADENA MÁGICA · LANZADOR + SUPER SALTO · HIPER COMBOS · COMBATE 1 VS 1</div>
     </div>
 
@@ -786,7 +793,7 @@ const BANKS = {
   dcazul: { frames: Array.from({length: 6}, (_, i) => `assets/sprites/dcazul/dcazul-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
   dcrojo: { frames: Array.from({length: 8}, (_, i) => `assets/sprites/dcrojo/dcrojo-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
   /* WIZ y WIZZ comparten un banco de 7 poses; antes WIZ cargaba una sola imagen. */
-  wiznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
+  wiznew: { spriteFacesRight: false, frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   mistikwiz: { frames: [...SPRITE_DATA.mistikwiz, 'assets/sprites/mistikwiz/mistikwiz-walk.png'], drawH: 306, feetPad: 5, recolor: [] },
   dcakuma: { frames: SPRITE_DATA.dcakuma, drawH: 306, feetPad: 5, recolor: [] },
   crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 390, feetPad: 6, recolor: [] },
@@ -2364,9 +2371,8 @@ class Fighter {
      * fueron preparados mirando a la derecha; se invierten únicamente cuando
      * el rival está a la izquierda. WIZZ conserva su excepción histórica. */
     const spriteFacesRight = art.spriteFacesRight ?? true;
-    const normalWizzReverse = this.char.bank === 'wizznew';
     const baseFlip = spriteFacesRight ? this.facing === -1 : this.facing === 1;
-    const flip = normalWizzReverse ? !baseFlip : baseFlip;
+    const flip = baseFlip;
 
     /* sombra */
     const shadowScale = this.onGround ? 1 : clamp(1 - (GROUND_Y - this.y) / 900, 0.4, 1);
@@ -2377,7 +2383,16 @@ class Fighter {
     g.ellipse(this.x, GROUND_Y + 6, 62 * shadowScale, 12 * shadowScale, 0, 0, Math.PI * 2);
     g.fill();
     g.restore();
-
+    if (this.blocking || this.state === STATE.BLOCKSTUN) {
+      g.save();
+      const low = this.blockingLow || this.currentPoseIndex() === (POSE[this.char.bank]?.blockLow);
+      g.globalAlpha = this.state === STATE.BLOCKSTUN ? 0.42 : 0.25;
+      g.strokeStyle = low ? '#73d8ff' : '#b9f3ff';
+      g.fillStyle = low ? 'rgba(34,150,243,.12)' : 'rgba(121,229,255,.10)';
+      g.lineWidth = 7; g.shadowColor = '#39d9ff'; g.shadowBlur = 22;
+      g.beginPath(); g.ellipse(this.x + this.facing * 22, this.y - (low ? 92 : 125), low ? 78 : 92, low ? 68 : 112, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.restore();
+    }
     g.save();
     g.translate(this.x, this.y + (art.feetPad || 0));
     if (flip) g.scale(-1, 1);
@@ -2439,14 +2454,16 @@ class Projectile {
     g.shadowColor = this.color; g.shadowBlur = 26;
     g.fillStyle = this.color;
     g.translate(this.x, this.y);
+    const visualW = this.w * 2;
+    const visualH = this.h * 2;
     if (this.vertical) {
-      g.beginPath(); g.rect(-this.w*.24, -this.h*.5, this.w*.48, this.h); g.fill();
+      g.beginPath(); g.rect(-visualW*.24, -visualH*.5, visualW*.48, visualH); g.fill();
     } else {
       g.rotate(Math.atan2(this.vy, this.vx || this.facing));
-      g.beginPath(); g.ellipse(0, 0, this.w*.42, this.h*.42, 0, 0, Math.PI*2); g.fill();
+      g.beginPath(); g.ellipse(0, 0, visualW*.42, visualH*.42, 0, 0, Math.PI*2); g.fill();
     }
     g.globalAlpha=0.9; g.fillStyle=this.vertical?'#8fc8ff':'#fff'; g.beginPath();
-    g.ellipse(0, 0, this.vertical?this.w*.12:this.w*.2, this.vertical?this.h*.28:this.h*.2, 0, 0, Math.PI*2); g.fill();
+    g.ellipse(0, 0, this.vertical?visualW*.12:visualW*.2, this.vertical?visualH*.28:visualH*.2, 0, 0, Math.PI*2); g.fill();
     g.restore();
   }
 }
@@ -3511,7 +3528,7 @@ function drawFight(g, world) {
     g.translate(a.x, a.y + (art.feetPad || 0));
     const spriteFacesRight = art.spriteFacesRight ?? true;
     const baseFlip = spriteFacesRight ? a.facing === -1 : a.facing === 1;
-    const flip = CHAR[a.charId].bank === 'wizznew' ? !baseFlip : baseFlip;
+    const flip = baseFlip;
     if (flip) g.scale(-1, 1);
     g.filter = `drop-shadow(0 0 12px ${CHAR[a.charId].chroma})`;
     g.drawImage(im, -w / 2, -h, w, h);
@@ -3580,12 +3597,11 @@ function drawParticles(g) {
 
 /* ======================= MÁQUINA DE ESTADOS DEL JUEGO =================== */
 
+const DIFFICULTY_PRESETS = { easy: 0.72, normal: 1, hard: 1.28 };
 const ARCADE_ROUTE = [
-  { chars: ['wz', 'manuelin'], assists: ['a', 'g'], diff: 0.70, label: 'COMBATE 1' },
-  { chars: ['dc', 'crater'], assists: ['b', 'a'], diff: 0.95, label: 'COMBATE 2' },
-  { chars: ['toto', 'dcr'], assists: ['g', 'b'], diff: 1.20, label: 'COMBATE 3' },
-  { chars: ['miguel1', 'crater'], assists: ['a', 'a'], diff: 0, label: 'MIGUEL 1', boss: true, bossId: 'miguel1' },
-  { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'MIGUEL 2', boss: true, bossId: 'miguel2' },
+  ...ROSTER.map((c, i) => ({ chars: [c.id], assists: ['a'], diff: Math.min(1.34, 0.68 + i * 0.035), label: `NIVEL ${i + 1} · ${c.name}` })),
+  { chars: ['miguel1', 'crater'], assists: ['a', 'a'], diff: 0, label: 'JEFE FINAL · MIGUEL 1', boss: true, bossId: 'miguel1' },
+  { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'JEFE FINAL · MIGUEL 2', boss: true, bossId: 'miguel2' },
 ];
 const MYSTIC_UNLOCK_KEY = 'dcvswiz:wizz-mistico:unlocked';
 const MISTIKWIZZ_UNLOCK_KEY = 'dcvswiz:mistikwizz:unlocked';
@@ -3615,9 +3631,8 @@ function unlockDCAkuma() {
  * se entra directamente a Miguel. El cambio también se aplica si el unlock
  * ocurre durante la primera partida. */
 function arcadeRoute() {
-  return isDCAkumaUnlocked()
-    ? [ARCADE_ROUTE[0], ARCADE_ROUTE[1], ARCADE_ROUTE[3], ARCADE_ROUTE[4]]
-    : ARCADE_ROUTE;
+  const mult = DIFFICULTY_PRESETS[Game.arcadeDifficulty] || DIFFICULTY_PRESETS.normal;
+  return ARCADE_ROUTE.map((r) => ({ ...r, diff: r.boss ? 0 : r.diff * mult }));
 }
 
 const Game = {
@@ -3628,6 +3643,7 @@ const Game = {
   wins: 0,
   losses: 0,
   arcadeComplete: false,
+  arcadeDifficulty: 'normal',
   paused: false,
   p1: { picks: [], step: 0, focus: 0 },
   p2: { picks: [], step: 0, focus: 0 },
@@ -4107,6 +4123,15 @@ function drawAttract(g) {
 /* ======================= ENLACES DE INTERFAZ =========================== */
 
 function installBindings() {
+  const difficultyStatus = $('difficulty-status');
+  document.querySelectorAll('[data-difficulty]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      Game.arcadeDifficulty = btn.dataset.difficulty;
+      if (difficultyStatus) difficultyStatus.textContent = Game.arcadeDifficulty === 'easy' ? 'FÁCIL' : Game.arcadeDifficulty === 'hard' ? 'DIFÍCIL' : 'NORMAL';
+      document.querySelectorAll('[data-difficulty]').forEach((b) => b.style.filter = b === btn ? 'brightness(1.45)' : 'brightness(.82)');
+      Audio.init(); Audio.resume(); Audio.sfx.menu();
+    });
+  });
   document.querySelectorAll('[data-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
       Audio.init(); Audio.resume();
