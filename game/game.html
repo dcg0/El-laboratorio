@@ -2279,7 +2279,9 @@ class Fighter {
     this.redHp = Math.min(this.maxHp - this.hp, this.redHp + dmg * 0.55);
     if (this.team) this.team.gauge = Math.min(MAX_SUPER_LEVELS * SUPER_LEVEL, this.team.gauge + dmg * 1.5);
 
-    this.flashTimer = 5;
+    /* Feedback de impacto: parpadeo rojo breve y retroceso suave.
+       Se aplica también a proyectiles porque ambos pasan por takeHit(). */
+    this.flashTimer = 8;
     this.blocking = false;
     this.move = null;
     this.hitList.clear();
@@ -2290,7 +2292,7 @@ class Fighter {
     this.stateFrame = 0;
     this.stunFrames = hit.hitstun;
     this.hitstunAirOK = true;
-    this.vx = attacker ? attacker.facing * Math.max(2, (hit.pushHit || 3) * 1.1) : 0;
+    this.vx = attacker ? attacker.facing * Math.max(3.2, (hit.pushHit || 3) * 1.2) : 0;
     if (launched) {
       this.onGround = false;
       this.vy = typeof hit.launch === 'number' ? hit.launch : -10.5;
@@ -2303,7 +2305,7 @@ class Fighter {
       this.vy = -2.8;
     }
 
-    this.x = clamp(this.x + this.vx * 0.3, WALL_L, WALL_R);
+    this.x = clamp(this.x + this.vx * 0.45, WALL_L, WALL_R);
 
     if (hit.knockdown && !launched) { this.hardLand = true; }
     if (hit.airEnder && !this.onGround) { this.state = STATE.THROWN; this.vx = attacker ? attacker.facing * 16 : 0; this.vy = -6; }
@@ -2413,7 +2415,7 @@ class Fighter {
     if (flip) g.scale(-1, 1);
     let filter = '';
     if (this.guardBreakTimer > 0 && (this.guardBreakTimer % 10) < 5) filter += 'brightness(1.75) saturate(2.8) sepia(1) hue-rotate(300deg) drop-shadow(0 0 18px #ff1738) ';
-    else if (this.flashTimer > 0 && (this.flashTimer % 4) < 2) filter += 'brightness(2.6) saturate(0.2) ';
+    else if (this.flashTimer > 0 && (this.flashTimer % 4) < 2) filter += 'brightness(1.8) saturate(3.2) sepia(1) hue-rotate(300deg) drop-shadow(0 0 16px #ff1738) ';
     if (this.invuln > 0) g.globalAlpha *= 0.72;
     if (this.state === STATE.ATTACK && this.move && (this.move.type === 'hyper')) filter += `drop-shadow(0 0 18px ${this.move.color}) `;
     if (filter) g.filter = filter;
