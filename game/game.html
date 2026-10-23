@@ -271,7 +271,7 @@
           <h4>MOVIMIENTO</h4>
           <div class="grid-mv">
             <span>Doble toque ← / → : dash</span>
-            <span>↓ y luego ↑ : super salto (más alto)</span>
+            <span>↓ ↑ ↑ : super salto largo inclinado hacia el rival</span>
             <span>Mantener atrás : bloqueo alto · refleja proyectiles</span>
             <span>Mantener ↓ + atrás : bloqueo bajo</span>
             <span>Tanque lleno · adelante + HP : hiper de energía</span>
@@ -413,6 +413,8 @@ const PHYS = {
   doubleJumpVy: -15.8,
   doubleJumpForward: 6.2,
   superJumpVy: -21.5,
+  superJumpForward: 10.5,  // trayectoria larga de ↓ ↑ ↑ hacia el rival
+  superJumpExtendVy: -18.5,
   superJumpFloat: 0.62,       // gravedad reducida en super salto
   maxFall: 18,                // velocidad terminal
   airDrift: 0.72,
@@ -1921,6 +1923,14 @@ class Fighter {
       } else { this.vx = 0; this.setFreeState(STATE.IDLE); this.walkTimer += STEP; }
     } else {
       /* control aéreo */
+      /* ↓ ↑ ↑: el segundo arriba extiende el super salto con una
+         trayectoria larga dirigida automáticamente hacia el oponente. */
+      if (input.tapDir.up && this.superJumping && !this.superJumpExtended
+        && world.frame - this.lastTap.up <= PHYS.doubleJumpWindow) {
+        this.extendSuperJump(world);
+        this.lastTap.up = -99;
+        return;
+      }
       if (input.tapDir.up && this.doubleJumpAvailable
         && world.frame - this.lastTap.up <= PHYS.doubleJumpWindow) {
         this.doubleJump();
@@ -2166,10 +2176,26 @@ class Fighter {
     this.state = STATE.JUMP; this.stateFrame = 0;
     this.resetAirActions();
     this.superJumping = true;
+    this.superJumpExtended = false;
     this.lastTap.up = WORLD ? WORLD.frame : this.lastTap.up;
     Audio.sfx.jump();
     spawnDust(this.x, GROUND_Y);
     spawnRing(this.x, GROUND_Y - 30, '#8fe6ff', 120, 0.4);
+  }
+
+  extendSuperJump(world) {
+    const foe = this.opponent();
+    const toward = foe ? (foe.x >= this.x ? 1 : -1) : this.facing;
+    this.superJumpExtended = true;
+    this.doubleJumpAvailable = false;
+    this.superJumping = true;
+    this.vx = toward * PHYS.superJumpForward;
+    this.vy = Math.min(this.vy, PHYS.superJumpExtendVy);
+    this.state = STATE.JUMP;
+    this.stateFrame = 0;
+    Audio.sfx.jump();
+    spawnDoubleJumpFx(this);
+    spawnRing(this.x, this.y - 30, '#ffd21f', 145, 0.42);
   }
 
   doubleJump() {
@@ -2229,6 +2255,7 @@ class Fighter {
       }
       this.y = GROUND_Y; this.vy = 0; this.onGround = true;
       this.superJumping = false;
+      this.superJumpExtended = false;
       if (this.state === STATE.JUMP) { this.state = STATE.IDLE; this.stateFrame = 0; this.resetAirActions(); }
     } else {
       this.onGround = false;
