@@ -801,7 +801,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
  *     tres bancos (resoluciones distintas) se vean del mismo porte. --- */
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
-  refresh: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
+  refresh: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 260, feetPad: 6, recolor: [] },
   kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato-v2/kato-${i + 1}.png?v=kato2`), 'assets/sprites/kato-v2/kato-walk.png?v=kato2'], drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal, drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
@@ -813,7 +813,7 @@ const BANKS = {
   dcakuma: { frames: SPRITE_DATA.dcakuma, drawH: 306, feetPad: 5, recolor: [] },
   crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 390, feetPad: 6, recolor: [] },
   wizz:   { frames: ['assets/sprites/wizz_sin_fondo.png'], drawH: 306, feetPad: 6,  recolor: [] },
-  wizznew: { frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
+  wizznew: { spriteFacesRight: false, frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   wmistiko: { frames: Array.from({length: 9}, (_, i) => `assets/sprites/wmistiko/wmistiko-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
   noir:   { frames: SPRITE_DATA.dcBlack, drawH: 300, feetPad: 0,  recolor: [] },
   manuelin:{ frames: SPRITE_DATA.manuelin, drawH: 292, feetPad: 5, recolor: [] },
@@ -821,7 +821,7 @@ const BANKS = {
   wero:   { frames: SPRITE_DATA.wero,     drawH: 292, feetPad: 5, recolor: [] },
   yiyo:   { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/yiyo/yiyo-${String(i + 1).padStart(2, '0')}.png`), drawH: 300, feetPad: 6, recolor: [] },
   aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron-v2/aron-${String(i + 1).padStart(2, '0')}.png?v=aron2`), drawH: 300, feetPad: 6, recolor: [] },
-  dandy: { spriteFacesRight: true, frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
+  dandy: { spriteFacesRight: false, frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
   miguelnew: { spriteFacesRight: true, frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
   victor: { spriteFacesRight: true, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
 };
@@ -1131,7 +1131,7 @@ const Art = {
        * turno. El banco original se usa como fallback visual; esto mantiene
        * todos los sprites disponibles y permite que el menú abra de inmediato. */
       const frames = src;
-      this.variants[ch.id] = { frames, drawH: def.drawH, feetPad: def.feetPad };
+      this.variants[ch.id] = { frames, drawH: def.drawH, feetPad: def.feetPad, spriteFacesRight: def.spriteFacesRight };
     }
   },
 
@@ -2795,7 +2795,7 @@ class AiController {
       case 'ult':
         out._motion = 'doubleQcfP'; press('hp'); press('mp'); this.plan = 'wait'; this.timer = 0.9; break;
       case 'dash':
-        out.tapDir.right = true; out.dir.right = true; this.plan = 'wait'; this.timer = 0.3; break;
+        out.tapDir[toward] = true; out.dir[toward] = true; this.plan = 'wait'; this.timer = 0.3; break;
       case 'jump': holdDir('up'); this.plan = 'wait'; break;
       case 'assist': case 'tag': this.plan = 'wait'; this.timer = 0.4; break;
       case 'throw':
@@ -3764,7 +3764,7 @@ const Game = {
   wins: 0,
   losses: 0,
   arcadeComplete: false,
-  arcadeDifficulty: 'normal', // dificultad fija: la selección fue retirada del menú
+  arcadeDifficulty: 'easy', // fácil por defecto; la selección fue retirada del menú
 
   morganSceneShown: false,
   paused: false,
