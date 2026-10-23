@@ -246,14 +246,6 @@
         <button data-testid="btn-practice" data-action="practice">PRÁCTICA <span class="kbd">3</span></button>
         <button data-testid="btn-controls" data-action="controls">CONTROLES Y MOVIMIENTOS <span class="kbd">4</span></button>
       </div>
-      <div id="arcade-difficulty" aria-label="Dificultad del arcade" style="margin:16px auto 0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:520px;align-items:center;">
-        <span style="width:100%;font:900 12px Impact,sans-serif;letter-spacing:.18em;color:#9fe9ff;">DIFICULTAD ARCADE</span>
-        <button type="button" data-difficulty="easy" style="padding:8px 14px;cursor:pointer;">FÁCIL</button>
-        <button type="button" data-difficulty="normal" style="padding:8px 14px;cursor:pointer;">NORMAL</button>
-        <button type="button" data-difficulty="hard" style="padding:8px 14px;cursor:pointer;">DIFÍCIL</button>
-        <strong id="difficulty-status" style="font:900 12px Arial,sans-serif;color:#fff;min-width:90px;">NORMAL</strong>
-      </div>
-      <div class="credit-line">6 BOTONES · CADENA MÁGICA · LANZADOR + SUPER SALTO · HIPER COMBOS · COMBATE 1 VS 1</div>
     </div>
 
     <div id="screen-controls" class="screen hidden" data-testid="screen-controls">
@@ -3704,7 +3696,8 @@ const Game = {
   wins: 0,
   losses: 0,
   arcadeComplete: false,
-  arcadeDifficulty: 'normal',
+  arcadeDifficulty: 'normal', // dificultad fija: la selección fue retirada del menú
+
   morganSceneShown: false,
   paused: false,
   p1: { picks: [], step: 0, focus: 0 },
@@ -4293,15 +4286,6 @@ function drawAttract(g) {
 /* ======================= ENLACES DE INTERFAZ =========================== */
 
 function installBindings() {
-  const difficultyStatus = $('difficulty-status');
-  document.querySelectorAll('[data-difficulty]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      Game.arcadeDifficulty = btn.dataset.difficulty;
-      if (difficultyStatus) difficultyStatus.textContent = Game.arcadeDifficulty === 'easy' ? 'FÁCIL' : Game.arcadeDifficulty === 'hard' ? 'DIFÍCIL' : 'NORMAL';
-      document.querySelectorAll('[data-difficulty]').forEach((b) => b.style.filter = b === btn ? 'brightness(1.45)' : 'brightness(.82)');
-      Audio.init(); Audio.resume(); Audio.sfx.menu();
-    });
-  });
   document.querySelectorAll('[data-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
       Audio.init(); Audio.resume();
