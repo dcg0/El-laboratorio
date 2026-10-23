@@ -139,7 +139,7 @@
     background:linear-gradient(180deg,rgba(5,4,18,.96),rgba(2,2,10,.98));
     border-top:1px solid rgba(0,230,255,.2);
   }
-  #music-fab,#back-fab,#fullscreen-fab{
+  #music-fab,#back-fab,#fullscreen-fab,#pause-fab,#restart-fab{
     position:relative;flex:0 0 auto;width:clamp(70px,12vw,100px);height:clamp(70px,12vw,100px);border-radius:50%;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     border:3px solid #78f3ff;color:#fff;font-family:inherit;font-weight:900;cursor:pointer;
@@ -147,13 +147,17 @@
     box-shadow:0 0 0 4px rgba(0,230,255,.18),0 0 24px rgba(0,230,255,.72),inset 0 0 14px rgba(0,230,255,.38);
     text-shadow:0 1px 5px #000;
   }
+  #pause-fab,#restart-fab{width:clamp(70px,10vw,92px);height:clamp(70px,10vw,92px);border-width:2px;font-size:clamp(.68rem,1.15vw,.82rem);letter-spacing:.05em;}
+  #pause-fab{border-color:#54e7ff;background:radial-gradient(circle at 35% 28%,#236c86 0%,#11152b 55%,#050611 100%);box-shadow:0 0 0 3px rgba(84,231,255,.14),0 0 18px rgba(84,231,255,.48),inset 0 0 12px rgba(84,231,255,.25);}
+  #restart-fab{border-color:#ff7bbd;background:radial-gradient(circle at 35% 28%,#8a315d 0%,#251022 55%,#090711 100%);box-shadow:0 0 0 3px rgba(255,123,189,.14),0 0 18px rgba(255,123,189,.48),inset 0 0 12px rgba(255,123,189,.25);}
+  #pause-fab .music-glyph,#restart-fab .music-glyph{font-size:clamp(1.2rem,3vw,1.9rem);}
   #fullscreen-fab{border-color:#ffd21f;background:radial-gradient(circle at 35% 28%,#806b1f 0%,#241d12 55%,#090711 100%);box-shadow:0 0 0 4px rgba(255,210,31,.16),0 0 20px rgba(255,210,31,.56),inset 0 0 12px rgba(255,210,31,.3);}
   #back-fab{border-color:#ff6c7c;background:radial-gradient(circle at 35% 28%,#9a314f 0%,#251022 55%,#090711 100%);box-shadow:0 0 0 4px rgba(255,64,96,.16),0 0 20px rgba(255,58,91,.56),inset 0 0 12px rgba(255,58,91,.3);}
   #fullscreen-fab{width:42px;height:42px;min-width:42px;opacity:.48;border-width:1px;box-shadow:0 0 0 2px rgba(255,210,31,.1),0 0 12px rgba(255,210,31,.28);}
   #fullscreen-fab .music-glyph{font-size:1.15rem;}
   #fullscreen-fab .music-label{font-size:.38rem;margin-top:1px;}
   #fullscreen-fab:hover,#fullscreen-fab:focus-visible,#fullscreen-fab:active{opacity:.9;}
-  #back-fab[hidden],#fullscreen-fab[hidden]{display:none!important}
+  #back-fab[hidden],#fullscreen-fab[hidden],#pause-fab[hidden],#restart-fab[hidden]{display:none!important}
   /* El gabinete completo entra en fullscreen: los hermanos del escenario no
      pertenecían al top layer y el navegador ocultaba el tablero y SALIR. */
   #cabinet:fullscreen{height:100vh;height:100dvh;min-height:0;overflow:hidden;}
@@ -346,7 +350,13 @@
   <div class="deck-caption">JOYSTICK PARA MOVER · ABAJO/ARRIBA + CUALQUIER BOTÓN = PROYECTIL · ADELANTE + HP/R1 CON TANQUE LLENO = HIPER</div>
 </section>
 
-<section class="music-control-row" aria-label="Control de música y asistencias">
+<section class="music-control-row" aria-label="Control de música, combate y asistencias">
+  <button id="pause-fab" type="button" aria-label="Pausar o continuar el combate" aria-pressed="false">
+    <span class="music-glyph" aria-hidden="true">Ⅱ</span><span class="music-label">PAUSA</span>
+  </button>
+  <button id="restart-fab" type="button" aria-label="Reiniciar el combate actual">
+    <span class="music-glyph" aria-hidden="true">↻</span><span class="music-label">REINICIAR</span>
+  </button>
   <button id="fullscreen-fab" type="button" aria-label="Ampliar el juego a pantalla completa" aria-pressed="false">
     <span class="music-glyph" aria-hidden="true">⛶</span><span class="music-label">AMPLIAR</span>
   </button>
@@ -4084,6 +4094,16 @@ function setScreen(id) {
   if (ui) ui.classList.toggle('interactive', id !== 'fight');
   const back = $('back-fab');
   if (back) back.hidden = id === 'menu';
+  const pause = $('pause-fab');
+  const restart = $('restart-fab');
+  if (pause) pause.hidden = id !== 'fight';
+  if (restart) restart.hidden = id !== 'fight';
+  if (pause) {
+    const paused = id === 'fight' && Game.paused;
+    pause.setAttribute('aria-pressed', String(paused));
+    pause.querySelector('.music-glyph').textContent = paused ? '▶' : 'Ⅱ';
+    pause.querySelector('.music-label').textContent = paused ? 'CONTINUAR' : 'PAUSA';
+  }
   Audio.init(); Audio.resume();
 }
 
@@ -4305,6 +4325,22 @@ function installBindings() {
   const back = $('back-fab');
   if (back) back.addEventListener('click', () => { Audio.sfx.menu(); Game.world = null; setScreen('menu'); });
 
+  const pause = $('pause-fab');
+  if (pause) pause.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (Game.screen !== 'fight' || !Game.world || Game.world.over) return;
+    Game.paused = !Game.paused;
+    Audio.sfx.menu();
+    setScreen('fight');
+  });
+  const restart = $('restart-fab');
+  if (restart) restart.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (Game.screen !== 'fight' || !Game.world) return;
+    Game.beginFight();
+    Audio.sfx.round();
+  });
+
   const fullscreen = $('fullscreen-fab');
   if (fullscreen) {
     const syncFullscreen = () => {
@@ -4367,7 +4403,7 @@ function installBindings() {
       else if (k === 'escape') { Game.reset(); setScreen('menu'); }
     } else if (Game.screen === 'fight') {
       if (k === 'escape') { Game.world = null; setScreen('menu'); }
-      if (k === 'p') { Game.paused = !Game.paused; }
+      if (k === 'p') { Game.paused = !Game.paused; setScreen('fight'); }
     }
   });
 }
