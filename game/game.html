@@ -4015,6 +4015,37 @@ const Game = {
     });
   },
 
+  playGameOverVideo(done) {
+    const stage = $('stage');
+    if (!stage) { done(); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;inset:0;z-index:60;background:#000;display:grid;place-items:center;overflow:hidden;';
+    const video = document.createElement('video');
+    video.src = 'assets/video/gameover-final.mp4';
+    video.autoplay = true; video.playsInline = true; video.controls = false;
+    video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;';
+    const skip = document.createElement('button');
+    skip.textContent = 'SALTAR · ESC';
+    skip.setAttribute('aria-label', 'Saltar video final');
+    skip.style.cssText = 'position:absolute;right:18px;bottom:18px;padding:10px 16px;background:rgba(6,4,24,.86);color:#fff;border:2px solid #ffd21f;border-radius:8px;font:900 14px Impact,sans-serif;letter-spacing:.08em;cursor:pointer;opacity:.82;';
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener('keydown', onKey);
+      overlay.remove();
+      done();
+    };
+    const onKey = (e) => { if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); finish(); } };
+    skip.onclick = finish;
+    video.onended = finish;
+    video.onerror = finish;
+    window.addEventListener('keydown', onKey);
+    overlay.append(video, skip);
+    stage.appendChild(overlay);
+    video.play().catch(() => { skip.textContent = 'VER VIDEO · ENTER / SALTAR · ESC'; });
+  },
+
   finishMysticUnlock() {
     this.arcadeComplete = true;
     const already = isMysticUnlocked();
@@ -4031,9 +4062,9 @@ const Game = {
     ]);
     /* fin.png es la última escena: aparece después de la cinemática final
      * y después del póster de desbloqueo de Wizz Místico. */
-    const showFinalScene = () => this.showVictoryImage(
+    const showFinalScene = () => this.playGameOverVideo(() => this.showVictoryImage(
       'assets/victories/fin.png', 'FIN · RUTA ARCADE COMPLETADA', finish,
-    );
+    ));
     if (!already) this.showUnlockPoster('wizz', '¡WIZZ MÍSTICO DESBLOQUEADO!', showFinalScene);
     else showFinalScene();
   },
