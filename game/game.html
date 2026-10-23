@@ -2687,14 +2687,9 @@ class AiController {
     const gaugeReady = team.gauge >= SUPER_LEVEL;
     const ultReady = team.gauge >= SUPER_LEVEL * 3;
 
-    /* Defensa reactiva: si el rival ataca cerca, bloquear */
-    if (foe.isAttacking() && adist < 200 && this.reaction <= 0) {
-      const guardChance = clamp(0.30 + this.diff * 0.42, 0, 0.94);
-      if (Math.random() < guardChance) {
-        this.plan = 'block'; this.timer = rand(0.25, 0.6);
-        this.reaction = rand(0.1, 0.3);
-      }
-    }
+    /* La IA nunca se cubre: siempre debe recibir los ataques del jugador.
+       No se genera ningún plan de bloqueo, ni siquiera como reacción. */
+    if (this.plan === 'block') this.plan = 'wait';
     /* Anti-aéreo */
     if (!foe.onGround && foe.y < GROUND_Y - 130 && adist < 150 && Math.random() < 0.10 * this.diff) {
       this.plan = 'antiair'; this.timer = 0.2;
@@ -2732,7 +2727,7 @@ class AiController {
     const holdDir = (d) => { out.dir[d] = true; };
 
     switch (this.plan) {
-      case 'block': holdDir(away); break;
+      case 'block': this.plan = 'wait'; break; // bloqueo desactivado para la IA
       case 'approach': holdDir(toward); break;
       case 'retreat': holdDir(away); break;
       case 'fireball':
