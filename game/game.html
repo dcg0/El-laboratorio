@@ -2462,15 +2462,23 @@ function fighterHurtboxes(f) {
 
 /* ======================= PROYECTILES =================================== */
 
-/* Proyectiles: paleta consistente, tamaño de impacto y coste de recursos. */
-const PROJ_COLOR = { blue: '#31a9ff', yellow: '#ffd21f', red: '#ff2b3d', purple: '#b44cff', black: '#0b0b0f' };
-const PROJ_GROUP_OF = {
-  dc: 'blue', dcb: 'blue', manuelin: 'blue', dcakuma: 'blue',
-  yiyo: 'yellow', toto: 'yellow', wero: 'yellow', random: 'yellow', aron: 'yellow', victor: 'yellow', dandy: 'yellow',
-  wz: 'red', crater: 'red', miguel1: 'red', miguel2: 'red', dcr: 'red',
-  miguelnew: 'black',
+/* Proyectiles: color ligado al personaje que los dispara. */
+const PROJ_COLOR = {
+  blue: '#168cff', yellow: '#ffd21f', red: '#ff2b3d', black: '#0b0b0f', white: '#f7fbff',
 };
-function projColorFor(charId) { return PROJ_COLOR[PROJ_GROUP_OF[charId]] || PROJ_COLOR.purple; }
+const PROJ_GROUP_OF = {
+  /* DC y DCAKUMA: azul */
+  dc: 'blue', refresh: 'blue', dcb: 'blue', dcakuma: 'blue',
+  /* WIZZ: rojo */
+  wz: 'red', mistikwiz: 'red', wzm: 'red',
+  /* MIGUEL: negro */
+  miguel1: 'black', miguel2: 'black', miguelnew: 'black',
+  /* El resto queda en amarillo salvo los proyectiles especiales blancos. */
+  crater: 'yellow', dcr: 'yellow', manuelin: 'yellow', noir: 'yellow',
+  yiyo: 'yellow', toto: 'yellow', wero: 'yellow', random: 'yellow', aron: 'yellow', victor: 'yellow', dandy: 'yellow',
+};
+function projColorFor(charId) { return PROJ_COLOR[PROJ_GROUP_OF[charId]] || PROJ_COLOR.yellow; }
+function isMulticolorProjectile(charId) { return charId === 'crater'; }
 const PROJ_SIZE = 2.4;
 const PROJ_COST = SUPER_LEVEL / 2;
 const RAIN_COST = SUPER_LEVEL;
@@ -2488,7 +2496,10 @@ class Projectile {
     this.w = spec.w * PROJ_SIZE; this.h = spec.h * PROJ_SIZE;
     this.dmg = spec.damage; this.percentMaxHp = spec.percentMaxHp || 0; this.unblockable = !!spec.unblockable;
     this.hitstun = spec.hitstun; this.blockstun = spec.blockstun;
-    this.hitstop = spec.hitstop; this.color = projColorFor(owner.char?.id) || spec.color; this.level = spec.level;
+    this.hitstop = spec.hitstop;
+    this.multiColor = isMulticolorProjectile(owner.char?.id);
+    this.color = projColorFor(owner.char?.id) || spec.color;
+    this.level = spec.level;
     this.life = spec.life; this.pierce = spec.pierce || 0;
     this.age = 0;
     this.reflectCooldown = 0;
@@ -2510,8 +2521,19 @@ class Projectile {
   draw(g) {
     g.save();
     g.globalCompositeOperation = 'lighter';
-    g.shadowColor = this.color; g.shadowBlur = 26;
-    g.fillStyle = this.color;
+    g.shadowColor = this.multiColor ? '#ff6a2a' : this.color; g.shadowBlur = 26;
+    if (this.multiColor) {
+      const rainbow = g.createLinearGradient(-this.w * 0.55, 0, this.w * 0.55, 0);
+      rainbow.addColorStop(0, '#ff1744');
+      rainbow.addColorStop(0.2, '#ffea00');
+      rainbow.addColorStop(0.4, '#35e875');
+      rainbow.addColorStop(0.6, '#20d9ff');
+      rainbow.addColorStop(0.8, '#8b5cff');
+      rainbow.addColorStop(1, '#ff2bd6');
+      g.fillStyle = rainbow;
+    } else {
+      g.fillStyle = this.color;
+    }
     g.translate(this.x, this.y);
     const visualW = this.w;
     const visualH = this.h;
@@ -2964,6 +2986,7 @@ class World {
             pr.x = clamp(d.x + pr.vx * 8, WALL_L, WALL_R);
             pr.y = d.y - 135;
             pr.reflectCooldown = 12;
+            pr.multiColor = isMulticolorProjectile(d.char?.id);
             pr.color = projColorFor(d.char?.id) || pr.color;
             spawnSpark(point.x, point.y, '#ffe14a', 18, 1.15);
             spawnRing(point.x, point.y, '#ffe14a', 82, 0.3);
