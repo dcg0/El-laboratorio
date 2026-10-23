@@ -272,7 +272,7 @@
           <div class="grid-mv">
             <span>Doble toque ← / → : dash</span>
             <span>↓ y luego ↑ : super salto (más alto)</span>
-            <span>Mantener atrás : bloqueo alto</span>
+            <span>Mantener atrás : bloqueo alto · refleja proyectiles</span>
             <span>Mantener ↓ + atrás : bloqueo bajo</span>
             <span>Tanque lleno · adelante + HP : hiper de energía</span>
             <span>Tanque lleno · adelante + R1/HK : hiper de avance</span>
@@ -2464,6 +2464,7 @@ class Projectile {
     this.hitstop = spec.hitstop; this.color = projColorFor(owner.char?.id) || spec.color; this.level = spec.level;
     this.life = spec.life; this.pierce = spec.pierce || 0;
     this.age = 0;
+    this.reflectCooldown = 0;
     this.dead = false;
     this.trailT = 0;
   }
@@ -2472,6 +2473,7 @@ class Projectile {
     this.prevX = this.x;
     this.x += this.vx; this.y += this.vy;
     this.age++;
+    this.reflectCooldown = Math.max(0, this.reflectCooldown - 1);
     this.trailT++;
     if (this.trailT % 2 === 0) {
       Particles.push({ type: 'trail', x: this.x, y: this.y + rand(-10, 10), vx: rand(-1.6, 0), vy: rand(-0.5, 0.5), life: 0.22, age: 0, size: rand(5, 12), color: this.color, grav: 0 });
@@ -2923,6 +2925,25 @@ class World {
             }
             break;
           }
+          /* Reflejo: mantener atrás justo antes del impacto devuelve el proyectil
+             hacia el atacante. La guardia normal sigue funcionando para los golpes. */
+          if (d.blocking && d.onGround && pr.reflectCooldown <= 0 && !pr.unblockable) {
+            const originalOwner = pr.owner;
+            const direction = originalOwner && d.x >= originalOwner.x ? -1 : 1;
+            pr.owner = d;
+            pr.team = d.team;
+            pr.facing = direction;
+            pr.vx = Math.max(5.5, Math.abs(pr.vx)) * direction;
+            pr.x = clamp(d.x + pr.vx * 8, WALL_L, WALL_R);
+            pr.y = d.y - 135;
+            pr.reflectCooldown = 12;
+            pr.color = projColorFor(d.char?.id) || pr.color;
+            spawnSpark(point.x, point.y, '#ffe14a', 18, 1.15);
+            spawnRing(point.x, point.y, '#ffe14a', 82, 0.3);
+            Audio.sfx.guardPush();
+            break;
+          }
+
           const hit = {
             damage: pr.dmg, percentMaxHp: pr.percentMaxHp, unblockable: pr.unblockable,
             hitstun: pr.hitstun, blockstun: pr.blockstun, hitstop: pr.hitstop,
