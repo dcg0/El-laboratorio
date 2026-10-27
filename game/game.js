@@ -449,8 +449,11 @@ SpecialArt.yiyo = new Image();
 SpecialArt.yiyo.src = 'assets/specials/yiyo-special.png';
 SpecialArt.wero = new Image();
 SpecialArt.wero.src = 'assets/specials/wero-special.png';
-const ProjectileArt = { miguel1: new Image(), craterCow: new Image(), weroProjectile: new Image() };
+const Miguel1MoveArt = { attack: new Image() };
+Miguel1MoveArt.attack.src = 'assets/specials/miguel1-can-attack.png';
+const ProjectileArt = { miguel1: new Image(), miguel1Can: new Image(), craterCow: new Image(), weroProjectile: new Image() };
 ProjectileArt.miguel1.src = 'assets/projectiles/miguel-indio-bottle.png';
+ProjectileArt.miguel1Can.src = 'assets/projectiles/miguel-tecate-can.png';
 ProjectileArt.craterCow.src = 'assets/projectiles/crater-cow-skateboard.png';
 ProjectileArt.weroProjectile.src = 'assets/projectiles/wero-projectile.png';
 const STAGE_BG = new Image();
@@ -1115,9 +1118,26 @@ const MOVES = {
   noir: buildMoves('noir'), miguel2: buildMoves('miguel2'),
   manuelin: buildMoves('manuelin'), toto: buildMoves('toto'), wero: buildMoves('wero'), yiyo: buildMoves('yiyo'),
 };
-/* Miguel 1 jugable: no tiene golpes, combos, especiales ni hipercombos.
- * Su único botón ofensivo es LP/A y dispara un rayo rojo imbloqueable. */
+/* Miguel1 conserva su rayo de LP/A y añade el ataque ilustrado y la lata como movimientos separados. */
 const MIGUEL1_MOVES = {
+  miguelAttack: normal({
+    id: 'miguelAttack', name: 'ATAQUE RELÁMPAGO', pose: 0, startup: 5, active: 4, recovery: 12,
+    boxes: [{ x: 58, y: -184, w: 220, h: 112 }], damage: 8, level: 'mid',
+    hitstun: 15, blockstun: 9, hitstop: 5, pushHit: 3.0, pushBlock: 4.2, meter: 3,
+    color: '#39a7ff', sfx: 'medium', fx: 'straight',
+    label: 'ATRÁS + CUALQUIER BOTÓN · ATAQUE RELÁMPAGO',
+  }),
+  miguelCan: normal({
+    id: 'miguelCan', name: 'LATA ASCENDENTE', pose: 0, startup: 7, active: 1, recovery: 10,
+    boxes: [], damage: 5, hitstun: 12, blockstun: 7, hitstop: 4, meter: 3,
+    color: '#f2f2f2', sfx: 'light', fx: 'jab',
+    proj: {
+      vx: 0, vy: -8.5, vertical: true, w: 32, h: 90, renderW: 32, renderH: 90, y: -150,
+      damage: 5, hitstun: 12, blockstun: 7, hitstop: 4, color: '#f2f2f2', life: 90,
+      level: 'mid', pierce: 0, art: 'miguel1Can',
+    },
+    label: 'ARRIBA + CUALQUIER BOTÓN · LATA VERTICAL',
+  }),
   miguelRay: special({
     id: 'miguelRay', name: 'RAYO ROJO', pose: 0, startup: 14, active: 6, recovery: 30,
     damage: 0, hitstun: 28, blockstun: 0, hitstop: 12, meter: 0,
@@ -1136,7 +1156,7 @@ function movesFor(charId) {
   return MOVES[bank] || MOVES[bank === 'dcnormal' ? 'dc' : 'noir'];
 }
 function assistsFor(charId) {
-  /* Miguel 1 no puede atacar como asistente: solo movimiento y rayo propio. */
+  /* Miguel 1 no puede atacar como asistente; sus movimientos son solo para el personaje activo. */
   if (charId === 'miguel1') return ['a', 'b', 'g'].map((key) => special({
     id: `miguel1NoAssist${key.toUpperCase()}`, name: 'SIN ASISTENCIA', pose: 0,
     startup: 1, active: 1, recovery: 1, damage: 0, boxes: [], meter: 0,
@@ -1673,10 +1693,15 @@ class Fighter {
 
   chooseMove(input, world) {
     const m = this.moves;
-    /* Miguel 1 solo puede lanzar su rayo con A/LP; todos los demás botones
-     * ofensivos se ignoran deliberadamente para evitar golpes accidentales. */
+    /* Miguel1: LP/A lanza el rayo original; atrás+botón y arriba+botón son ataques separados. */
     if (this.charId === 'miguel1') {
-      if (input.tap.lp) return { id: 'miguelRay' };
+      const d = input.dir || {};
+      const tap = input.tap || {};
+      const backHeld = this.facing === 1 ? d.left : d.right;
+      const anyButtonTap = tap.lp || tap.mp || tap.hp || tap.lk || tap.mk || tap.hk;
+      if (d.up && anyButtonTap) return { id: 'miguelCan' };
+      if (backHeld && anyButtonTap) return { id: 'miguelAttack' };
+      if (tap.lp) return { id: 'miguelRay' };
       return null;
     }
     /* Comandos inyectados por la IA (evita simular la línea de tiempo). */
@@ -2123,7 +2148,11 @@ class Fighter {
     const art = Art.get(this.charId);
     if (!art.frames.length) return;
     const idx = clamp(this.currentPoseIndex(), 0, art.frames.length - 1);
-    const im = art.frames[idx];
+    const poseImage = art.frames[idx];
+    const moveArt = this.charId === 'miguel1' && this.state === STATE.ATTACK
+      && this.move?.id === 'miguelAttack' && Miguel1MoveArt.attack.complete
+      && Miguel1MoveArt.attack.naturalWidth > 0 ? Miguel1MoveArt.attack : null;
+    const im = moveArt || poseImage;
     if (!im) return;
     const natW = im.naturalWidth || im.width;
     const natH = im.naturalHeight || im.height;
@@ -2255,12 +2284,12 @@ class Projectile {
       const w = customArt.naturalWidth * scale, h = customArt.naturalHeight * scale;
       g.save();
       g.translate(this.x, this.y + this.artYOffset);
-      if (this.facing < 0) g.scale(-1, 1);
+      if (this.facing < 0 && this.artKey !== 'miguel1Can') g.scale(-1, 1);
       g.drawImage(customArt, -w / 2, -h / 2, w, h);
       g.restore();
       return;
     }
-    const bottle = this.owner?.charId === 'miguel1' ? ProjectileArt.miguel1 : null;
+    const bottle = this.owner?.charId === 'miguel1' && this.artKey !== 'miguel1Can' ? ProjectileArt.miguel1 : null;
     if (bottle?.complete && bottle.naturalWidth > 0) {
       const natW = bottle.naturalWidth, natH = bottle.naturalHeight;
       const scale = Math.min(this.w / natW, this.h / natH);
