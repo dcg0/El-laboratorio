@@ -465,7 +465,7 @@ const BANKS = {
   dcrojo: { frames: Array.from({length: 8}, (_, i) => `assets/sprites/dcrojo/dcrojo-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
   /* WIZ y WIZZ comparten un banco de 7 poses; antes WIZ cargaba una sola imagen. */
   wiznew: { spriteFacesRight: false, frames: Array.from({length: 7}, (_, i) => `assets/sprites/wizznew/wizznormal-0${i}.png`), drawH: 306, feetPad: 5, recolor: [] },
-  mistikwiz: { frames: [...SPRITE_DATA.mistikwiz, 'assets/sprites/mistikwiz/mistikwiz-walk.png'], drawH: 306, feetPad: 5, recolor: [] },
+  mistikwiz: { frames: ['assets/sprites/mistikwiz/mistikwiz-idle.png', 'assets/sprites/mistikwiz/mistikwiz-attack.png', 'assets/sprites/mistikwiz/mistikwiz-attack.png', 'assets/sprites/mistikwiz/mistikwiz-attack.png', 'assets/sprites/mistikwiz/mistikwiz-attack.png', 'assets/sprites/mistikwiz/mistikwiz-attack.png', 'assets/sprites/mistikwiz/mistikwiz-idle.png', 'assets/sprites/mistikwiz/mistikwiz-idle.png'], drawH: 306, feetPad: 5, recolor: [] },
   dcakuma: { frames: SPRITE_DATA.dcakuma, drawH: 306, feetPad: 5, recolor: [] },
   crater: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/cratter/cratter-${String(i + 1).padStart(2, '0')}.png`), drawH: 390, feetPad: 6, recolor: [] },
   wizz:   { frames: ['assets/sprites/wizz_sin_fondo.png'], drawH: 306, feetPad: 6,  recolor: [] },
