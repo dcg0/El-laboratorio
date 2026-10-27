@@ -19,8 +19,7 @@
 
 
 ## Abrir el laboratorio
-<img src="https://github.com/dcg0/DC-laboratory/actions/workflows/security.yml/badge.svg" alt="Security checks"></a>
-  <a href="https://github.com/dcg0/DC-laboratory/actions/workflows/codeql.yml"><img src="https://github.com/dcg0/DC-laboratory/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+<img src="https://github.com/dcg0/DC-laboratory/actions/workflows/security.yml/badge.svg" alt="Security checks"></a><a href="https://github.com/dcg0/DC-laboratory/actions/workflows/codeql.yml"><img src="https://github.com/dcg0/DC-laboratory/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://github.com/dcg0/DC-laboratory/security"><img src="https://img.shields.io/badge/secret%20scanning-enabled-176b46" alt="Secret scanning enabled"></a>
   <a href="https://github.com/dcg0/DC-laboratory/blob/main/downloads/DCA-ChromeOS.apk.sha256"><img src="https://img.shields.io/badge/SHA--256-verified-2f81f7" alt="SHA-256 verified"></a>
   <a href="https://github.com/dcg0/DC-laboratory/blob/main/.github/dependabot.yml"><img src="https://img.shields.io/badge/Dependabot-enabled-2f81f7" alt="Dependabot enabled"></a>
