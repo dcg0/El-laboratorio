@@ -30,14 +30,14 @@ const STEP = 1 / 60;          // paso fijo de simulación (60 Hz)
 const MAX_STEP_FRAMES = 5;    // techo de pasos por refresco (evita espiral)
 
 /* Física (unidades por fotograma a 60 Hz) */
-/* Dash arcade: avanza cuatro espacios de golpe. */
-const DASH_SPACES = 4;
-const SPACE_PX = 40;
+/* Dash arcade: recorrido más largo con una ejecución más rápida. */
+const DASH_SPACES = 6;
+const SPACE_PX = 44;
 
 const PHYS = {
   walkF: 8.6, walkB: 7.4,
   dashF: 30.0, dashB: 26.0,
-  dashFrames: 16,
+  dashFrames: 10,
   gravity: 0.78,
   jumpVy: -15.2,
   jumpForward: 4.2,
@@ -515,6 +515,8 @@ const ROSTER = [
   { id: 'wzm',   name: 'WIZZ MÍSTICO', bank: 'wmistiko', hue: 0.78,  chroma: '#b44cff', chroma2: '#f1a7ff' },
   { id: 'dcakuma', name: 'DCAKUMA', bank: 'dcakuma', hue: null, chroma: '#168cff', chroma2: '#74b9ff' },
 ];
+/* Dandy se conserva en el roster interno, pero solo se obtiene por RANDOM. */
+const SELECTABLE_ROSTER = ROSTER.filter((c) => c.id !== 'dandy');
 const BOSS_ROSTER = [
   { id: 'miguel1', name: 'MIGUEL 1', bank: 'miguel1', hue: null, chroma: '#ff1533', chroma2: '#ff9a6a' },
   { id: 'miguel2', name: 'MIGUEL 2', bank: 'miguel2', hue: null, chroma: '#a855f7', chroma2: '#ff4fd8' },
@@ -1315,6 +1317,7 @@ class Fighter {
     this.guardHoldFrames = 0;
     this.guardBreakTimer = 0;
     this.lastTap = { left: -99, right: -99, up: -99, down: -99 };
+    this.downTapHistory = [];
     this.doubleJumpAvailable = true;
     this.specialEvadeTimer = 0;
     this.downTimer = 0;
@@ -1582,10 +1585,43 @@ class Fighter {
     const atk = this.pressCount(input);
     const tapA = input.tap.lp || input.tap.mp || input.tap.hp || input.tap.lk || input.tap.mk || input.tap.hk;
     const wantHyper = atk >= 2;
-
+    if (!input._ai && !this.team?.isCPU && input.tapDir?.down) {
+      this.downTapHistory = this.downTapHistory.filter((frame) => world.frame - frame <= 42);
+      this.downTapHistory.push(world.frame);
+      if (this.downTapHistory.length >= 3) {
+        this.downTapHistory = [];
+        const rival = this.opponent();
+        if (this.onGround && rival?.alive && Math.abs(rival.x - this.x) <= 260) {
+          const towardRival = rival.x >= this.x ? 1 : -1;
+          let destination = clamp(rival.x + towardRival * 82, WALL_L, WALL_R);
+          if (Math.abs(destination - rival.x) < 48) destination = clamp(rival.x - towardRival * 82, WALL_L, WALL_R);
+          this.x = destination;
+          this.prevX = destination;
+          this.vx = 0; this.vy = 0;
+          this.facing = -towardRival;
+          this.setFreeState(STATE.IDLE);
+          spawnRing(this.x, this.y - 90, '#8fe6ff', 120, 0.34);
+          spawnSpark(this.x, this.y - 120, '#ffffff', 16, 1.0);
+          Audio.sfx.dash();
+          return;
+        }
+      }
+    }
     /* --- definición del movimiento a ejecutar --- */
     const pick = this.chooseMove(input, world);
     if (pick) { this.chainUsed.clear(); this.airChainUsed.clear(); this.startMove(world, pick); return; }
+    /* El doble toque se detecta antes de la guardia para habilitar el dash hacia atrás. */
+    if (this.onGround && (input.tapDir.right || input.tapDir.left)) {
+      const dir = input.tapDir.right ? 1 : -1;
+      const fwdTap = dir === facing;
+      const key = dir === 1 ? 'right' : 'left';
+      if (world.frame - (this.lastTap[key] ?? -99) <= PHYS.doubleTapWindow) {
+        this.lastTap[key] = -99;
+        this.startDash(fwdTap ? 1 : -1);
+        return;
+      }
+      this.lastTap[key] = world.frame;
+    }
 
     /* Atrás ya no bloquea automáticamente: permite caminar libremente hacia
      * cualquier lado. El bloqueo queda reservado para la acción explícita. */
@@ -1635,19 +1671,6 @@ class Fighter {
       return;
     }
 
-    /* --- dash por doble toque --- */
-    if (input.tapDir.right || input.tapDir.left) {
-      const dir = input.tapDir.right ? 1 : -1;
-      /* `facing` apunta al rival: 1 = derecha, -1 = izquierda. */
-      const fwdTap = dir === facing;
-      const key = dir === 1 ? 'right' : 'left';
-      if (world.frame - (this.lastTap[key] ?? -99) <= PHYS.doubleTapWindow) {
-        this.lastTap[key] = -99;
-        this.startDash(fwdTap ? 1 : -1);
-        return;
-      }
-      this.lastTap[key] = world.frame;
-    }
 
     /* --- desplazamiento básico --- */
     if (this.onGround) {
@@ -1720,11 +1743,16 @@ class Fighter {
     const atkCount = this.pressCount(input);
     const mb = this.motion;
     const facing = this.facing;
+    const backHeld = facing === 1 ? d.left : d.right;
     const team = this.team;
     const freshQcf = mb.qcf() && mb.recent(6);
     const freshQcb = mb.qcb() && mb.recent(6);
     const freshDp = mb.dp() && mb.recent(6);
-
+    /* A + R1/RB (A/LP + HK) dispara el especial aunque no haya una secuencia previa. */
+    if (!input._ai && onGround && m.spRush
+      && ((tap.lp && input.btn.hk) || (tap.hk && input.btn.lp))) {
+      mb.clear(); return { id: 'spRush' };
+    }
     /* --- hiper combos (prioridad) --- */
     if (team && team.gauge >= SUPER_LEVEL) {
       /* Acceso simplificado por joystick: adelante + HP/R1.
@@ -1759,6 +1787,8 @@ class Fighter {
       if (pTap && freshDp) { mb.clear(); return { id: 'spRise' }; }
       if (kTap && freshQcb) { mb.clear(); return { id: 'spSpin' }; }
       if (pTap && freshQcb) { mb.clear(); return { id: 'spGrab' }; }
+      /* Atrás + A también ofrece el proyectil horizontal, sin reemplazar QCB + P. */
+      if (tap.lp && backHeld && !freshQcb) { mb.clear(); return { id: 'spProj' }; }
       if (pTap && mb.chargeBackOK() && mb.recent(4)) { mb.consumeChargeBack(); return { id: 'spCharge' }; }
     } else if (!this.onGround) {
       if (kTap && mb.qcb() && !this.airSpecialUsed) return { id: 'spDive' };
@@ -1785,6 +1815,9 @@ class Fighter {
     this.stateFrame = 0;
     this.dashDir = dir;
     this.dashFrame = 0;
+    if (dir < 0 && this.team?.side && !this.team.isCPU && unlockAron()) {
+      spawnFloater(this.x, this.y - 245, '¡ARON DESBLOQUEADO!', '#ff7a18', 26, 1.5);
+    }
     const sgn = this.facing * (dir > 0 ? 1 : -1);
     this.x = clamp(this.x + sgn * DASH_SPACES * SPACE_PX, WALL_L, WALL_R);
     this.vx = 0;
@@ -2719,7 +2752,38 @@ class World {
   }
 
   /* ---------------- Resolución de golpes ---------------- */
+  resolveAttackClash() {
+    const a = this.teams[1]?.active, b = this.teams[2]?.active;
+    if (!a || !b || !a.alive || !b.alive || a.invuln > 0 || b.invuln > 0
+      || !a.move || !b.move || a.hitList.has(b) || b.hitList.has(a)) return false;
+    const boxesA = a.activeBoxes(), boxesB = b.activeBoxes();
+    if (!boxesA.length || !boxesB.length) return false;
+    const hurtsA = fighterHurtboxes(a), hurtsB = fighterHurtboxes(b);
+    const touches = (attacker, boxes, hurts) => boxes.some((box) => {
+      const swept = sweptWorldBox(box, attacker);
+      return hurts.some((hurt) => overlap(swept, hurt));
+    });
+    if (!touches(a, boxesA, hurtsB) || !touches(b, boxesB, hurtsA)) return false;
+
+    this.clashTargets = new Map([[a, b], [b, a]]);
+    a.hitList.add(b); b.hitList.add(a);
+    const direction = b.x >= a.x ? 1 : -1;
+    const separation = 20;
+    a.x = clamp(a.x - direction * separation, WALL_L, WALL_R);
+    b.x = clamp(b.x + direction * separation, WALL_L, WALL_R);
+    a.vx = -direction * 5.8;
+    b.vx = direction * 5.8;
+    const midX = (a.x + b.x) / 2, midY = (a.y + b.y) / 2 - 120;
+    this.hitstop = Math.max(this.hitstop, 5);
+    this.shake = Math.max(this.shake, 5);
+    spawnSpark(midX, midY, '#ffffff', 22, 1.2);
+    spawnRing(midX, midY, '#ffd21f', 100, 0.28);
+    Audio.sfx.medium();
+    return true;
+  }
   resolveHits() {
+    this.clashTargets = new Map();
+    this.resolveAttackClash();
     for (const side of [1, 2]) {
       const atkTeam = this.teams[side];
       const defTeam = this.teams[side === 1 ? 2 : 1];
@@ -2812,6 +2876,7 @@ class World {
       const wb = sweptWorldBox(box, a);
       for (const d of defenders) {
         if (d === a) continue;
+        if (this.clashTargets?.get(a) === d) { a.hitList.add(d); continue; }
         if (a.hitList.has(d)) continue;
         if (d.invuln > 0) continue;
         const hurt = hurtCache.get(d) || [];
@@ -2831,12 +2896,18 @@ class World {
   }
 
   applyHit(victim, attacker, hit, point, color) {
-    const blocked = victim.checkBlock(hit);
+    const resolvedHit = attacker?.team?.isCPU
+      ? Object.assign({}, hit, {
+        damage: hit.damage == null ? hit.damage : hit.damage * 0.70,
+        percentMaxHp: hit.percentMaxHp ? hit.percentMaxHp * 0.70 : hit.percentMaxHp,
+      })
+      : hit;
+    const blocked = victim.checkBlock(resolvedHit);
     const scale = victim.comboScaling();
-    const dmg = hit.percentMaxHp
-      ? victim.maxHp * hit.percentMaxHp
-      : Math.max(1, hit.damage * scale);
-    const ok = victim.takeHit(hit, attacker, point);
+    const dmg = resolvedHit.percentMaxHp
+      ? victim.maxHp * resolvedHit.percentMaxHp
+      : Math.max(1, resolvedHit.damage * scale);
+    const ok = victim.takeHit(resolvedHit, attacker, point);
     if (!ok) return false;
 
     const heavy = hit.hitstop >= 7;
@@ -3519,6 +3590,9 @@ const MISTIKWIZZ_UNLOCK_KEY = 'dcvswiz:mistikwizz:unlocked';
 const DCAKUMA_UNLOCK_KEY = 'dcvswiz:dcakuma:unlocked';
 const MIGUEL1_UNLOCK_KEY = 'dcvswiz:miguel1:unlocked';
 const MIGUEL2_UNLOCK_KEY = 'dcvswiz:miguel2:unlocked';
+const ARON_UNLOCK_KEY = 'dcvswiz:aron:unlocked';
+const DANDY_UNLOCK_KEY = 'dcvswiz:dandy:unlocked';
+const DANDY_BATTLE_COUNT_KEY = 'dcvswiz:dandy:arcade-battles';
 function isMiguel1Unlocked() { try { return localStorage.getItem(MIGUEL1_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
 function isMiguel2Unlocked() { try { return localStorage.getItem(MIGUEL2_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
 function unlockMiguels() {
@@ -3537,6 +3611,27 @@ function isDCAkumaUnlocked() {
 }
 function unlockDCAkuma() {
   try { localStorage.setItem(DCAKUMA_UNLOCK_KEY, '1'); } catch (_) {}
+}
+function isAronUnlocked() {
+  try { return localStorage.getItem(ARON_UNLOCK_KEY) === '1'; } catch (_) { return false; }
+}
+function unlockAron() {
+  if (isAronUnlocked()) return false;
+  try { localStorage.setItem(ARON_UNLOCK_KEY, '1'); return true; } catch (_) { return false; }
+}
+function isDandyUnlocked() {
+  try { return localStorage.getItem(DANDY_UNLOCK_KEY) === '1'; } catch (_) { return false; }
+}
+function recordArcadeBattle(world) {
+  if (!world || world.dandyBattleRecorded) return false;
+  world.dandyBattleRecorded = true;
+  if (isDandyUnlocked()) return false;
+  try {
+    const count = Math.max(0, Number.parseInt(localStorage.getItem(DANDY_BATTLE_COUNT_KEY), 10) || 0) + 1;
+    localStorage.setItem(DANDY_BATTLE_COUNT_KEY, String(count));
+    if (count >= 4) { localStorage.setItem(DANDY_UNLOCK_KEY, '1'); return true; }
+  } catch (_) {}
+  return false;
 }
 /* Con DCAkuma desbloqueado la ruta se acorta: tras un combate adicional
  * se entra directamente a Miguel. El cambio también se aplica si el unlock
@@ -3666,6 +3761,7 @@ const Game = {
   onFightEnd() {
     const w = this.world;
     if (this.mode === 'practice') { return; }
+    const firstDandyUnlock = this.mode === 'arcade' && recordArcadeBattle(w);
     const usedToto = this.p1.picks.some((p) => p.charId === 'toto');
     const firstMiguel1Win = w.winner === 1 && usedToto && !isMiguel1Unlocked();
     if (firstMiguel1Win) unlockMiguel1();
@@ -3692,7 +3788,11 @@ const Game = {
             return;
           }
           this.stage++;
-          this.showResult(w.result, [`COMBATE GANADO`, `SIGUIENTE: ${arcadeRoute()[this.stage].label}`, 'CONTINÚA PARA AVANZAR']);
+            this.showResult(w.result, [
+              'COMBATE GANADO',
+              ...(firstDandyUnlock ? ['¡DANDY DESBLOQUEADO! DISPONIBLE EN RANDOM'] : []),
+              `SIGUIENTE: ${arcadeRoute()[this.stage].label}`, 'CONTINÚA PARA AVANZAR',
+            ]);
         };
         const continueAfterUnlock = () => {
           const showTeamVictoryScene = () => {
@@ -3725,7 +3825,11 @@ const Game = {
         continueAfterUnlock();
         return;
       }
-      this.showResult('GAME OVER', ['Derrota en ' + arcadeRoute()[this.stage].label, `Combates ganados: ${this.wins}`, 'VUELVE AL MENÚ PARA REINTENTAR']);
+      this.showResult('GAME OVER', [
+        'Derrota en ' + arcadeRoute()[this.stage].label,
+        ...(firstDandyUnlock ? ['¡DANDY DESBLOQUEADO! DISPONIBLE EN RANDOM'] : []),
+        `Combates ganados: ${this.wins}`, 'VUELVE AL MENÚ PARA REINTENTAR',
+      ]);
       return;
     }
     if (this.mode === 'versus') {
@@ -3991,19 +4095,21 @@ function renderSelect() {
     ? 'JUGADOR 1 · ELIGE PERSONAJE'
     : 'JUGADOR 2 · ELIGE PERSONAJE';
   grid.innerHTML = '';
-  const isLocked = (c) => c.id === 'wzm' && !isMysticUnlocked()
+  const isLocked = (c) => c.id === 'aron' && !isAronUnlocked()
+    || c.id === 'wzm' && !isMysticUnlocked()
     || c.id === 'mistikwiz' && !isMistikwizzUnlocked()
     || c.id === 'dcakuma' && !isDCAkumaUnlocked();
-  const orderedRoster = ROSTER.map((c, originalIndex) => ({ c, originalIndex }))
+  const orderedRoster = SELECTABLE_ROSTER.map((c, originalIndex) => ({ c, originalIndex }))
     .sort((a, b) => Number(isLocked(a.c)) - Number(isLocked(b.c)));
   orderedRoster.forEach(({ c, originalIndex }) => {
     const locked = isLocked(c);
     const lockedMystic = c.id === 'wzm' && !isMysticUnlocked();
     const lockedMistikwizz = c.id === 'mistikwiz' && !isMistikwizzUnlocked();
     const lockedDCAkuma = c.id === 'dcakuma' && !isDCAkumaUnlocked();
+    const lockedAron = c.id === 'aron' && !isAronUnlocked();
     const idx = originalIndex;
     const el = document.createElement('div');
-    el.className = 'char-card' + (state.focus === ROSTER.indexOf(c) ? ' focused' : '') + (locked ? ' locked' : '');
+    el.className = 'char-card' + (state.focus === SELECTABLE_ROSTER.indexOf(c) ? ' focused' : '') + (locked ? ' locked' : '');
     el.dataset.char = c.id;
     el.style.setProperty('--char-accent', c.chroma);
     el.style.borderColor = c.chroma;
@@ -4035,15 +4141,16 @@ function renderSelect() {
     if (!intrigueCard) {
       const n = document.createElement('div');
       n.className = 'cname';
-      n.textContent = lockedMystic ? 'BLOQUEADO · WIZZ MÍSTICO' : (lockedMistikwizz ? 'BLOQUEADO · MISTIKWIZZ' : (lockedDCAkuma ? 'BLOQUEADO · DCAKUMA' : c.name));
+      n.textContent = lockedAron ? 'BLOQUEADO · ARON' : (lockedMystic ? 'BLOQUEADO · WIZZ MÍSTICO' : (lockedMistikwizz ? 'BLOQUEADO · MISTIKWIZZ' : (lockedDCAkuma ? 'BLOQUEADO · DCAKUMA' : c.name)));
       el.appendChild(n);
     }
-    el.onclick = () => { state.focus = ROSTER.indexOf(c); if (!locked) confirmPick(); else { Audio.sfx.menu(); renderSelect(); } };
+    el.onclick = () => { state.focus = SELECTABLE_ROSTER.indexOf(c); if (!locked) confirmPick(); else { Audio.sfx.menu(); renderSelect(); } };
     grid.appendChild(el);
   });
   /* Tarjeta sorpresa: entrega personajes normales o, tras desbloquearlos, los dos secretos. */
-  const randomIdx = ROSTER.length;
-  const randomPool = ROSTER.map((c) => c.id);
+  const randomIdx = SELECTABLE_ROSTER.length;
+  const randomPool = SELECTABLE_ROSTER.map((c) => c.id).filter((id) => id !== 'aron' || isAronUnlocked());
+  if (isDandyUnlocked()) randomPool.push('dandy');
 function pickRandomCardResult() {
   const roll = Math.random();
   const normal = () => CHAR[randomPool[Math.floor(Math.random() * randomPool.length)]];
@@ -4074,8 +4181,8 @@ function pickRandomCardResult() {
 function confirmPick() {
   const side = Game.selectSide;
   const state = side === 1 ? Game.p1 : Game.p2;
-  const c = state.focus === ROSTER.length ? pickRandomCardResult() : ROSTER[state.focus];
-  if (state.focus !== ROSTER.length && ((c.id === 'wzm' && !isMysticUnlocked()) || (c.id === 'mistikwiz' && !isMistikwizzUnlocked()) || (c.id === 'dcakuma' && !isDCAkumaUnlocked()) || (c.id === 'miguel1' && !isMiguel1Unlocked()))) { renderSelect(); return; }
+  const c = state.focus === SELECTABLE_ROSTER.length ? pickRandomCardResult() : SELECTABLE_ROSTER[state.focus];
+  if (state.focus !== SELECTABLE_ROSTER.length && ((c.id === 'aron' && !isAronUnlocked()) || (c.id === 'wzm' && !isMysticUnlocked()) || (c.id === 'mistikwiz' && !isMistikwizzUnlocked()) || (c.id === 'dcakuma' && !isDCAkumaUnlocked()) || (c.id === 'miguel1' && !isMiguel1Unlocked()))) { renderSelect(); return; }
   state.picks = [{ charId: c.id }];
   Audio.sfx.select();
   if (state.picks.length < 1) { renderSelect(); return; }
@@ -4260,7 +4367,7 @@ function installBindings() {
       if (Game.screen === 'result' && (k === 'enter' || k === ' ')) $('btn-continue')?.click();
     } else if (Game.screen === 'select') {
       const state = Game.selectSide === 1 ? Game.p1 : Game.p2;
-      const cardCount = ROSTER.length + 1;
+      const cardCount = SELECTABLE_ROSTER.length + 1;
       if (k === 'arrowleft' || k === 'a') { state.focus = (state.focus - 1 + cardCount) % cardCount; renderSelect(); Audio.sfx.menu(); }
       else if (k === 'arrowright' || k === 'd') { state.focus = (state.focus + 1) % cardCount; renderSelect(); Audio.sfx.menu(); }
       else if (k === 'arrowup' || k === 'w') { state.focus = (state.focus - 8 + cardCount) % cardCount; renderSelect(); Audio.sfx.menu(); }
