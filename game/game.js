@@ -59,6 +59,7 @@ const PHYS = {
 const LIFE = 144;             // vitalidad estilo MvC
 const SUPER_LEVEL = 100;      // puntos por nivel de hiper combo
 const MAX_SUPER_LEVELS = 5;
+const FIGHTER_DRAW_HEIGHT = 306; // altura base común para todos los luchadores
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -1591,7 +1592,7 @@ class Fighter {
     /* Guardia universal: atrás + abajo = guardia baja agachada; atrás sola = guardia alta. */
     this.blocking = false;
     this.blockingLow = false;
-    if (this.onGround && back && !tapA && !wantHyper) {
+    if (!this.team?.isCPU && this.onGround && back && !tapA && !wantHyper) {
       this.blocking = true;
       this.blockingLow = !!d.down;
       this.guardHoldFrames++;
@@ -2156,7 +2157,7 @@ class Fighter {
     if (!im) return;
     const natW = im.naturalWidth || im.width;
     const natH = im.naturalHeight || im.height;
-    const h = art.drawH;
+    const h = FIGHTER_DRAW_HEIGHT;
     const w = natW * (h / natH);
 
     /* La dirección lógica siempre apunta al oponente: 1 = derecha, -1 = izquierda.
@@ -2507,7 +2508,7 @@ class AiController {
         const helperDiff = f.team.helperAiDiff ?? 0.85;
         const helperAssistChance = clamp(0.18 * helperDiff, 0.02, 0.18);
         this.plan=dist>210?'approach':(q<.48?'bossStrike':(q<.76?'bossDash':'bossRay'));
-        this.timer=rand(.28,.62);
+        this.timer=rand(.28,.62)/clamp(this.diff,0.5,2);
       }
       const toward=dx>=0?'right':'left';
       if(this.plan==='approach'){out.dir[toward]=true;return out;}
@@ -2620,7 +2621,7 @@ class World {
     this.bossCharge = null;
     this.paused = false;
     this.teams = {
-      1: new Team(this, 1, picks1, { isCPU: !!opts.cpu1, gauge: opts.gauge1 || 0 }),
+      1: new Team(this, 1, picks1, { isCPU: !!opts.cpu1, gauge: MAX_SUPER_LEVELS * SUPER_LEVEL }),
       2: new Team(this, 2, picks2, { isCPU: !!opts.cpu2, gauge: opts.gauge2 || 0 }),
     };
     this.teams[1].reset(360, 1);
@@ -2867,6 +2868,7 @@ class World {
 
   /* ---------------- Ciclo ---------------- */
   step(inputs) {
+    if (this.teams[1]) this.teams[1].gauge = MAX_SUPER_LEVELS * SUPER_LEVEL;
     if (this.paused || this.over) { updateFx(STEP); return; }
     this.frame++;
 
@@ -2917,6 +2919,7 @@ class World {
     if (this.boss) this.updateBoss();
 
     this.checkKO();
+    if (this.teams[1]) this.teams[1].gauge = MAX_SUPER_LEVELS * SUPER_LEVEL;
     updateFx(STEP);
     if (this.shake > 0) this.shake *= 0.86;
   }
@@ -3422,7 +3425,7 @@ function drawFight(g, world) {
     const im = a.img;
     if (!im) continue;
     const natW = im.naturalWidth || im.width, natH = im.naturalHeight || im.height;
-    const h = art.drawH, w = natW * (h / natH);
+    const h = FIGHTER_DRAW_HEIGHT, w = natW * (h / natH);
     const alpha = (1 - a.age / a.life) * a.alpha;
     g.save();
     g.globalAlpha = alpha;
@@ -3607,7 +3610,6 @@ const Game = {
       opts.bossId = route.bossId;
       opts.finalStage = !!route.final;
       opts.timer = route.boss ? 20 : 99;
-      opts.gauge1 = Math.min(MAX_SUPER_LEVELS * SUPER_LEVEL, this.wins * SUPER_LEVEL * 1.5);
       opts.gauge2 = route.boss ? 0 : 0;
     } else if (this.mode === 'practice') {
       picks2 = [{ charId: 'wz' }];
@@ -3622,7 +3624,8 @@ const Game = {
       const d = this.world.teams[2].active;
       d.isTrainingDummy = true;
     }
-    const bossDiff = this.world.boss ? 1.45 : diff;
+    const easyMultiplier = DIFFICULTY_PRESETS[Game.arcadeDifficulty] || DIFFICULTY_PRESETS.easy;
+    const bossDiff = this.world.boss ? 1.45 * easyMultiplier : diff;
     this.world.teams[2].ai = new AiController(this.world.teams[2].active, bossDiff);
     this.world.teams[2].aiDiff = bossDiff;
     this.paused = false;
@@ -3960,6 +3963,8 @@ function setScreen(id) {
     if (el) el.classList.toggle('hidden', s !== id);
   }
   Game.screen = id;
+  const stage = $('stage');
+  if (stage) stage.dataset.screen = id;
   const ui = $('ui');
   if (ui) ui.classList.toggle('interactive', id !== 'fight');
   const back = $('back-fab');
