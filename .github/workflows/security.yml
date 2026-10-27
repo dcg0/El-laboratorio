@@ -22,14 +22,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          private_key='-----BEGIN [A-Z ]*PRIVATE KEY-----'
-          aws_key='(AKIA|ASIA)[0-9A-Z]{16}'
-          github_token='(gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})'
-          patterns="$private_key|$aws_key|$github_token|AIza[0-9A-Za-z_-]{35}"
-          if git grep -n -I -E -e "$patterns" -- . ':!SECURITY.md' ':!.github/workflows/security.yml'; then
-            echo 'Potential secret detected. Remove it and rotate it before merging.' >&2
-            exit 1
-          fi
+          python3 tools/check_secrets.py
+
+      - name: Test secret scanner
+        shell: bash
+        run: python3 -m unittest discover -s tests -p 'test*.py'
 
       - name: Validate helper Python syntax
         shell: bash
