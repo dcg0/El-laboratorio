@@ -1036,13 +1036,14 @@ function buildMoves(bank) {
       ? [{ x: 36, y: -232, w: 232, h: 220 }]
       : (weroUltimate ? [{ x: 32, y: -240, w: 248, h: 230 }]
         : [{ x: 36, y: -240, w: 260, h: 250 }])),
-    percentMaxHp: yiyoUltimate ? 0.30 : (weroUltimate ? 0.95 : 0),
+    percentMaxHp: yiyoUltimate ? 0.30 : (weroUltimate ? 1.0 : 0),
     unblockable: weroUltimate,
     mobileSpecial: yiyoUltimate,
     freezeSelf: weroUltimate,
     sizeBoostFrames: totoUltimate ? 20 * 60 : 0,
-    label: signatureUltimate ? 'DOBLE ↓↘→ + P·P (Nv.2)'
-      : (totoUltimate ? 'TOTO · +25% TAMAÑO · 20 SEGUNDOS (Nv.2)' : '↓↘→↓↘→ + P (Nv.3)'),
+    label: weroUltimate ? 'KO INSTANTÁNEO · DOBLE ↓↘→ + P·P (Nv.2)'
+      : (signatureUltimate ? 'DOBLE ↓↘→ + P·P (Nv.2)'
+        : (totoUltimate ? 'TOTO · +25% TAMAÑO · 20 SEGUNDOS (Nv.2)' : '↓↘→↓↘→ + P (Nv.3)')),
     reveal: true, knockdown: true, cinematic: false,
   });
   set.hyDuo = hyper({
