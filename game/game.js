@@ -3788,106 +3788,124 @@ const Game = {
   },
 
   showUnlockPoster(kind, title, done) {
-    const stage = $('stage');
     const poster = kind === 'mistikwiz'
       ? (Art.get('mistikwiz').frames[POSE.mistikwiz.idle]?.src || UNLOCK_ART.wizz)
       : kind === 'miguel1'
         ? SELECT_PORTRAITS.miguel1
         : UNLOCK_ART[kind];
-    if (!stage || !poster) { done(); return; }
+    if (!poster) { done(); return; }
     const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:absolute;inset:0;z-index:45;background:rgba(0,0,0,.94);display:grid;place-items:center;padding:3vh 4vw;box-sizing:border-box;';
-    const panel = document.createElement('div');
-    panel.style.cssText = 'position:relative;width:min(88vw,620px);height:min(88vh,760px);display:grid;place-items:center;background:#080516;border:3px solid #39eaff;box-shadow:0 0 35px #168cff;border-radius:14px;overflow:hidden;';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;display:grid;place-items:center;touch-action:manipulation;';
+    overlay.tabIndex = 0;
+    overlay.setAttribute('role', 'button');
+    overlay.setAttribute('aria-label', `${title}. Pulsa Enter o toca para continuar.`);
     const img = document.createElement('img');
     img.src = poster; img.alt = title;
-    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-    const caption = document.createElement('div');
-    caption.textContent = title;
-    caption.style.cssText = 'position:absolute;bottom:12px;left:12px;right:12px;text-align:center;padding:10px;background:rgba(5,4,24,.86);color:#fff;font:900 clamp(18px,3vw,30px) Impact,sans-serif;letter-spacing:.08em;text-shadow:0 3px 0 #000;';
-    const btn = document.createElement('button');
-    btn.textContent = 'CONTINUAR';
-    btn.style.cssText = 'position:absolute;bottom:72px;left:50%;transform:translateX(-50%);padding:10px 22px;background:#160c34;color:#fff;border:2px solid #ff2bd6;border-radius:8px;font:900 16px Impact,sans-serif;cursor:pointer;';
-    const finish = () => { overlay.remove(); done(); };
-    btn.onclick = finish;
-    panel.append(img, caption, btn); overlay.appendChild(panel); stage.appendChild(overlay);
-    setTimeout(() => btn.focus(), 0);
-  },
-
-  showVictoryImage(src, title, done) {
-    const stage = $('stage');
-    if (!stage || !src) { done(); return; }
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:absolute;inset:0;z-index:46;background:rgba(0,0,0,.94);display:grid;place-items:center;padding:3vh 4vw;box-sizing:border-box;';
-    const panel = document.createElement('div');
-    panel.style.cssText = 'position:relative;width:min(92vw,760px);height:min(88vh,780px);display:grid;place-items:center;background:#080516;border:3px solid #ff4d9a;box-shadow:0 0 35px #ff4d9a;border-radius:14px;overflow:hidden;';
-    const img = document.createElement('img');
-    img.src = src; img.alt = title; img.loading = 'eager';
-    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-    const caption = document.createElement('div');
-    caption.textContent = title;
-    caption.style.cssText = 'position:absolute;bottom:12px;left:12px;right:12px;text-align:center;padding:10px;background:rgba(5,4,24,.86);color:#fff;font:900 clamp(18px,3vw,30px) Impact,sans-serif;letter-spacing:.08em;text-shadow:0 3px 0 #000;';
-    const btn = document.createElement('button');
-    btn.textContent = 'CONTINUAR';
-    btn.style.cssText = 'position:absolute;bottom:72px;left:50%;transform:translateX(-50%);padding:10px 22px;background:#160c34;color:#fff;border:2px solid #ff4d9a;border-radius:8px;font:900 16px Impact,sans-serif;cursor:pointer;';
-    let finished = false;
-    const finish = () => { if (finished) return; finished = true; overlay.remove(); done(); };
-    btn.onclick = finish;
-    img.onerror = finish;
-    panel.append(img, caption, btn); overlay.appendChild(panel); stage.appendChild(overlay);
-    setTimeout(() => btn.focus(), 0);
-  },
-  playVictoryCinematic() {
-    const stage = $('stage');
-    if (!stage) { this.finishMysticUnlock(); return; }
-    const usedDc = this.p1.picks.some((p) => /^dc/.test(p.charId));
-    const usedWizz = this.p1.picks.some((p) => /^wz/.test(p.charId));
-    /* DC usa su video de camisa azul; WIZZ usa sus cinemáticas; los demás
-     * personajes usan el primer video alternativo conservado. */
-    const cinematicSrc = usedDc && !usedWizz
-      ? 'assets/video/miguel-victory.mp4'
-      : usedWizz
-        ? 'assets/video/miguel-victory-wizz.mp4'
-        : 'assets/video/miguel-victory-dc.mp4';
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:absolute;inset:0;z-index:40;background:#000;display:grid;place-items:center;';
-    const video = document.createElement('video');
-    video.src = cinematicSrc;
-    video.autoplay = true; video.playsInline = true; video.controls = false;
-    video.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-    overlay.appendChild(video);
-    stage.appendChild(overlay);
+    img.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;display:block;';
     let finished = false;
     const finish = () => {
       if (finished) return;
       finished = true;
+      window.removeEventListener('keydown', onKey);
+      overlay.remove();
+      done();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); finish(); }
+    };
+    overlay.addEventListener('click', finish);
+    window.addEventListener('keydown', onKey);
+    img.onerror = finish;
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.focus(), 0);
+  },
+
+  showVictoryImage(src, title, done) {
+    if (!src) { done(); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;display:grid;place-items:center;touch-action:manipulation;';
+    overlay.tabIndex = 0;
+    overlay.setAttribute('role', 'button');
+    overlay.setAttribute('aria-label', `${title}. Pulsa Enter o toca para continuar.`);
+    const img = document.createElement('img');
+    img.src = src; img.alt = title; img.loading = 'eager';
+    img.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;display:block;';
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener('keydown', onKey);
+      overlay.remove();
+      done();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); finish(); }
+    };
+    overlay.addEventListener('click', finish);
+    window.addEventListener('keydown', onKey);
+    img.onerror = finish;
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.focus(), 0);
+  },
+  playVictoryCinematic() {
+    const stage = $('stage');
+    if (!stage) { this.finishMysticUnlock(); return; }
+    const usedCrater = this.p1.picks.some((p) => p.charId === 'crater');
+    const usedTotoOrYiyo = this.p1.picks.some((p) => p.charId === 'toto' || p.charId === 'yiyo');
+    const usedDc = this.p1.picks.some((p) => /^dc/.test(p.charId));
+    const usedWizz = this.p1.picks.some((p) => /^wz/.test(p.charId));
+    /* Clips específicos preceden a las cinemáticas existentes; el nuevo clip
+     * cubre únicamente a los personajes sin video propio. */
+    const cinematicSrc = usedCrater
+      ? 'assets/video/crater-victory.mp4'
+      : usedTotoOrYiyo
+        ? 'assets/video/toto-yiyo-victory.mp4'
+        : usedDc && !usedWizz
+          ? 'assets/video/miguel-victory.mp4'
+          : usedWizz
+            ? 'assets/video/miguel-victory-wizz.mp4'
+            : 'assets/video/victory-generic.mp4';
+    Audio.stopMusic();
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;display:grid;place-items:center;';
+    const video = document.createElement('video');
+    video.src = cinematicSrc;
+    video.autoplay = true; video.playsInline = true; video.controls = false;
+    video.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;background:#000;';
+    overlay.appendChild(video);
+    document.body.appendChild(overlay);
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener('keydown', onKey);
       overlay.remove();
       this.finishMysticUnlock();
     };
+    const onKey = (e) => {
+      if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); finish(); }
+    };
+    overlay.addEventListener('click', () => {
+      if (video.paused) video.play().catch(() => {});
+      else if (video.duration > 30) finish();
+    });
+    window.addEventListener('keydown', onKey);
     video.onended = finish;
     video.onerror = finish;
-    video.play().catch(() => {
-      const btn = document.createElement('button');
-      btn.textContent = 'VER CINEMÁTICA · ENTER';
-      btn.style.cssText = 'position:absolute;z-index:2;padding:14px 22px;background:#170d35;color:#fff;border:2px solid #b44cff;font:900 18px Impact,sans-serif;cursor:pointer;';
-      btn.onclick = () => { btn.remove(); video.play().catch(finish); };
-      overlay.appendChild(btn);
-    });
+    video.play().catch(() => {});
   },
 
   playGameOverVideo(done) {
     const stage = $('stage');
     if (!stage) { done(); return; }
     const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:absolute;inset:0;z-index:60;background:#000;display:grid;place-items:center;overflow:hidden;';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;background:#000;display:grid;place-items:center;overflow:hidden;';
     const video = document.createElement('video');
     video.src = 'assets/video/gameover-final.mp4';
     video.autoplay = true; video.playsInline = true; video.controls = false;
-    video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;';
-    const skip = document.createElement('button');
-    skip.textContent = 'SALTAR · ESC';
-    skip.setAttribute('aria-label', 'Saltar video final');
-    skip.style.cssText = 'position:absolute;right:18px;bottom:18px;padding:10px 16px;background:rgba(6,4,24,.86);color:#fff;border:2px solid #ffd21f;border-radius:8px;font:900 14px Impact,sans-serif;letter-spacing:.08em;cursor:pointer;opacity:.82;';
+    video.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;background:#000;';
     let finished = false;
     const finish = () => {
       if (finished) return;
@@ -3897,15 +3915,17 @@ const Game = {
       done();
     };
     const onKey = (e) => { if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); finish(); } };
-    skip.onclick = finish;
+    overlay.addEventListener('click', () => {
+      if (video.paused) video.play().catch(() => {});
+      else finish();
+    });
     video.onended = finish;
     video.onerror = finish;
     window.addEventListener('keydown', onKey);
-    overlay.append(video, skip);
-    stage.appendChild(overlay);
-    video.play().catch(() => { skip.textContent = 'VER VIDEO · ENTER / SALTAR · ESC'; });
+    overlay.appendChild(video);
+    document.body.appendChild(overlay);
+    video.play().catch(() => {});
   },
-
   finishMysticUnlock() {
     this.arcadeComplete = true;
     const already = isMysticUnlocked();
