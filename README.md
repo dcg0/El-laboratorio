@@ -12,6 +12,12 @@
   </a>
 </p>
 
+
+
+
+
+
+
 ## Abrir el laboratorio
  href="https://github.com/dcg0/DC-laboratory/actions/workflows/security.yml"><img src="https://github.com/dcg0/DC-laboratory/actions/workflows/security.yml/badge.svg" alt="Security checks"></a>
   <a href="https://github.com/dcg0/DC-laboratory/actions/workflows/codeql.yml"><img src="https://github.com/dcg0/DC-laboratory/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
