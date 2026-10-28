@@ -1,9 +1,9 @@
 const CACHE_PREFIX = 'dcvswizz-pwa-';
-const CACHE_NAME = `${CACHE_PREFIX}v2`;
+const CACHE_NAME = `${CACHE_PREFIX}v3`;
 const SHELL = [
   './dcvswizz.webmanifest',
   './game/game.html',
-  './game/game.js',
+  './game/game.js?v=20261028.1',
   './assets/js/dcvswizz-pwa.js',
   './assets/app-icons/dcvswizz-icon-192.png',
   './assets/app-icons/dcvswizz-icon-512.png'

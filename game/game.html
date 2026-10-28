@@ -266,6 +266,39 @@
     #screen-select .hint[data-testid="select-hint"]{margin:.3vh 0 0;font-size:clamp(.44rem,1.7vh,.68rem);letter-spacing:.04em;}
   }
 
+
+  /* Selector 3×4: los extras desbloqueados flanquean la cuarta fila; Random nunca ocupa una de las doce casillas. */
+  #screen-select .select-board{display:grid;grid-template-columns:minmax(74px,1fr) minmax(0,min(640px,68vw)) minmax(74px,1fr);grid-template-rows:minmax(0,1fr);gap:clamp(8px,1vw,16px);width:min(98%,1080px);flex:1 1 auto;min-height:0;margin:.6vh auto;align-items:stretch;}
+  #screen-select .char-grid{grid-column:2;grid-row:1;width:100%;max-width:none;height:100%;max-height:none;min-height:0;flex:none;margin:0;padding:clamp(8px,1vw,14px);grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));grid-auto-rows:auto;gap:clamp(5px,.75vw,11px);overflow:hidden;align-content:stretch;align-items:stretch;}
+  #screen-select .char-grid::after{content:none;display:none;}
+  #screen-select .char-card{display:block;width:100%;height:100%;min-width:0;min-height:0;aspect-ratio:auto;position:relative;padding:0;color:#fff;font:inherit;overflow:hidden;}
+  #screen-select .char-card img{position:absolute;inset:0;width:100%;height:100%;padding:4px;object-fit:contain!important;object-position:center center;}
+  #screen-select .char-card .cname{display:flex;align-items:center;justify-content:center;position:absolute;bottom:0;left:0;right:0;max-height:46%;min-height:1.45em;padding:.24em .2em;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.92) 30%);font-size:clamp(.62rem,1vw,1rem);line-height:1.05;letter-spacing:.035em;white-space:normal;overflow:visible;overflow-wrap:anywhere;text-overflow:clip;text-align:center;}
+  #screen-select .select-side-slot{display:grid;grid-column:1;grid-row:1;grid-template-rows:repeat(4,minmax(0,1fr));min-width:0;min-height:0;}
+  #screen-select #bonus-wzm{grid-column:3;}
+  #screen-select .select-side-slot:empty{display:none;}
+  #screen-select .select-side-slot .char-card{grid-row:4;align-self:stretch;}
+  #screen-select .random-choice{pointer-events:auto;align-self:center;flex:0 0 auto;width:min(72vw,300px);min-height:clamp(38px,6vh,52px);margin:.3vh auto .1vh;padding:.42em 1em;border:2px solid #ff6a2a;border-radius:8px;background:radial-gradient(circle at 50% 35%,rgba(255,106,42,.45),rgba(18,7,42,.96) 75%);box-shadow:0 0 16px rgba(255,106,42,.28);color:#ffd21f;font:900 clamp(.72rem,1.25vw,1rem) Impact,sans-serif;letter-spacing:.08em;cursor:pointer;}
+  #screen-select .random-choice:hover,#screen-select .random-choice.focused{border-color:#ffd21f;transform:translateY(-2px);box-shadow:0 0 0 2px #ff2bd6,0 0 20px rgba(255,210,31,.55);}
+  @media(max-width:700px){
+    #screen-select .select-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr);gap:clamp(5px,1vh,9px);width:100%;margin:.4vh auto;}
+    #screen-select .char-grid{grid-column:1/-1;grid-row:2;width:100%;height:auto;min-height:0;flex:1 1 auto;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:clamp(4px,1vw,8px);padding:7px;overflow:hidden;}
+    #screen-select .char-card img{padding:2px;object-fit:contain!important;}
+    #screen-select .char-card .cname{font-size:clamp(.52rem,2.5vw,.76rem);padding:.2em .1em;max-height:48%;}
+    #screen-select .select-side-slot,#screen-select #bonus-wzm{display:flex;grid-row:1;flex:0 0 auto;align-items:center;justify-content:center;gap:8px;width:100%;height:clamp(66px,10vh,90px);}
+    #screen-select #bonus-dcakuma{grid-column:1;}
+    #screen-select #bonus-wzm{grid-column:2;}
+    #screen-select .select-side-slot:empty{display:none;}
+    #screen-select .select-side-slot .char-card{width:clamp(82px,25vw,120px);height:100%;flex:0 0 auto;}
+    #screen-select .random-choice{min-height:clamp(36px,5vh,46px);font-size:clamp(.68rem,3vw,.9rem);margin:.2vh auto;}
+  }
+  @media(orientation:landscape) and (max-height:560px){
+    #screen-select .select-board{grid-template-columns:minmax(64px,1fr) minmax(0,min(560px,66vw)) minmax(64px,1fr);gap:6px;margin:.2vh auto;}
+    #screen-select .char-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:4px;padding:5px;}
+    #screen-select .char-card .cname{font-size:clamp(.45rem,1.55vh,.68rem);padding:.15em .06em;}
+    #screen-select .random-choice{min-height:34px;margin:0 auto;font-size:clamp(.62rem,1.8vh,.85rem);}
+  }
+
 </style>
 <link rel="manifest" href="../dcvswizz.webmanifest">
 <meta name="theme-color" content="#ff3154">
@@ -361,7 +394,12 @@
     <div id="screen-select" class="screen hidden" data-testid="screen-select">
       <div class="title" style="font-size:clamp(1.3rem,3.4vw,2.4rem);">ELIGE TU PERSONAJE 1 VS 1</div>
       <div class="ts-head" id="selectPrompt">JUGADOR 1</div>
-      <div class="char-grid" id="charGrid"></div>
+      <div class="select-board" id="selectBoard">
+        <div id="bonus-dcakuma" class="select-side-slot" aria-label="DCAKUMA, junto a DC"></div>
+        <div class="char-grid" id="charGrid"></div>
+        <div id="bonus-wzm" class="select-side-slot" aria-label="Wizz Místico, junto a Wizz"></div>
+      </div>
+      <button id="randomChoice" class="random-choice" type="button" aria-label="Personaje aleatorio: extras fuera del panel, sin DCAKUMA ni Wizz Místico; misma probabilidad para cada uno">RANDOM · IGUAL</button>
       <div class="hint" data-testid="select-hint">FLECHAS / CLIC PARA ELEGIR · ENTER CONFIRMAR · ESC VOLVER</div>
     </div>
 
@@ -420,7 +458,7 @@
 </section>
 </main>
 
-<script src="game.js"></script>
+<script src="game.js?v=20261028.1"></script>
 <script defer src="../assets/js/dcvswizz-pwa.js"></script>
 </body>
 </html>

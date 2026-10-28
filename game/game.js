@@ -517,17 +517,34 @@ const ROSTER = [
   { id: 'dcakuma', name: 'DCAKUMA', bank: 'dcakuma', hue: null, chroma: '#168cff', chroma2: '#74b9ff' },
   { id: 'raul', name: 'RAÚL', bank: 'raul', hue: null, chroma: '#ff2bd6', chroma2: '#00e6ff' },
 ];
-/* Dandy se conserva en el roster interno, pero solo se obtiene por RANDOM. */
-const SELECTABLE_ROSTER = ROSTER.filter((c) => c.id !== 'dandy');
 const BOSS_ROSTER = [
   { id: 'miguel1', name: 'MIGUEL 1', bank: 'miguel1', hue: null, chroma: '#ff1533', chroma2: '#ff9a6a' },
   { id: 'miguel2', name: 'MIGUEL 2', bank: 'miguel2', hue: null, chroma: '#a855f7', chroma2: '#ff4fd8' },
 ];
 const CHAR = Object.fromEntries([...ROSTER, ...BOSS_ROSTER].map((c) => [c.id, c]));
+const PANEL_CHARACTER_ORDER = [
+  'manuelin', 'toto', 'yiyo',
+  'wero', 'crater', 'aron',
+  'victor', 'dcr', 'kato',
+  'dc', 'miguelnew', 'wz',
+];
+const PANEL_CHARACTER_IDS = new Set(PANEL_CHARACTER_ORDER);
+const PANEL_CHARACTER_LABELS = {
+  manuelin: 'Manuelín', toto: 'Toto', yiyo: 'Yiyo',
+  wero: 'Wero', crater: 'Crater', aron: 'Aron',
+  victor: 'Víctor', dcr: 'Rojo', kato: 'Kato',
+  dc: 'DC', miguelnew: 'Miguel', wz: 'Wizz',
+};
+const SELECTABLE_ROSTER = PANEL_CHARACTER_ORDER
+  .map((id) => ROSTER.find((c) => c.id === id))
+  .filter(Boolean);
+const RANDOM_EXCLUDED_IDS = new Set(['dcakuma', 'wzm']);
+const RANDOM_ROSTER = [...ROSTER, ...BOSS_ROSTER]
+  .filter((c) => !PANEL_CHARACTER_IDS.has(c.id) && !RANDOM_EXCLUDED_IDS.has(c.id));
 const SELECT_PORTRAITS = {
   /* Ilustraciones coloridas de Drive: se usan exclusivamente en las tarjetas. */
   kato: 'assets/portraits/kato.png',
-  dc: 'assets/portraits/DC.jpg', refresh: 'assets/portraits/refresh.png', dcb: 'assets/portraits/TU.png', dcr: 'assets/portraits/TU.png',
+  dc: 'assets/portraits/DC.jpg', refresh: 'assets/portraits/refresh.png', dcb: 'assets/portraits/TU.png',
   wz: 'assets/portraits/Wizz-2.png', wzm: 'assets/portraits/Wizz-2.png',
   manuelin: 'assets/portraits/Manuelin-1.png',
   toto: 'assets/portraits/Toto-1.png',
@@ -3754,11 +3771,20 @@ function drawParticles(g) {
 /* ======================= MÁQUINA DE ESTADOS DEL JUEGO =================== */
 
 const DIFFICULTY_PRESETS = { easy: 0.72, normal: 1, hard: 1.28 };
-const ARCADE_ROUTE = [
-  ...ROSTER.map((c, i) => ({ chars: [c.id], assists: ['a'], diff: Math.min(1.34, 0.68 + i * 0.035), label: `NIVEL ${i + 1} · ${c.name}` })),
+/* La cantidad de combates de Migueles aún no está confirmada. `rounds: null`
+ * conserva la secuencia actual; al recibir el número se puede sustituir por
+ * una lista de rondas sin alterar el resto de la ruta. */
+const ARCADE_MIGUEL_FINALE_CONFIG = Object.freeze({ rounds: null, difficulty: 'easy' });
+const CURRENT_MIGUEL_FINALE_ROUNDS = [
   { chars: ['miguel1', 'crater'], assists: ['a', 'a'], diff: 0, label: 'JEFE FINAL · MIGUEL 1', boss: true, bossId: 'miguel1' },
   { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'JEFE FINAL · MIGUEL 2', boss: true, bossId: 'miguel2' },
   { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'NIVEL FINAL', boss: true, bossId: 'miguel2', final: true },
+];
+const ARCADE_ROUTE = [
+  ...ROSTER.map((c, i) => ({ chars: [c.id], assists: ['a'], diff: Math.min(1.34, 0.68 + i * 0.035), label: `NIVEL ${i + 1} · ${c.name}` })),
+  ...(Array.isArray(ARCADE_MIGUEL_FINALE_CONFIG.rounds)
+    ? ARCADE_MIGUEL_FINALE_CONFIG.rounds
+    : CURRENT_MIGUEL_FINALE_ROUNDS),
 ];
 const MYSTIC_UNLOCK_KEY = 'dcvswiz:wizz-mistico:unlocked';
 const MISTIKWIZZ_UNLOCK_KEY = 'dcvswiz:mistikwizz:unlocked';
@@ -3769,8 +3795,21 @@ const ARON_UNLOCK_KEY = 'dcvswiz:aron:unlocked';
 const DANDY_UNLOCK_KEY = 'dcvswiz:dandy:unlocked';
 const DANDY_BATTLE_COUNT_KEY = 'dcvswiz:dandy:arcade-battles';
 const RAUL_UNLOCK_KEY = 'dcvswiz:raul:unlocked';
-function isRaulUnlocked() { try { return localStorage.getItem(RAUL_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
-function unlockRaul() { try { localStorage.setItem(RAUL_UNLOCK_KEY, '1'); } catch (_) {} }
+const FULL_ROSTER_UNLOCK_KEY = 'dcvswiz:roster:complete';
+function isFullRosterUnlocked() {
+  try { return localStorage.getItem(FULL_ROSTER_UNLOCK_KEY) === '1'; } catch (_) { return false; }
+}
+function unlockAllCharacters() {
+  try {
+    localStorage.setItem(FULL_ROSTER_UNLOCK_KEY, '1');
+    [MYSTIC_UNLOCK_KEY, MISTIKWIZZ_UNLOCK_KEY, DCAKUMA_UNLOCK_KEY,
+      MIGUEL1_UNLOCK_KEY, MIGUEL2_UNLOCK_KEY, ARON_UNLOCK_KEY,
+      DANDY_UNLOCK_KEY, RAUL_UNLOCK_KEY]
+      .forEach((key) => localStorage.setItem(key, '1'));
+  } catch (_) {}
+}
+function isRaulUnlocked() { return isFullRosterUnlocked(); }
+function unlockRaul() { return false; }
 function isMiguel1Unlocked() { try { return localStorage.getItem(MIGUEL1_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
 function isMiguel2Unlocked() { try { return localStorage.getItem(MIGUEL2_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
 function unlockMiguels() {
@@ -3790,30 +3829,22 @@ function isDCAkumaUnlocked() {
 function unlockDCAkuma() {
   try { localStorage.setItem(DCAKUMA_UNLOCK_KEY, '1'); } catch (_) {}
 }
-function isAronUnlocked() {
-  try { return localStorage.getItem(ARON_UNLOCK_KEY) === '1'; } catch (_) { return false; }
+function isAronUnlocked() { return isFullRosterUnlocked(); }
+function unlockAron() { return false; }
+function isDandyUnlocked() { return isFullRosterUnlocked(); }
+function recordArcadeBattle() { return false; }
+function isCharacterUnlockedForSelection(c) {
+  if (!c) return false;
+  if (isFullRosterUnlocked()) return true;
+  if (c.id === 'aron' || c.id === 'raul' || c.id === 'dandy') return false;
+  if (c.id === 'wzm') return isMysticUnlocked();
+  if (c.id === 'mistikwiz') return isMistikwizzUnlocked();
+  if (c.id === 'dcakuma') return isDCAkumaUnlocked();
+  if (c.id === 'miguel1') return isMiguel1Unlocked();
+  if (c.id === 'miguel2') return isMiguel2Unlocked();
+  return true;
 }
-function unlockAron() {
-  if (isAronUnlocked()) return false;
-  try { localStorage.setItem(ARON_UNLOCK_KEY, '1'); return true; } catch (_) { return false; }
-}
-function isDandyUnlocked() {
-  try { return localStorage.getItem(DANDY_UNLOCK_KEY) === '1'; } catch (_) { return false; }
-}
-function recordArcadeBattle(world) {
-  if (!world || world.dandyBattleRecorded) return false;
-  world.dandyBattleRecorded = true;
-  if (isDandyUnlocked()) return false;
-  try {
-    const count = Math.max(0, Number.parseInt(localStorage.getItem(DANDY_BATTLE_COUNT_KEY), 10) || 0) + 1;
-    localStorage.setItem(DANDY_BATTLE_COUNT_KEY, String(count));
-    if (count >= 4) { localStorage.setItem(DANDY_UNLOCK_KEY, '1'); return true; }
-  } catch (_) {}
-  return false;
-}
-/* Con DCAkuma desbloqueado la ruta se acorta: tras un combate adicional
- * se entra directamente a Miguel. El cambio también se aplica si el unlock
- * ocurre durante la primera partida. */
+/* La ruta mantiene todos los oponentes del roster antes de la secuencia final. */
 function arcadeRoute() {
   const mult = DIFFICULTY_PRESETS[Game.arcadeDifficulty] || DIFFICULTY_PRESETS.normal;
   return ARCADE_ROUTE.map((r) => ({ ...r, diff: r.boss ? 0 : r.diff * mult }));
@@ -3898,7 +3929,8 @@ const Game = {
       d.isTrainingDummy = true;
     }
     const easyMultiplier = DIFFICULTY_PRESETS[Game.arcadeDifficulty] || DIFFICULTY_PRESETS.easy;
-    const bossDiff = this.world.boss ? 1.45 * easyMultiplier : diff;
+    const finalMiguelDifficulty = DIFFICULTY_PRESETS[ARCADE_MIGUEL_FINALE_CONFIG.difficulty] || DIFFICULTY_PRESETS.easy;
+    const bossDiff = this.world.boss ? finalMiguelDifficulty : diff;
     this.world.teams[2].ai = new AiController(this.world.teams[2].active, bossDiff);
     this.world.teams[2].aiDiff = bossDiff;
     this.paused = false;
@@ -4220,14 +4252,16 @@ const Game = {
     this.arcadeComplete = true;
     const already = isMysticUnlocked();
     const miguelsAlready = isMiguel1Unlocked() && isMiguel2Unlocked();
+    unlockAllCharacters();
     unlockMiguels();
     unlockMystic();
     const finish = () => this.showResult('¡VICTORIA TOTAL!', [
       'Has superado la ruta arcade completa',
       `Combates ganados: ${this.wins}`,
+      'ELENCO COMPLETO DESBLOQUEADO',
       already ? 'WIZZ MÍSTICO · YA DESBLOQUEADO' : '¡WIZZ MÍSTICO DESBLOQUEADO!',
       miguelsAlready ? 'MIGUEL 1 · MIGUEL 2 · YA DESBLOQUEADOS' : '¡MIGUEL 1 Y MIGUEL 2 DESBLOQUEADOS!',
-      'RANDOM: 50% PERSONAJE · 30% MIGUEL 1 · 20% MIGUEL 2',
+      'RANDOM: EXTRAS FUERA DEL PANEL, SIN DCAKUMA NI WIZZ MÍSTICO · PROBABILIDAD IGUAL',
       'DC LABORATORIO TE ESPERA',
     ]);
     /* fin.png es la última escena: aparece después de la cinemática final
@@ -4269,6 +4303,59 @@ function setScreen(id) {
   Audio.init(); Audio.resume();
 }
 
+function getSelectEntries() {
+  const entries = SELECTABLE_ROSTER.map((character) => ({
+    key: character.id, kind: 'character', character,
+  }));
+  entries.push({ key: 'random', kind: 'random' });
+  if (isDCAkumaUnlocked()) entries.push({ key: 'dcakuma', kind: 'character', character: CHAR.dcakuma });
+  if (isMysticUnlocked()) entries.push({ key: 'wzm', kind: 'character', character: CHAR.wzm });
+  return entries;
+}
+function pickRandomCardResult() {
+  const randomPool = RANDOM_ROSTER.filter(isCharacterUnlockedForSelection);
+  if (!randomPool.length) return null;
+  return randomPool[Math.floor(Math.random() * randomPool.length)];
+}
+function renderCharacterCard(container, character, focusIndex, state, side) {
+  const locked = !isCharacterUnlockedForSelection(character);
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'char-card' + (state.focus === focusIndex ? ' focused' : '') + (locked ? ' locked' : '');
+  card.dataset.char = character.id;
+  card.setAttribute('aria-label', (PANEL_CHARACTER_LABELS[character.id] || character.name)
+    + (locked ? ' · se desbloquea al completar la ruta arcade' : ''));
+  card.setAttribute('aria-disabled', String(locked));
+  card.style.setProperty('--char-accent', character.chroma);
+  card.style.borderColor = character.chroma;
+
+  const art = Art.get(character.id);
+  const pose = POSE[character.bank] || {};
+  const frames = art && art.frames ? art.frames : [];
+  const frameIndex = Number.isInteger(pose.idle) ? pose.idle : 0;
+  const frame = frames[frameIndex] || frames[0];
+  const portrait = character.id === 'wzm' ? null : SELECT_PORTRAITS[character.id];
+  const image = document.createElement('img');
+  image.alt = '';
+  image.draggable = false;
+  image.decoding = 'async';
+  image.style.objectFit = 'contain';
+  if (portrait) image.src = portrait;
+  else if (frame) image.src = frame.src || (frame.toDataURL ? frame.toDataURL() : frame);
+  if (character.id === 'victor') image.style.transform = side === 1 ? 'scaleX(-1)' : 'scaleX(1)';
+  card.appendChild(image);
+
+  const name = document.createElement('span');
+  name.className = 'cname';
+  name.textContent = PANEL_CHARACTER_LABELS[character.id] || character.name;
+  card.appendChild(name);
+  card.onclick = () => {
+    state.focus = focusIndex;
+    if (!locked) confirmPick();
+    else { Audio.sfx.menu(); renderSelect(); }
+  };
+  container.appendChild(card);
+}
 function renderSelect() {
   const grid = $('charGrid');
   if (!grid) return;
@@ -4278,85 +4365,26 @@ function renderSelect() {
     ? 'JUGADOR 1 · ELIGE PERSONAJE'
     : 'JUGADOR 2 · ELIGE PERSONAJE';
   grid.innerHTML = '';
-  const isLocked = (c) => c.id === 'aron' && !isAronUnlocked()
-    || c.id === 'wzm' && !isMysticUnlocked()
-    || c.id === 'mistikwiz' && !isMistikwizzUnlocked()
-    || c.id === 'dcakuma' && !isDCAkumaUnlocked()
-    || c.id === 'raul' && !isRaulUnlocked();
-  const orderedRoster = SELECTABLE_ROSTER.map((c, originalIndex) => ({ c, originalIndex }))
-    .sort((a, b) => Number(isLocked(a.c)) - Number(isLocked(b.c)));
-  orderedRoster.forEach(({ c, originalIndex }) => {
-    const locked = isLocked(c);
-    const lockedMystic = c.id === 'wzm' && !isMysticUnlocked();
-    const lockedMistikwizz = c.id === 'mistikwiz' && !isMistikwizzUnlocked();
-    const lockedDCAkuma = c.id === 'dcakuma' && !isDCAkumaUnlocked();
-    const lockedAron = c.id === 'aron' && !isAronUnlocked();
-    const lockedRaul = c.id === 'raul' && !isRaulUnlocked();
-    const idx = originalIndex;
-    const el = document.createElement('div');
-    el.className = 'char-card' + (state.focus === SELECTABLE_ROSTER.indexOf(c) ? ' focused' : '') + (locked ? ' locked' : '');
-    el.dataset.char = c.id;
-    el.style.setProperty('--char-accent', c.chroma);
-    el.style.borderColor = c.chroma;
-    const art = Art.get(c.id);
-    const im = document.createElement('img');
-    const unlockPoster = c.id === 'dcakuma' ? UNLOCK_ART.dcakuma : (c.id === 'wzm' ? UNLOCK_ART.wizz : null);
-    const fr = art.frames[POSE[c.bank].idle];
-    const portrait = SELECT_PORTRAITS[c.id];
-    /* El póster solo representa el estado bloqueado; al desbloquear se
-     * muestra el retrato externo si existe y, si no, el frame jugable real. */
-    if (unlockPoster) {
-      /* DCAKUMA y WIZZ MÍSTICO conservan la imagen especial de desbloqueo
-       * también después de desbloquearse; no se sustituye por el retrato. */
-      im.src = unlockPoster;
-      im.style.objectFit = 'cover';
-      im.style.opacity = locked ? '0.78' : '1';
-    } else if (portrait) {
-      im.src = portrait;
-      im.style.objectFit = 'cover';
-      im.style.opacity = '1';
-    } else if (fr) {
-      im.src = fr.src || (fr.toDataURL ? fr.toDataURL() : '');
-      im.style.objectFit = 'contain';
-      im.style.opacity = '1';
-    }
-    if (c.id === 'victor') im.style.transform = side === 1 ? 'scaleX(-1)' : 'scaleX(1)';
-    el.appendChild(im);
-    /* Estas tres tarjetas usan TU.png como imagen de intriga y no muestran nombre. */
-    const intrigueCard = c.id === 'dcb' || c.id === 'dcr';
-    if (!intrigueCard) {
-      const n = document.createElement('div');
-      n.className = 'cname';
-      n.textContent = lockedRaul ? 'BLOQUEADO · RAÚL' : (lockedAron ? 'BLOQUEADO · ARON' : (lockedMystic ? 'BLOQUEADO · WIZZ MÍSTICO' : (lockedMistikwizz ? 'BLOQUEADO · MISTIKWIZZ' : (lockedDCAkuma ? 'BLOQUEADO · DCAKUMA' : c.name))));
-      if (lockedRaul) n.title = 'Gana una batalla con Miguel para desbloquear a Raúl.';
-      el.appendChild(n);
-    }
-    el.onclick = () => { state.focus = SELECTABLE_ROSTER.indexOf(c); if (!locked) confirmPick(); else { Audio.sfx.menu(); renderSelect(); } };
-    grid.appendChild(el);
-  });
-  /* Tarjeta sorpresa: entrega personajes normales o, tras desbloquearlos, los dos secretos. */
-  const randomIdx = SELECTABLE_ROSTER.length;
-  const randomPool = SELECTABLE_ROSTER.map((c) => c.id).filter((id) => (id !== 'aron' || isAronUnlocked()) && (id !== 'raul' || isRaulUnlocked()));
-  if (isDandyUnlocked()) randomPool.push('dandy');
-function pickRandomCardResult() {
-  const roll = Math.random();
-  const normal = () => CHAR[randomPool[Math.floor(Math.random() * randomPool.length)]];
-  /* MIGUEL 1 y MIGUEL 2 no existen en tarjetas: permanecen secretos hasta
-   * completar toda la ruta arcade. Después del desbloqueo, RANDOM conserva
-   * exactamente 50% normal, 30% MIGUEL 1 y 20% MIGUEL 2. */
-  if (roll < 0.50) return normal();
-  if (!isMiguel1Unlocked() || !isMiguel2Unlocked()) return normal();
-  if (roll < 0.80) return CHAR.miguel1;
-  return CHAR.miguel2;
-}
-  const randomCard = document.createElement('div');
-  randomCard.className = 'char-card crater-random-card' + (state.focus === randomIdx ? ' focused' : '');
-  randomCard.dataset.char = 'crater-random';
-  randomCard.style.background = 'radial-gradient(circle at 50% 35%, rgba(255,106,42,.58), rgba(18,7,42,.95) 70%)';
-  randomCard.style.borderColor = '#ff6a2a';
-  randomCard.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;padding-bottom:26px;color:#ffd21f;font:900 clamp(48px,7vw,88px) Impact,sans-serif;text-shadow:0 4px 0 #000,0 0 18px #ff6a2a;">?</div><div class="cname">RANDOM · 50/30/20</div>';
-  randomCard.onclick = () => { state.focus = randomIdx; confirmPick(); };
-  grid.appendChild(randomCard);
+  const entries = getSelectEntries();
+  const randomIndex = entries.findIndex((entry) => entry.kind === 'random');
+  SELECTABLE_ROSTER.forEach((character, index) => renderCharacterCard(grid, character, index, state, side));
+
+  const dcaSlot = $('bonus-dcakuma');
+  const mysticSlot = $('bonus-wzm');
+  if (dcaSlot) dcaSlot.innerHTML = '';
+  if (mysticSlot) mysticSlot.innerHTML = '';
+  const dcaIndex = entries.findIndex((entry) => entry.key === 'dcakuma');
+  const mysticIndex = entries.findIndex((entry) => entry.key === 'wzm');
+  if (dcaSlot && dcaIndex >= 0) renderCharacterCard(dcaSlot, CHAR.dcakuma, dcaIndex, state, side);
+  if (mysticSlot && mysticIndex >= 0) renderCharacterCard(mysticSlot, CHAR.wzm, mysticIndex, state, side);
+
+  const randomChoice = $('randomChoice');
+  if (randomChoice) {
+    randomChoice.classList.toggle('focused', state.focus === randomIndex);
+    randomChoice.setAttribute('aria-label', 'Personaje aleatorio: extras fuera del panel, sin DCAKUMA ni Wizz Místico; misma probabilidad para cada uno');
+    randomChoice.setAttribute('aria-pressed', String(state.focus === randomIndex));
+    randomChoice.onclick = () => { state.focus = randomIndex; confirmPick(); };
+  }
   /* CPU o J2 en versus */
   if (Game.mode === 'versus') {
     const other = side === 1 ? Game.p2 : Game.p1;
@@ -4364,13 +4392,56 @@ function pickRandomCardResult() {
     if (o) o.innerHTML = other.picks.map((p) => `<span>${CHAR[p.charId].name}</span>`).join('') || '<span>PENDIENTE</span>';
   }
 }
-
+function moveSelectFocus(direction) {
+  const state = Game.selectSide === 1 ? Game.p1 : Game.p2;
+  const entries = getSelectEntries();
+  const randomIndex = entries.findIndex((entry) => entry.kind === 'random');
+  const dcaIndex = entries.findIndex((entry) => entry.key === 'dcakuma');
+  const mysticIndex = entries.findIndex((entry) => entry.key === 'wzm');
+  let index = Math.max(0, Math.min(state.focus, entries.length - 1));
+  if (index < 12) {
+    const row = Math.floor(index / 3);
+    const column = index % 3;
+    if (direction === 'left') {
+      if (index === 9 && dcaIndex >= 0) index = dcaIndex;
+      else index = row * 3 + (column + 2) % 3;
+    } else if (direction === 'right') {
+      if (index === 11 && mysticIndex >= 0) index = mysticIndex;
+      else index = row * 3 + (column + 1) % 3;
+    } else if (direction === 'up') {
+      index = ((row + 3) % 4) * 3 + column;
+    } else if (row === 3) {
+      index = column === 0 && dcaIndex >= 0 ? dcaIndex
+        : column === 2 && mysticIndex >= 0 ? mysticIndex : randomIndex;
+    } else {
+      index = (row + 1) * 3 + column;
+    }
+  } else if (index === randomIndex) {
+    if (direction === 'up') index = 10;
+    else if (direction === 'left') index = dcaIndex >= 0 ? dcaIndex : 9;
+    else if (direction === 'right') index = mysticIndex >= 0 ? mysticIndex : 11;
+    else index = 1;
+  } else if (index === dcaIndex) {
+    if (direction === 'right' || direction === 'up') index = 9;
+    else if (direction === 'down') index = randomIndex;
+    else index = mysticIndex >= 0 ? mysticIndex : 11;
+  } else if (index === mysticIndex) {
+    if (direction === 'left' || direction === 'up') index = 11;
+    else if (direction === 'down') index = randomIndex;
+    else index = dcaIndex >= 0 ? dcaIndex : 9;
+  }
+  state.focus = index;
+  renderSelect();
+  Audio.sfx.menu();
+}
 function confirmPick() {
   const side = Game.selectSide;
   const state = side === 1 ? Game.p1 : Game.p2;
-  const c = state.focus === SELECTABLE_ROSTER.length ? pickRandomCardResult() : SELECTABLE_ROSTER[state.focus];
-  if (state.focus !== SELECTABLE_ROSTER.length && ((c.id === 'aron' && !isAronUnlocked()) || (c.id === 'wzm' && !isMysticUnlocked()) || (c.id === 'mistikwiz' && !isMistikwizzUnlocked()) || (c.id === 'dcakuma' && !isDCAkumaUnlocked()) || (c.id === 'miguel1' && !isMiguel1Unlocked()) || (c.id === 'raul' && !isRaulUnlocked()))) { renderSelect(); return; }
-  state.picks = [{ charId: c.id }];
+  const entries = getSelectEntries();
+  const selected = entries[state.focus] || entries[0];
+  const character = selected && selected.kind === 'random' ? pickRandomCardResult() : selected && selected.character;
+  if (!character || !isCharacterUnlockedForSelection(character)) { renderSelect(); return; }
+  state.picks = [{ charId: character.id }];
   Audio.sfx.select();
   if (state.picks.length < 1) { renderSelect(); return; }
   if (Game.mode === 'versus' && side === 1) {
@@ -4382,7 +4453,6 @@ function confirmPick() {
   Audio.sfx.ok();
   Game.beginFight();
 }
-
 /* ======================= BUCLE PRINCIPAL =============================== */
 
 let accum = 0, lastTime = 0, running = false;
@@ -4553,12 +4623,10 @@ function installBindings() {
       if (k === 'escape') { Game.world = null; setScreen('menu'); }
       if (Game.screen === 'result' && (k === 'enter' || k === ' ')) $('btn-continue')?.click();
     } else if (Game.screen === 'select') {
-      const state = Game.selectSide === 1 ? Game.p1 : Game.p2;
-      const cardCount = SELECTABLE_ROSTER.length + 1;
-      if (k === 'arrowleft' || k === 'a') { state.focus = (state.focus - 1 + cardCount) % cardCount; renderSelect(); Audio.sfx.menu(); }
-      else if (k === 'arrowright' || k === 'd') { state.focus = (state.focus + 1) % cardCount; renderSelect(); Audio.sfx.menu(); }
-      else if (k === 'arrowup' || k === 'w') { state.focus = (state.focus - 8 + cardCount) % cardCount; renderSelect(); Audio.sfx.menu(); }
-      else if (k === 'arrowdown' || k === 's') { state.focus = (state.focus + 8) % cardCount; renderSelect(); Audio.sfx.menu(); }
+      if (k === 'arrowleft' || k === 'a') moveSelectFocus('left');
+      else if (k === 'arrowright' || k === 'd') moveSelectFocus('right');
+      else if (k === 'arrowup' || k === 'w') moveSelectFocus('up');
+      else if (k === 'arrowdown' || k === 's') moveSelectFocus('down');
       else if (k === 'j' || k === 'enter' || k === ' ') confirmPick();
       else if (k === 'escape') { Game.reset(); setScreen('menu'); }
     } else if (Game.screen === 'fight') {
