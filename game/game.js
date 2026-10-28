@@ -1302,6 +1302,8 @@ class Fighter {
     this.hitList = new Set();
     this.blocking = false;
     this.blockingLow = false;
+    this.guardBlockHits = 0;
+    this.guardHeld = false;
     this.invuln = 0;
     this.armor = 0;
     this.juggle = 0;
@@ -1468,6 +1470,10 @@ class Fighter {
     this.prevY = this.y;
     const rival = this.opponent();
     if (rival && rival.alive && Math.abs(rival.x-this.x)>1) this.facing = rival.x >= this.x ? 1 : -1;
+    const guardDir = input?.dir || {};
+    const backHeld = this.facing === 1 ? guardDir.left : guardDir.right;
+    this.guardHeld = !!(input && !this.team?.isCPU && backHeld);
+    if (!this.guardHeld) this.guardBlockHits = 0;
     this.assistCooldown = Math.max(0, this.assistCooldown - 1);
     this.invuln = Math.max(0, this.invuln - 1);
     this.armor = Math.max(0, this.armor - 1);
@@ -2071,6 +2077,7 @@ class Fighter {
 
     /* Bloqueo correcto */
     if (!hit.unblockable && this.checkBlock(hit)) return this.blockHit(hit, attacker, hitPoint);
+    this.guardBlockHits = 0;
 
     /* Armadura: absorbe un golpe sin interrumpir */
     if (this.armor > 0 && hit.hitstop < 9) {
@@ -2149,6 +2156,29 @@ class Fighter {
   }
 
   blockHit(hit, attacker, hitPoint) {
+    if (!this.team?.isCPU && this.guardHeld && this.guardBlockHits >= 3) {
+      this.guardBlockHits = 0;
+      this.state = STATE.BLOCKSTUN;
+      this.stateFrame = 0;
+      this.stunFrames = Math.max(8, hit.blockstun || 0);
+      this.blocking = true;
+      const direction = attacker ? (Math.sign(this.x - attacker.x) || attacker.facing || 1) : -this.facing;
+      this.vx = direction * 9;
+      if (attacker && Math.abs(this.x - attacker.x) <= 180) {
+        const separation = Math.min(36, Math.max(0, (92 - Math.abs(this.x - attacker.x)) / 2));
+        this.x = clamp(this.x + direction * separation, WALL_L, WALL_R);
+        attacker.x = clamp(attacker.x - direction * separation, WALL_L, WALL_R);
+        attacker.vx = -direction * 8;
+        spawnDust(attacker.x, GROUND_Y, -direction);
+      }
+      Audio.sfx.guardPush();
+      spawnSpark(hitPoint.x, hitPoint.y, '#ffffff', 18, 1.05);
+      spawnRing(hitPoint.x, hitPoint.y, '#ffd21f', 96, 0.3);
+      spawnDust(this.x, GROUND_Y, direction);
+      return true;
+    }
+    if (!this.team?.isCPU && this.guardHeld) this.guardBlockHits++;
+    else this.guardBlockHits = 0;
     const chip = hit.damage * (hit.unblockable ? 0 : hit.level === 'mid' ? 0.06 : 0.09);
     this.hp = Math.max(1, this.hp - chip);
     this.state = STATE.BLOCKSTUN;
@@ -2903,6 +2933,7 @@ class World {
       })
       : hit;
     const blocked = victim.checkBlock(resolvedHit);
+    const guardBounce = blocked && !victim.team?.isCPU && victim.guardHeld && victim.guardBlockHits >= 3;
     const scale = victim.comboScaling();
     const dmg = resolvedHit.percentMaxHp
       ? victim.maxHp * resolvedHit.percentMaxHp
@@ -2912,9 +2943,11 @@ class World {
 
     const heavy = hit.hitstop >= 7;
     this.hitstop = Math.max(this.hitstop, hit.hitstop);
-    this.shake = Math.max(this.shake, blocked ? 3 : heavy ? 8 : 4);
+    this.shake = Math.max(this.shake, guardBounce ? 6 : blocked ? 3 : heavy ? 8 : 4);
 
-    if (blocked) {
+    if (guardBounce) {
+      /* El cuarto bloqueo ya produjo su propio efecto de rebote en blockHit(). */
+    } else if (blocked) {
       spawnSpark(point.x, point.y, '#a8ecff', 8, 0.8);
       spawnRing(point.x, point.y, '#7fd6ff', 58, 0.2);
       Audio.sfx.block();
