@@ -491,7 +491,8 @@ const BANKS = {
   aron: { spriteFacesRight: true, frames: Array.from({length: 10}, (_, i) => `assets/sprites/newchars/aron-v2/aron-${String(i + 1).padStart(2, '0')}.png?v=aron2`), drawH: 300, feetPad: 6, recolor: [] },
   dandy: { spriteFacesRight: false, frames: [...Array.from({length: 6}, (_, i) => `assets/sprites/newchars/dandy/dandy-0${i + 1}.png`), 'assets/sprites/newchars/dandy/dandy-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
   miguelnew: { spriteFacesRight: true, frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
-  victor: { spriteFacesRight: true, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
+  victor: { spriteFacesRight: false, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
+  raul: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/newchars/raul/raul-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
 };
 
 /* --- Plantilla de personajes jugables (paletas del mismo material). --- */
@@ -514,6 +515,7 @@ const ROSTER = [
   { id: 'yiyo',     name: 'YiYo',     bank: 'yiyo',     hue: null, chroma: '#ff8a35', chroma2: '#ffe18a' },
   { id: 'wzm',   name: 'WIZZ MÍSTICO', bank: 'wmistiko', hue: 0.78,  chroma: '#b44cff', chroma2: '#f1a7ff' },
   { id: 'dcakuma', name: 'DCAKUMA', bank: 'dcakuma', hue: null, chroma: '#168cff', chroma2: '#74b9ff' },
+  { id: 'raul', name: 'RAÚL', bank: 'raul', hue: null, chroma: '#ff2bd6', chroma2: '#00e6ff' },
 ];
 /* Dandy se conserva en el roster interno, pero solo se obtiene por RANDOM. */
 const SELECTABLE_ROSTER = ROSTER.filter((c) => c.id !== 'dandy');
@@ -710,6 +712,17 @@ const POSE = {
 POSE.aron = { ...POSE.manuelin, idle: 0, walk: [0, 1], crouch: 5, jump: 6, fall: 6, sLP: 2, sMP: 3, sHP: 3, sLK: 4, sMK: 4, sHK: 5, cLP: 5, cMP: 6, cHP: 6, cLK: 5, cMK: 6, cHK: 6, jLP: 2, jMP: 3, jHP: 4, jLK: 5, jMK: 6, jHK: 7, dashF: 1, dashB: 0, block: 7, blockLow: 5, blockAir: 6, hit: 8, hitLow: 8, hitAir: 8, down: 9, getUp: 0, specialP: 3, specialK: 4, hyper: 8, hyperAlt: 8, launcherP: 3, launcherK: 4, assistP: 2, assistK: 5, win: 8 };
 POSE.dandy = { ...POSE.manuelin, idle: 5, walk: [5, 6], win: 5 };
 POSE.victor = { ...POSE.manuelin, idle: 5, walk: [5, 7], win: 5 };
+POSE.raul = {
+  ...POSE.manuelin,
+  idle: 0, walk: [0, 4], crouch: 8, jump: 2, fall: 2,
+  sLP: 1, sMP: 4, sHP: 5, sLK: 2, sMK: 6, sHK: 7,
+  cLP: 8, cMP: 8, cHP: 8, cLK: 8, cMK: 8, cHK: 8,
+  jLP: 1, jMP: 2, jHP: 7, jLK: 4, jMK: 6, jHK: 7,
+  dashF: 5, dashB: 0, block: 0, blockLow: 8, blockAir: 2,
+  hit: 0, hitLow: 8, hitAir: 2, down: 2, getUp: 0,
+  specialP: 1, specialK: 6, hyper: 7, hyperAlt: 5,
+  launcherP: 1, launcherK: 6, assistP: 1, assistK: 6, win: 0,
+};
 POSE.miguelnew = { idle: 0, walk: [0, 1], crouch: 0, jump: 1, fall: 1, sLP: 0, sMP: 1, sHP: 1, sLK: 0, sMK: 1, sHK: 1, cLP: 0, cMP: 1, cHP: 1, cLK: 0, cMK: 1, cHK: 1, jLP: 0, jMP: 1, jHP: 1, jLK: 0, jMK: 1, jHK: 1, dashF: 1, dashB: 0, block: 1, blockLow: 0, blockAir: 1, hit: 0, hitLow: 1, hitAir: 1, down: 0, getUp: 1, specialP: 1, specialK: 0, hyper: 1, hyperAlt: 0, launcherP: 1, launcherK: 0, assistP: 1, assistK: 0, win: 0 };
 
 /* --- Carga de sprites + generación de paletas alternativas. --- */
@@ -1295,6 +1308,7 @@ class Fighter {
     this.move = null;
     this.moveFrame = 0;
     this.sizeBoostTimer = 0;
+    this.raulGiantTimer = 0;
     this.sizeDownTimer = 0;
     this.damageBoostTimer = 0;
     this.hitInstance = 0;
@@ -1488,6 +1502,7 @@ class Fighter {
     this.getupInvuln = Math.max(0, this.getupInvuln - 1);
     this.specialEvadeTimer = Math.max(0, this.specialEvadeTimer - 1);
     this.sizeBoostTimer = Math.max(0, this.sizeBoostTimer - 1);
+    this.raulGiantTimer = Math.max(0, this.raulGiantTimer - 1);
     this.sizeDownTimer = Math.max(0, this.sizeDownTimer - 1);
     this.damageBoostTimer = Math.max(0, this.damageBoostTimer - 1);
     this.stateFrame++;
@@ -1856,6 +1871,12 @@ class Fighter {
     const freshQcf = mb.qcf() && mb.recent(6);
     const freshQcb = mb.qcb() && mb.recent(6);
     const freshDp = mb.dp() && mb.recent(6);
+    /* Raúl consume A + R1 como aumento visual; no inicia un movimiento ni crea hitboxes. */
+    if (this.charId === 'raul' && !input._ai && !this.team?.isCPU && onGround
+      && ((tap.lp && input.btn.hk) || (tap.hk && input.btn.lp))) {
+      mb.clear();
+      return { id: 'raulGrow' };
+    }
     /* A + R1/RB (A/LP + HK) dispara el especial aunque no haya una secuencia previa. */
     if (!input._ai && onGround && m.spRush
       && ((tap.lp && input.btn.hk) || (tap.hk && input.btn.lp))) {
@@ -1936,6 +1957,10 @@ class Fighter {
   }
 
   startMove(world, entry, keepChain) {
+    if (this.charId === 'raul' && entry?.id === 'raulGrow') {
+      this.raulGiantTimer = 15 * 60;
+      return;
+    }
     const source = this.moves[entry.id];
     if (!source) return;
     /* Ritmo arcade rápido: todos los botones responden antes y recuperan antes.
@@ -2374,7 +2399,7 @@ class Fighter {
     }
     if (this.state === STATE.ATTACK && this.move && (this.move.type === 'hyper')) filter += `drop-shadow(0 0 18px ${this.move.color}) `;
     if (filter) g.filter = filter;
-    const spriteScale = this.sizeDownTimer > 0 ? 0.7 : (this.sizeBoostTimer > 0 ? 1.25 : 1);
+    const spriteScale = this.sizeDownTimer > 0 ? 0.7 : (this.charId === 'raul' && this.raulGiantTimer > 0 ? 1.3 : (this.sizeBoostTimer > 0 ? 1.25 : 1));
     g.drawImage(im, -w * spriteScale / 2, -h * spriteScale, w * spriteScale, h * spriteScale);
     g.filter = 'none';
     g.restore();
@@ -2675,14 +2700,17 @@ class AiController {
 
     const dx = foe.x - f.x;
     if (f.isBoss && world.bossId === 'miguel2') {
+      this.reaction = Math.max(0, this.reaction - STEP);
       this.timer -= STEP;
       if (this.timer <= 0 && f.canAct()) {
         const dist=Math.abs(dx), q=Math.random();
         const helperDiff = f.team.helperAiDiff ?? 0.85;
         const helperAssistChance = clamp(0.18 * helperDiff, 0.02, 0.18);
-        this.plan=dist>210?'approach':(q<.48?'bossStrike':(q<.76?'bossDash':'bossRay'));
-        this.timer=rand(.28,.62)/clamp(this.diff,0.5,2);
+        this.plan=dist>210?'approach':(q<.34?'bossStrike':(q<.51?'bossDash':'bossRay'));
+        this.timer=rand(.68,.98)/clamp(this.diff,0.5,2);
+        this.reaction=rand(.24,.40)/clamp(this.diff,0.5,2);
       }
+      if (this.reaction > 0) return out;
       const toward=dx>=0?'right':'left';
       if(this.plan==='approach'){out.dir[toward]=true;return out;}
       if(this.plan==='bossDash'){out.tapDir[toward]=true;out.dir[toward]=true;this.plan='wait';return out;}
@@ -2700,25 +2728,28 @@ class AiController {
        No se genera ningún plan de bloqueo, ni siquiera como reacción. */
     if (this.plan === 'block') this.plan = 'wait';
     /* Anti-aéreo */
-    if (!foe.onGround && foe.y < GROUND_Y - 130 && adist < 150 && Math.random() < 0.10 * this.diff) {
+    if (!foe.onGround && foe.y < GROUND_Y - 130 && adist < 150 && Math.random() < 0.04 * this.diff) {
       this.plan = 'antiair'; this.timer = 0.2;
     }
 
     this.reaction = Math.max(0, this.reaction - STEP);
+    if (this.reaction > 0 && this.plan !== 'antiair') return out;
     this.timer -= STEP;
 
     if (this.timer <= 0 && this.plan !== 'block') {
       const r = Math.random();
       if (adist > 320) {
-        if (gaugeReady && r < 0.18) this.plan = 'fireball';
-        else if (r < 0.25) this.plan = 'special';
+        if (gaugeReady && r < 0.08) this.plan = 'fireball';
+        else if (r < 0.15) this.plan = 'special';
         else this.plan = 'approach';
       } else if (adist > 170) {
-        if (ultReady && r < 0.10) this.plan = 'ult';
-        else if (gaugeReady && r < 0.24) this.plan = 'hyper';
-        else if (r < 0.42) this.plan = 'special';
-        else if (r < 0.55) this.plan = 'dash';
+        if (ultReady && r < 0.05) this.plan = 'ult';
+        else if (gaugeReady && r < 0.13) this.plan = 'hyper';
+        else if (r < 0.28) this.plan = 'special';
+        else if (r < 0.40) this.plan = 'dash';
         else this.plan = 'approach';
+      } else if (r < 0.25) {
+        this.plan = 'wait';
       } else {
         if (!this.bag.length) {
           const pool = ['lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'cHP', 'cHK', 'lp', 'lk', 'throw'];
@@ -2729,9 +2760,10 @@ class AiController {
         this.plan = this.bag.shift();
         this.lastMove = this.plan;
       }
-      this.timer = rand(0.22, 0.5) / clamp(this.diff, 0.5, 2);
+      this.timer = rand(0.45, 0.80) / clamp(this.diff, 0.5, 2);
+      this.reaction = rand(0.14, 0.24) / clamp(this.diff, 0.5, 2);
+      return out;
     }
-
     const press = (b) => { out.btn[b] = true; out.tap[b] = true; };
     const holdDir = (d) => { out.dir[d] = true; };
 
@@ -2740,26 +2772,26 @@ class AiController {
       case 'approach': holdDir(toward); break;
       case 'retreat': holdDir(away); break;
       case 'fireball':
-        out._motion = 'qcf'; press('lp'); this.plan = 'wait'; this.timer = 0.4; break;
+        out._motion = 'qcf'; press('lp'); this.plan = 'wait'; this.timer = 0.75; break;
       case 'special':
         out._motion = Math.random() < 0.5 ? 'qcfK' : 'qcbK'; press(Math.random() < 0.5 ? 'lk' : 'mk');
-        this.plan = 'wait'; this.timer = 0.5; break;
+        this.plan = 'wait'; this.timer = 0.9; break;
       case 'antiair':
-        out._motion = 'dpP'; press('hp'); this.plan = 'wait'; this.timer = 0.5; break;
+        out._motion = 'dpP'; press('hp'); this.plan = 'wait'; this.timer = 0.7; break;
       case 'hyper':
-        out._motion = 'qcfPP'; press('lp'); press('hp'); this.plan = 'wait'; this.timer = 0.7; break;
+        out._motion = 'qcfPP'; press('lp'); press('hp'); this.plan = 'wait'; this.timer = 1.1; break;
       case 'ult':
-        out._motion = 'doubleQcfP'; press('hp'); press('mp'); this.plan = 'wait'; this.timer = 0.9; break;
+        out._motion = 'doubleQcfP'; press('hp'); press('mp'); this.plan = 'wait'; this.timer = 1.35; break;
       case 'dash':
-        out.tapDir[toward] = true; out.dir[toward] = true; this.plan = 'wait'; this.timer = 0.3; break;
+        out.tapDir[toward] = true; out.dir[toward] = true; this.plan = 'wait'; this.timer = 0.55; break;
       case 'jump': holdDir('up'); this.plan = 'wait'; break;
-      case 'assist': case 'tag': this.plan = 'wait'; this.timer = 0.4; break;
+      case 'assist': case 'tag': this.plan = 'wait'; this.timer = 0.75; break;
       case 'throw':
-        out._motion = 'qcbP'; press('mp'); this.plan = 'wait'; this.timer = 0.5; break;
+        out._motion = 'qcbP'; press('mp'); this.plan = 'wait'; this.timer = 0.9; break;
       case 'lp': case 'mp': case 'hp': case 'lk': case 'mk': case 'hk':
-        press(this.plan); this.plan = 'wait'; this.timer = 0.16; break;
-      case 'cHP': holdDir('down'); press('hp'); this.plan = 'wait'; this.timer = 0.3; break;
-      case 'cHK': holdDir('down'); press('hk'); this.plan = 'wait'; this.timer = 0.3; break;
+        press(this.plan); this.plan = 'wait'; this.timer = 0.24; break;
+      case 'cHP': holdDir('down'); press('hp'); this.plan = 'wait'; this.timer = 0.55; break;
+      case 'cHK': holdDir('down'); press('hk'); this.plan = 'wait'; this.timer = 0.55; break;
       default: break;
     }
     return out;
@@ -3736,6 +3768,9 @@ const MIGUEL2_UNLOCK_KEY = 'dcvswiz:miguel2:unlocked';
 const ARON_UNLOCK_KEY = 'dcvswiz:aron:unlocked';
 const DANDY_UNLOCK_KEY = 'dcvswiz:dandy:unlocked';
 const DANDY_BATTLE_COUNT_KEY = 'dcvswiz:dandy:arcade-battles';
+const RAUL_UNLOCK_KEY = 'dcvswiz:raul:unlocked';
+function isRaulUnlocked() { try { return localStorage.getItem(RAUL_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
+function unlockRaul() { try { localStorage.setItem(RAUL_UNLOCK_KEY, '1'); } catch (_) {} }
 function isMiguel1Unlocked() { try { return localStorage.getItem(MIGUEL1_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
 function isMiguel2Unlocked() { try { return localStorage.getItem(MIGUEL2_UNLOCK_KEY) === '1'; } catch (_) { return false; } }
 function unlockMiguels() {
@@ -3904,6 +3939,10 @@ const Game = {
   onFightEnd() {
     const w = this.world;
     if (this.mode === 'practice') { return; }
+    const firstRaulUnlock = w?.winner === 1
+      && this.p1.picks.some((p) => p.charId === 'miguelnew')
+      && !isRaulUnlocked();
+    if (firstRaulUnlock) unlockRaul();
     const firstDandyUnlock = this.mode === 'arcade' && recordArcadeBattle(w);
     const usedToto = this.p1.picks.some((p) => p.charId === 'toto');
     const firstMiguel1Win = w.winner === 1 && usedToto && !isMiguel1Unlocked();
@@ -3933,6 +3972,7 @@ const Game = {
           this.stage++;
             this.showResult(w.result, [
               'COMBATE GANADO',
+              ...(firstRaulUnlock ? ['¡RAÚL DESBLOQUEADO! DISPONIBLE EN SELECCIÓN'] : []),
               ...(firstDandyUnlock ? ['¡DANDY DESBLOQUEADO! DISPONIBLE EN RANDOM'] : []),
               `SIGUIENTE: ${arcadeRoute()[this.stage].label}`, 'CONTINÚA PARA AVANZAR',
             ]);
@@ -3977,7 +4017,7 @@ const Game = {
     }
     if (this.mode === 'versus') {
       const txt = w.winner === 0 ? 'EMPATE' : (w.winner === 1 ? 'JUGADOR 1 GANA' : 'JUGADOR 2 GANA');
-      this.showResult(w.result, [txt, ...(firstMiguel1Win ? ['¡MIGUEL 1 DESBLOQUEADO POR GANAR CON TOTO!'] : []), `P1: ${this.p1.picks.map((p) => CHAR[p.charId].name).join('')}`, `P2: ${this.p2.picks.map((p) => CHAR[p.charId].name).join('')}`]);
+      this.showResult(w.result, [txt, ...(firstMiguel1Win ? ['¡MIGUEL 1 DESBLOQUEADO POR GANAR CON TOTO!'] : []), ...(firstRaulUnlock ? ['¡RAÚL DESBLOQUEADO! DISPONIBLE EN SELECCIÓN'] : []), `P1: ${this.p1.picks.map((p) => CHAR[p.charId].name).join('')}`, `P2: ${this.p2.picks.map((p) => CHAR[p.charId].name).join('')}`]);
     }
   },
 
@@ -4241,7 +4281,8 @@ function renderSelect() {
   const isLocked = (c) => c.id === 'aron' && !isAronUnlocked()
     || c.id === 'wzm' && !isMysticUnlocked()
     || c.id === 'mistikwiz' && !isMistikwizzUnlocked()
-    || c.id === 'dcakuma' && !isDCAkumaUnlocked();
+    || c.id === 'dcakuma' && !isDCAkumaUnlocked()
+    || c.id === 'raul' && !isRaulUnlocked();
   const orderedRoster = SELECTABLE_ROSTER.map((c, originalIndex) => ({ c, originalIndex }))
     .sort((a, b) => Number(isLocked(a.c)) - Number(isLocked(b.c)));
   orderedRoster.forEach(({ c, originalIndex }) => {
@@ -4250,6 +4291,7 @@ function renderSelect() {
     const lockedMistikwizz = c.id === 'mistikwiz' && !isMistikwizzUnlocked();
     const lockedDCAkuma = c.id === 'dcakuma' && !isDCAkumaUnlocked();
     const lockedAron = c.id === 'aron' && !isAronUnlocked();
+    const lockedRaul = c.id === 'raul' && !isRaulUnlocked();
     const idx = originalIndex;
     const el = document.createElement('div');
     el.className = 'char-card' + (state.focus === SELECTABLE_ROSTER.indexOf(c) ? ' focused' : '') + (locked ? ' locked' : '');
@@ -4278,13 +4320,15 @@ function renderSelect() {
       im.style.objectFit = 'contain';
       im.style.opacity = '1';
     }
+    if (c.id === 'victor') im.style.transform = side === 1 ? 'scaleX(-1)' : 'scaleX(1)';
     el.appendChild(im);
     /* Estas tres tarjetas usan TU.png como imagen de intriga y no muestran nombre. */
     const intrigueCard = c.id === 'dcb' || c.id === 'dcr';
     if (!intrigueCard) {
       const n = document.createElement('div');
       n.className = 'cname';
-      n.textContent = lockedAron ? 'BLOQUEADO · ARON' : (lockedMystic ? 'BLOQUEADO · WIZZ MÍSTICO' : (lockedMistikwizz ? 'BLOQUEADO · MISTIKWIZZ' : (lockedDCAkuma ? 'BLOQUEADO · DCAKUMA' : c.name)));
+      n.textContent = lockedRaul ? 'BLOQUEADO · RAÚL' : (lockedAron ? 'BLOQUEADO · ARON' : (lockedMystic ? 'BLOQUEADO · WIZZ MÍSTICO' : (lockedMistikwizz ? 'BLOQUEADO · MISTIKWIZZ' : (lockedDCAkuma ? 'BLOQUEADO · DCAKUMA' : c.name))));
+      if (lockedRaul) n.title = 'Gana una batalla con Miguel para desbloquear a Raúl.';
       el.appendChild(n);
     }
     el.onclick = () => { state.focus = SELECTABLE_ROSTER.indexOf(c); if (!locked) confirmPick(); else { Audio.sfx.menu(); renderSelect(); } };
@@ -4292,7 +4336,7 @@ function renderSelect() {
   });
   /* Tarjeta sorpresa: entrega personajes normales o, tras desbloquearlos, los dos secretos. */
   const randomIdx = SELECTABLE_ROSTER.length;
-  const randomPool = SELECTABLE_ROSTER.map((c) => c.id).filter((id) => id !== 'aron' || isAronUnlocked());
+  const randomPool = SELECTABLE_ROSTER.map((c) => c.id).filter((id) => (id !== 'aron' || isAronUnlocked()) && (id !== 'raul' || isRaulUnlocked()));
   if (isDandyUnlocked()) randomPool.push('dandy');
 function pickRandomCardResult() {
   const roll = Math.random();
@@ -4325,7 +4369,7 @@ function confirmPick() {
   const side = Game.selectSide;
   const state = side === 1 ? Game.p1 : Game.p2;
   const c = state.focus === SELECTABLE_ROSTER.length ? pickRandomCardResult() : SELECTABLE_ROSTER[state.focus];
-  if (state.focus !== SELECTABLE_ROSTER.length && ((c.id === 'aron' && !isAronUnlocked()) || (c.id === 'wzm' && !isMysticUnlocked()) || (c.id === 'mistikwiz' && !isMistikwizzUnlocked()) || (c.id === 'dcakuma' && !isDCAkumaUnlocked()) || (c.id === 'miguel1' && !isMiguel1Unlocked()))) { renderSelect(); return; }
+  if (state.focus !== SELECTABLE_ROSTER.length && ((c.id === 'aron' && !isAronUnlocked()) || (c.id === 'wzm' && !isMysticUnlocked()) || (c.id === 'mistikwiz' && !isMistikwizzUnlocked()) || (c.id === 'dcakuma' && !isDCAkumaUnlocked()) || (c.id === 'miguel1' && !isMiguel1Unlocked()) || (c.id === 'raul' && !isRaulUnlocked()))) { renderSelect(); return; }
   state.picks = [{ charId: c.id }];
   Audio.sfx.select();
   if (state.picks.length < 1) { renderSelect(); return; }
