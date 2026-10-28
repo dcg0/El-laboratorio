@@ -1318,6 +1318,10 @@ class Fighter {
     this.guardPushTimer = 0;
     this.guardHoldFrames = 0;
     this.guardBreakTimer = 0;
+    this.manuelinChargeActive = false;
+    this.manuelinChargeFrames = 0;
+    this.manuelinChargeBlinks = 0;
+    this.manuelinChargeFlashTimer = 0;
     this.lastTap = { left: -99, right: -99, up: -99, down: -99 };
     this.downTapHistory = [];
     this.doubleJumpAvailable = true;
@@ -1478,6 +1482,7 @@ class Fighter {
     this.invuln = Math.max(0, this.invuln - 1);
     this.armor = Math.max(0, this.armor - 1);
     this.flashTimer = Math.max(0, this.flashTimer - 1);
+    this.manuelinChargeFlashTimer = Math.max(0, this.manuelinChargeFlashTimer - 1);
     this.guardPushTimer = Math.max(0, this.guardPushTimer - 1);
     this.guardBreakTimer = Math.max(0, this.guardBreakTimer - 1);
     this.getupInvuln = Math.max(0, this.getupInvuln - 1);
@@ -1591,6 +1596,19 @@ class Fighter {
     const atk = this.pressCount(input);
     const tapA = input.tap.lp || input.tap.mp || input.tap.hp || input.tap.lk || input.tap.mk || input.tap.hk;
     const wantHyper = atk >= 2;
+    if (this.charId === 'manuelin' && this.onGround && !input._ai && !this.team?.isCPU) {
+      if (this.manuelinChargeActive) { this.updateManuelinCharge(world, input); return; }
+      if (input.tap.lp && input.btn.lp && !d.down && !d.up && !back && !wantHyper) {
+        this.manuelinChargeActive = true;
+        this.manuelinChargeFrames = 0;
+        this.manuelinChargeBlinks = 0;
+        this.manuelinChargeFlashTimer = 0;
+        this.vx = 0;
+        this.move = null;
+        this.setFreeState(STATE.IDLE);
+        return;
+      }
+    }
     if (!input._ai && !this.team?.isCPU && input.tapDir?.down) {
       this.downTapHistory = this.downTapHistory.filter((frame) => world.frame - frame <= 42);
       this.downTapHistory.push(world.frame);
@@ -1712,6 +1730,90 @@ class Fighter {
     }
   }
 
+  updateManuelinCharge(world, input) {
+    if (input?.btn?.lp) {
+      this.manuelinChargeFrames++;
+      const blink = Math.floor(this.manuelinChargeFrames / 30);
+      if (blink > this.manuelinChargeBlinks) {
+        this.manuelinChargeBlinks = blink;
+        this.manuelinChargeFlashTimer = 12;
+        spawnSpark(this.x, this.y - 150, '#8fe6ff', 18, 1.0);
+        spawnRing(this.x, this.y - 140, '#31a9ff', 88 + blink * 18, 0.24);
+        spawnFloater(this.x, this.y - 250, `${Math.min(blink, 4)}/4`, '#8fe6ff', 26, 0.75);
+        if (blink >= 4) { this.explodeManuelinCharge(world); return; }
+      }
+      this.vx = 0;
+      this.setFreeState(STATE.IDLE);
+      return;
+    }
+    const chargeFrames = this.manuelinChargeFrames;
+    const ready = this.manuelinChargeBlinks >= 3;
+    this.manuelinChargeActive = false;
+    this.manuelinChargeFrames = 0;
+    this.manuelinChargeBlinks = 0;
+    this.manuelinChargeFlashTimer = 0;
+    this.vx = 0;
+    if (ready) { this.fireManuelinChargedProjectile(world); return; }
+    if (chargeFrames <= 6) { this.startMove(world, { id: 'sLP' }); return; }
+    this.setFreeState(STATE.IDLE);
+  }
+  fireManuelinChargedProjectile(world) {
+    const move = this.moves.spProj;
+    const normal = move?.proj;
+    if (!normal) return;
+    this.startMove(world, { id: 'spProj' });
+    if (this.move) this.move.proj = null;
+    const charged = Object.assign({}, normal, {
+      vx: (normal.vx || 9.2) * 0.35,
+      w: normal.w * 5,
+      h: normal.h * 5,
+      damage: normal.damage * 1.10,
+      life: Math.ceil((normal.life || 150) * 2.5),
+    });
+    world.spawnProjectile(this, charged, this.move);
+    spawnRing(this.x + this.facing * 48, this.y - 140, '#31a9ff', 150, 0.32);
+  }
+  explodeManuelinCharge(world) {
+    this.manuelinChargeActive = false;
+    this.manuelinChargeFrames = 0;
+    this.manuelinChargeBlinks = 0;
+    this.manuelinChargeFlashTimer = 0;
+    const selfDamage = this.maxHp * 0.15;
+    this.hp = Math.max(0, this.hp - selfDamage);
+    this.redHp = Math.min(this.maxHp - this.hp, this.redHp + selfDamage * 0.55);
+    this.flashTimer = 12;
+    this.move = null;
+    this.hitList.clear();
+    this.blocking = false;
+    this.blockingLow = false;
+    this.state = this.hp <= 0 ? STATE.KO : STATE.HITSTUN;
+    this.stateFrame = 0;
+    this.stunFrames = 18;
+    this.hitstunAirOK = true;
+    this.vx = -this.facing * 7;
+    this.vy = -4.5;
+    this.onGround = false;
+    if (this.hp <= 0) Audio.sfx.ko();
+    else Audio.sfx.hit();
+    const blastPoint = { x: this.x, y: this.y - 130 };
+    const blastRadius = 260;
+    spawnSpark(blastPoint.x, blastPoint.y, '#31a9ff', 38, 1.6);
+    spawnRing(blastPoint.x, blastPoint.y, '#8fe6ff', blastRadius, 0.48);
+    spawnRing(blastPoint.x, blastPoint.y, '#ffffff', 150, 0.32);
+    spawnDust(this.x, GROUND_Y, -this.facing);
+    spawnFloater(this.x, this.y - 260, '¡EXPLOSIÓN! -15%', '#ff4b5c', 32, 1.1);
+    world.hitstop = Math.max(world.hitstop, 8);
+    world.shake = Math.max(world.shake, 12);
+    const rival = this.opponent();
+    if (rival?.alive && rival.invuln <= 0
+      && Math.hypot(rival.x - this.x, rival.y - this.y) <= blastRadius) {
+      world.applyHit(rival, this, {
+        damage: 0, percentMaxHp: 0.15, unblockable: true,
+        hitstun: 22, blockstun: 0, hitstop: 8, level: 'mid',
+        pushHit: 6, pushBlock: 0, kind: 'explosion', color: '#31a9ff',
+      }, { x: rival.x, y: rival.y - 120 }, '#31a9ff');
+    }
+  }
   setFreeState(s) { if (this.state !== s) { this.state = s; this.stateFrame = 0; } }
 
   resetAirActions() {
@@ -2074,6 +2176,10 @@ class Fighter {
   /* ---------- Reacción a impactos ---------- */
   takeHit(hit, attacker, hitPoint) {
     if (!this.alive || this.state === STATE.KO) return false;
+    this.manuelinChargeActive = false;
+    this.manuelinChargeFrames = 0;
+    this.manuelinChargeBlinks = 0;
+    this.manuelinChargeFlashTimer = 0;
 
     /* Bloqueo correcto */
     if (!hit.unblockable && this.checkBlock(hit)) return this.blockHit(hit, attacker, hitPoint);
@@ -2262,6 +2368,10 @@ class Fighter {
     if (this.guardBreakTimer > 0 && (this.guardBreakTimer % 10) < 5) filter += 'brightness(1.75) saturate(2.8) sepia(1) hue-rotate(300deg) drop-shadow(0 0 18px #ff1738) ';
     else if (this.flashTimer > 0 && (this.flashTimer % 4) < 2) filter += 'brightness(1.8) saturate(3.2) sepia(1) hue-rotate(300deg) drop-shadow(0 0 16px #ff1738) ';
     if (this.invuln > 0) g.globalAlpha *= 0.72;
+    if (this.charId === 'manuelin' && this.manuelinChargeActive
+      && this.manuelinChargeFlashTimer > 8) {
+      filter += 'brightness(3) saturate(.45) drop-shadow(0 0 32px #31a9ff) ';
+    }
     if (this.state === STATE.ATTACK && this.move && (this.move.type === 'hyper')) filter += `drop-shadow(0 0 18px ${this.move.color}) `;
     if (filter) g.filter = filter;
     const spriteScale = this.sizeDownTimer > 0 ? 0.7 : (this.sizeBoostTimer > 0 ? 1.25 : 1);
