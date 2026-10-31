@@ -134,6 +134,40 @@ const Input = (() => {
     for (const k of Object.keys(tapped)) tapped[k] = false;
   }
 
+  /* Especiales táctiles de Miguel 1. data-tk conserva el mapeo de teclado existente. */
+  const miguelTouchDeck = document.createElement('div');
+  miguelTouchDeck.id = 'miguel-touch-deck';
+  miguelTouchDeck.setAttribute('aria-label', 'Especiales táctiles de Miguel 1');
+  miguelTouchDeck.style.cssText = 'display:none;box-sizing:border-box;width:min(100%,2200px);margin:0 auto;padding:8px 10px;gap:8px;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(5,4,18,.96),rgba(2,2,10,.98));border-top:1px solid rgba(169,107,255,.35);z-index:8;';
+  const makeMiguelTouchButton = (label, key, alt, aria, color) => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'miguel-touch-action'; button.dataset.tk = key;
+    if (alt) button.dataset.alt = alt;
+    button.setAttribute('aria-label', aria); button.textContent = label;
+    button.style.cssText = `flex:1 1 0;min-width:0;max-width:260px;min-height:48px;padding:7px 5px;border:1px solid ${color};border-radius:12px;background:linear-gradient(145deg,rgba(34,24,64,.98),rgba(7,9,25,.98));box-shadow:0 0 12px ${color}55;color:#fff;font:900 11px/1.1 Arial,sans-serif;letter-spacing:.03em;text-align:center;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;`;
+    return button;
+  };
+  const miguelRayButton = makeMiguelTouchButton('Q · RAYO', 'q', '', 'Rayo rojo de Miguel 1', '#ff315f');
+  const miguelGiantButton = makeMiguelTouchButton('E · GIGANTE', 'e', '', 'Forma gigante de Miguel 1', '#a96bff');
+  const miguelRainButton = makeMiguelTouchButton('A+R1 · LLUVIA', 'j', 'o', 'Lluvia de proyectiles de Miguel 1', '#ff9a3c');
+  miguelTouchDeck.append(miguelRayButton, miguelGiantButton, miguelRainButton);
+  document.querySelector('#arcade-deck')?.insertAdjacentElement('afterend', miguelTouchDeck);
+  const syncMiguelTouchDeck = () => {
+    try {
+      const worldNow = typeof WORLD === 'undefined' ? null : WORLD;
+      const player = worldNow?.teams?.[1]?.active;
+      const touchDevice = (navigator.maxTouchPoints || 0) > 0
+        || !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      miguelTouchDeck.style.display = touchDevice && player?.charId === 'miguel1' ? 'flex' : 'none';
+      const cooldown = player?.miguelRainCooldown || 0;
+      miguelRainButton.disabled = cooldown > 0;
+      miguelRainButton.textContent = cooldown > 0 ? `LLUVIA · ${Math.ceil(cooldown / 60)}s` : 'A+R1 · LLUVIA';
+      miguelRainButton.style.opacity = cooldown > 0 ? '.55' : '1';
+    } catch (_) { miguelTouchDeck.style.display = 'none'; }
+  };
+  window.addEventListener('resize', syncMiguelTouchDeck);
+  window.setInterval(syncMiguelTouchDeck, 200);
+  syncMiguelTouchDeck();
   /* Botones táctiles del tablero arcade: usan data-tk con la tecla física. */
   document.querySelectorAll('[data-tk]').forEach((b) => {
     const keys = [b.dataset.tk, ...(b.dataset.alt ? b.dataset.alt.split(',') : [])].filter(Boolean);
@@ -452,6 +486,8 @@ SpecialArt.wero = new Image();
 SpecialArt.wero.src = 'assets/specials/wero-special.png';
 const Miguel1MoveArt = { attack: new Image() };
 Miguel1MoveArt.attack.src = 'assets/specials/miguel1-can-attack.png';
+const MIGUEL1_AIR_ART = new Image();
+MIGUEL1_AIR_ART.src = 'assets/sprites/miguel1/miguel1-air-impact.png';
 const ProjectileArt = { miguel1: new Image(), miguel1Can: new Image(), craterCow: new Image(), weroProjectile: new Image() };
 ProjectileArt.miguel1.src = 'assets/projectiles/miguel-indio-bottle.png';
 ProjectileArt.miguel1Can.src = 'assets/projectiles/miguel-tecate-can.png';
@@ -472,7 +508,12 @@ const BANKS = {
   refresh: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 260, feetPad: 6, recolor: [] },
   kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato-v2/kato-${i + 1}.png?v=kato2`), 'assets/sprites/kato-v2/kato-walk.png?v=kato2'], drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal.map((src, i) => ({ 1: 'assets/sprites/dcnormal/dc-punch.png', 4: 'assets/sprites/dcnormal/dc-charge.png', 5: 'assets/sprites/dcnormal/dc-beam.png' }[i] || src)), drawH: 306, feetPad: 8, recolor: [] },
-  miguel1: { frames: [MIGUEL1_SRC], drawH: 430, feetPad: 8, recolor: [] },
+  miguel1: { frames: [MIGUEL1_SRC,
+    'assets/sprites/miguel1/miguel1-punch-windup.png',
+    'assets/sprites/miguel1/miguel1-punch-impact.png',
+    'assets/sprites/miguel1/miguel1-punch-recovery.png',
+    'assets/sprites/miguel1/miguel1-kick-chamber.png',
+    'assets/sprites/miguel1/miguel1-kick-impact.png'], drawH: 430, feetPad: 8, recolor: [] },
   dcazul: { frames: Array.from({length: 6}, (_, i) => `assets/sprites/dcazul/dcazul-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
   dcrojo: { frames: Array.from({length: 8}, (_, i) => `assets/sprites/dcrojo/dcrojo-${i + 1}.png`), drawH: 306, feetPad: 5, recolor: [] },
   /* WIZ y WIZZ comparten un banco de 7 poses; antes WIZ cargaba una sola imagen. */
@@ -503,7 +544,7 @@ const ROSTER = [
   { id: 'victor', name: 'VICTOR', bank: 'victor', hue: null, chroma: '#7c5cff', chroma2: '#d7cfff' },
   { id: 'kato',  name: 'KATO',     bank: 'kato',     hue: 0.78,  chroma: '#9b4dff', chroma2: '#e0b3ff' },
   { id: 'dc',    name: 'DC',       bank: 'dcnormal', hue: null,   chroma: '#168cff', chroma2: '#8fd8ff' },
-  { id: 'refresh', name: 'Refresh', bank: 'refresh', hue: null, chroma: '#168cff', chroma2: '#dff8ff' },
+  { id: 'refresh', name: 'Ruben', bank: 'refresh', hue: null, chroma: '#168cff', chroma2: '#dff8ff' },
   { id: 'dcb',   name: 'DC AZUL',  bank: 'dcazul',   hue: 0.58,  chroma: '#168cff', chroma2: '#8fd8ff' },
   { id: 'mistikwiz', name: 'MISTIKWIZ', bank: 'mistikwiz', hue: null, chroma: '#b44cff', chroma2: '#f1a7ff' },
   { id: 'crater', name: 'CrATtEr', bank: 'crater', hue: null, chroma: '#ff6a2a', chroma2: '#ffd21f' },
@@ -749,6 +790,7 @@ const Art = {
   boss: null,
   boss1: null,
   boss2: null,
+  giantMiguel1: null,
   total: 0, done: 0,
 
   load(onProgress) {
@@ -769,10 +811,11 @@ const Art = {
     });
     const boss1P = bossP(MIGUEL1_SRC, 'boss1');
     const boss2P = bossP(MIGUEL2_SRC, 'boss2');
+    const giantMiguel1P = bossP('assets/sprites/miguel1/miguel1-giant-form.png', 'giantMiguel1');
     const baseJobs = Object.entries(this.base).map(async ([name, frames]) => {
       this.base[name] = (await Promise.all(frames)).filter(Boolean);
     });
-    return Promise.all([...baseJobs, boss1P, boss2P]).then(() => this.buildVariants());
+    return Promise.all([...baseJobs, boss1P, boss2P, giantMiguel1P]).then(() => this.buildVariants());
   },
 
   /* Recolorea únicamente la ropa: los píxeles cuya tonalidad cae dentro del
@@ -818,7 +861,10 @@ const Art = {
   },
 
   buildVariants() {
-    if (this.boss1) this.variants.miguel1 = { frames: [this.boss1], drawH: 430, feetPad: 8 };
+    if (this.boss1) this.variants.miguel1 = {
+      frames: [this.boss1, ...(this.base.miguel1 || []).slice(1)], drawH: 430, feetPad: 8,
+      giantFrame: this.giantMiguel1, giantDrawH: 580,
+    };
     if (this.boss2) this.variants.miguel2 = { frames: [this.boss2], drawH: 500, feetPad: 10 };
     for (const [name, def] of Object.entries(BANKS)) {
       const key = name;
@@ -1152,35 +1198,60 @@ const MOVES = {
   manuelin: buildMoves('manuelin'), toto: buildMoves('toto'), wero: buildMoves('wero'), yiyo: buildMoves('yiyo'),
 };
 /* Miguel1 conserva su rayo de LP/A y añade el ataque ilustrado y la lata como movimientos separados. */
+const MIGUEL1_NORMALS = Object.fromEntries([
+  'sLP', 'sMP', 'sHP', 'sLK', 'sMK', 'sHK',
+  'cLP', 'cMP', 'cHP', 'cLK', 'cMK', 'cHK',
+  'jLP', 'jMP', 'jHP', 'jLK', 'jMK', 'jHK',
+].map((id) => [id, MOVES.dc[id]]));
 const MIGUEL1_MOVES = {
+  ...MIGUEL1_NORMALS,
+  spProj: MOVES.dc.spProj,
+  spProjUp: MOVES.dc.spProjUp,
   miguelAttack: normal({
     id: 'miguelAttack', name: 'ATAQUE RELÁMPAGO', pose: 0, startup: 5, active: 4, recovery: 12,
     boxes: [{ x: 58, y: -184, w: 220, h: 112 }], damage: 8, level: 'mid',
     hitstun: 15, blockstun: 9, hitstop: 5, pushHit: 3.0, pushBlock: 4.2, meter: 3,
-    color: '#39a7ff', sfx: 'medium', fx: 'straight',
-    label: 'ATRÁS + CUALQUIER BOTÓN · ATAQUE RELÁMPAGO',
+    color: '#39a7ff', sfx: 'medium', fx: 'straight', label: 'ATRÁS + CUALQUIER BOTÓN · ATAQUE RELÁMPAGO',
   }),
   miguelCan: normal({
     id: 'miguelCan', name: 'LATA ASCENDENTE', pose: 0, startup: 7, active: 1, recovery: 10,
     boxes: [], damage: 5, hitstun: 12, blockstun: 7, hitstop: 4, meter: 3,
     color: '#f2f2f2', sfx: 'light', fx: 'jab',
-    proj: {
-      vx: 0, vy: -8.5, vertical: true, w: 32, h: 90, renderW: 32, renderH: 90, y: -150,
+    proj: { vx: 0, vy: -8.5, vertical: true, w: 32, h: 90, renderW: 32, renderH: 90, y: -150,
       damage: 5, hitstun: 12, blockstun: 7, hitstop: 4, color: '#f2f2f2', life: 90,
-      level: 'mid', pierce: 0, art: 'miguel1Can',
-    },
+      level: 'mid', pierce: 0, art: 'miguel1Can' },
     label: 'ARRIBA + CUALQUIER BOTÓN · LATA VERTICAL',
   }),
   miguelRay: special({
     id: 'miguelRay', name: 'RAYO ROJO', pose: 0, startup: 14, active: 6, recovery: 30,
     damage: 0, hitstun: 28, blockstun: 0, hitstop: 12, meter: 0,
     color: '#ff1738', fx: 'beam', sfx: 'hyper', boxes: [], unblockable: true,
-    proj: {
-      vx: 13.5, w: 66, h: 54, y: -150, damage: 0, percentMaxHp: 0.30,
-      hitstun: 28, blockstun: 0, hitstop: 12, color: '#ff1738', life: 110,
-      level: 'mid', pierce: 0, unblockable: true,
-    },
-    label: 'A · RAYO ROJO (30%)',
+    proj: { vx: 13.5, w: 150, h: 92, y: -150, damage: 0, percentMaxHp: 0.99,
+      hitstun: 28, blockstun: 0, hitstop: 12, color: '#ff1738', forceColor: '#ff1738', life: 110,
+      level: 'mid', pierce: 0, unblockable: true },
+    label: 'Q / 7 · RAYO ROJO (99%)',
+  }),
+  miguelAir: special({
+    id: 'miguelAir', name: 'IMPACTO AÉREO', pose: 0, startup: 7, active: 9, recovery: 18,
+    damage: 18, hitstun: 26, blockstun: 12, hitstop: 8, meter: 4,
+    color: '#ff6b2b', fx: 'burst', sfx: 'heavy', air: true, airOnlyTarget: true,
+    knockdown: true, airEnder: true, boxes: [{ x: 38, y: -190, w: 188, h: 156 }],
+    label: 'EN EL AIRE + MP · IMPACTO AÉREO',
+  }),
+  miguelGiant: special({
+    id: 'miguelGiant', name: 'FORMA GIGANTE', pose: 0, startup: 12, active: 1, recovery: 18,
+    damage: 0, hitstun: 0, blockstun: 0, hitstop: 0, meter: 0, cancel: [],
+    color: '#a96bff', fx: 'burst', sfx: 'special', boxes: [],
+    label: 'E / 8 · FORMA GIGANTE · 6 SEGUNDOS',
+  }),
+  miguelRain: special({
+    id: 'miguelRain', name: 'LLUVIA DE PROYECTILES', pose: 0, startup: 12, active: 24, recovery: 24,
+    damage: 0, hitstun: 0, blockstun: 0, hitstop: 0, meter: 0, boxes: [],
+    color: '#ff315f', fx: 'beam', sfx: 'special', projectileRain: { count: 7, interval: 4, spread: 64, height: 520 },
+    rainProj: { vx: 0, vy: 9.5, vertical: true, w: 16, h: 22, renderW: 18, renderH: 26,
+      damage: 0, percentMaxHp: 0.045, hitstun: 12, blockstun: 9, hitstop: 4,
+      color: '#ff315f', forceColor: '#ff315f', life: 90, level: 'mid', pierce: 0, art: 'miguel1Can' },
+    label: 'A + R1 / LP + HK · LLUVIA (RECARGA 5 S)',
   }),
 };
 function movesFor(charId) {
@@ -1326,6 +1397,12 @@ class Fighter {
     this.moveFrame = 0;
     this.sizeBoostTimer = 0;
     this.raulGiantTimer = 0;
+    this.giantFormTimer = 0;
+    this.giantFormCooldown = 0;
+    this.giantTransformAge = 0;
+    this.giantFormPermanent = false;
+    this.giantFormBossTriggered = false;
+    this.miguelRainCooldown = 0;
     this.sizeDownTimer = 0;
     this.damageBoostTimer = 0;
     this.hitInstance = 0;
@@ -1471,6 +1548,13 @@ class Fighter {
         if (wiz) return wizAttack(m);
         if (normalWizz) return wizzAttack(m);
         if (mystic) return mysticAttack(m);
+        if (this.charId === 'miguel1' && m.type === 'normal') {
+          const button = /(?:lp|mp|hp|lk|mk|hk)/.exec(String(m.id || '').toLowerCase())?.[0];
+          if (button) {
+            const phase = this.moveFrame < m.startup ? 0 : (this.moveFrame < m.startup + m.active ? 1 : 2);
+            return /^(?:lk|mk|hk)$/.test(button) ? [4, 5, 0][phase] : [1, 2, 3][phase];
+          }
+        }
         const pose = typeof m.pose === 'number' ? m.pose : P[m.pose];
         if (pose === undefined) return scalar('idle');
         // Los bancos tradicionales tienen una pose por golpe. Animamos la entrada,
@@ -1520,6 +1604,22 @@ class Fighter {
     this.specialEvadeTimer = Math.max(0, this.specialEvadeTimer - 1);
     this.sizeBoostTimer = Math.max(0, this.sizeBoostTimer - 1);
     this.raulGiantTimer = Math.max(0, this.raulGiantTimer - 1);
+    const giantExpiring = !this.giantFormPermanent && this.giantFormTimer === 1;
+    if (!this.giantFormPermanent) this.giantFormTimer = Math.max(0, this.giantFormTimer - 1);
+    this.giantFormCooldown = Math.max(0, this.giantFormCooldown - 1);
+    this.miguelRainCooldown = Math.max(0, this.miguelRainCooldown - 1);
+    const giantGrowing = this.giantFormTimer > 0 || this.giantFormPermanent;
+    this.giantTransformAge = giantGrowing ? Math.min(24, this.giantTransformAge + 1) : 0;
+    if (giantExpiring) spawnRing(this.x, this.y - 120, '#a96bff', 110, 0.32);
+    if (this.charId === 'miguel1' && this.isBoss && !this.giantFormBossTriggered
+      && this.hp > 0 && this.maxHp > 0 && this.hp / this.maxHp <= 0.5) {
+      this.giantFormBossTriggered = true; this.giantFormPermanent = true;
+      this.giantFormTimer = 0; this.giantFormCooldown = 0; this.giantTransformAge = 0; this.vx = 0;
+      Audio.sfx.special();
+      world.announce?.('MIGUEL DESATA SU FORMA GIGANTE', 2.2);
+      spawnRing(this.x, this.y - 180, '#a96bff', 220, 0.6);
+      spawnRing(this.x, GROUND_Y - 28, '#ff4f9a', 170, 0.48);
+    }
     this.sizeDownTimer = Math.max(0, this.sizeDownTimer - 1);
     this.damageBoostTimer = Math.max(0, this.damageBoostTimer - 1);
     this.stateFrame++;
@@ -1857,16 +1957,19 @@ class Fighter {
 
   chooseMove(input, world) {
     const m = this.moves;
-    /* Miguel1: LP/A lanza el rayo original; atrás+botón y arriba+botón son ataques separados. */
+    /* Miguel 1 conserva ataques propios y también usa la selección estándar. */
     if (this.charId === 'miguel1') {
-      const d = input.dir || {};
-      const tap = input.tap || {};
+      const d = input.dir || {}; const tap = input.tap || {}; const btn = input.btn || {};
       const backHeld = this.facing === 1 ? d.left : d.right;
       const anyButtonTap = tap.lp || tap.mp || tap.hp || tap.lk || tap.mk || tap.hk;
+      if (tap.assistA) return { id: 'miguelRay' };
+      if (tap.assistB) return { id: 'miguelGiant' };
+      if (this.onGround && this.miguelRainCooldown <= 0
+        && ((tap.lp && tap.hk) || (tap.lp && btn.hk) || (tap.hk && btn.lp))) return { id: 'miguelRain' };
+      if (!this.onGround && tap.mp) return { id: 'miguelAir' };
       if (d.up && anyButtonTap) return { id: 'miguelCan' };
       if (backHeld && anyButtonTap) return { id: 'miguelAttack' };
-      if (tap.lp) return { id: 'miguelRay' };
-      return null;
+      /* Abajo + botón continúa al selector común y conserva spProj. */
     }
     /* Comandos inyectados por la IA (evita simular la línea de tiempo). */
     if (input._motion) {
@@ -1974,6 +2077,20 @@ class Fighter {
   }
 
   startMove(world, entry, keepChain) {
+    if (this.charId === 'miguel1' && entry?.id === 'miguelGiant') {
+      const giantArt = Art.get('miguel1').giantFrame;
+      if (this.giantFormPermanent || this.giantFormTimer > 0 || this.giantFormCooldown > 0
+        || !giantArt?.complete || !(giantArt.naturalWidth || giantArt.width)) return;
+      this.giantFormTimer = 6 * 60; this.giantFormCooldown = 12 * 60; this.giantTransformAge = 0; this.vx = 0;
+      spawnRing(this.x, this.y - 150, '#a96bff', 180, 0.48);
+      spawnSpark(this.x, this.y - 150, '#ff4f9a', 24, 1.25);
+    }
+    if (this.charId === 'miguel1' && entry?.id === 'miguelRain') {
+      if (this.miguelRainCooldown > 0) return;
+      this.miguelRainCooldown = 5 * 60;
+      spawnRing(this.x, this.y - 210, '#ff315f', 180, 0.42);
+      spawnSpark(this.x, this.y - 235, '#ff315f', 20, 1.15);
+    }
     if (this.charId === 'raul' && entry?.id === 'raulGrow') {
       this.raulGiantTimer = 15 * 60;
       return;
@@ -2084,7 +2201,17 @@ class Fighter {
   updateAttack(world) {
     const m = this.move;
     this.moveFrame++;
-    if (m.proj && this.moveFrame === m.startup && !m.isAssistActor) {
+    if (m.projectileRain && m.rainProj && !m.isAssistActor) {
+      const rain = m.projectileRain, interval = Math.max(1, rain.interval || 1);
+      const offset = this.moveFrame - m.startup;
+      if (offset >= 0 && offset < rain.count * interval && offset % interval === 0) {
+        const index = Math.floor(offset / interval), target = this.opponent();
+        const centerX = target?.alive ? target.x : this.x + this.facing * 180;
+        const spawnX = clamp(centerX + (index - (rain.count - 1) / 2) * (rain.spread || 64), WALL_L + 30, WALL_R - 30);
+        const spawnY = Math.max(-20, GROUND_Y - (rain.height || 520) + (index % 2) * 24);
+        world.spawnProjectile(this, { ...m.rainProj, spawnX, spawnY }, m);
+      }
+    } else if (m.proj && this.moveFrame === m.startup && !m.isAssistActor) {
       world.spawnProjectile(this, m.proj, m);
     }
     const total = m.startup + m.active + m.recovery;
@@ -2359,16 +2486,23 @@ class Fighter {
   draw(g) {
     const art = Art.get(this.charId);
     if (!art.frames.length) return;
+    const giantActive = this.charId === 'miguel1' && (this.giantFormTimer > 0 || this.giantFormPermanent) && art.giantFrame?.complete;
     const idx = clamp(this.currentPoseIndex(), 0, art.frames.length - 1);
     const poseImage = art.frames[idx];
     const moveArt = this.charId === 'miguel1' && this.state === STATE.ATTACK
-      && this.move?.id === 'miguelAttack' && Miguel1MoveArt.attack.complete
-      && Miguel1MoveArt.attack.naturalWidth > 0 ? Miguel1MoveArt.attack : null;
-    const im = moveArt || poseImage;
+      ? (this.move?.id === 'miguelAir' && MIGUEL1_AIR_ART.complete && MIGUEL1_AIR_ART.naturalWidth > 0
+        ? MIGUEL1_AIR_ART : (this.move?.id === 'miguelAttack' && Miguel1MoveArt.attack.complete
+          && Miguel1MoveArt.attack.naturalWidth > 0 ? Miguel1MoveArt.attack : null)) : null;
+    const giantPose = giantActive && (this.state === STATE.IDLE || this.state === STATE.WALK || this.state === STATE.CROUCH
+      || (this.state === STATE.ATTACK && this.move?.id === 'miguelGiant'));
+    const im = giantPose ? art.giantFrame : (moveArt || poseImage);
     if (!im) return;
     const natW = im.naturalWidth || im.width;
     const natH = im.naturalHeight || im.height;
-    const h = FIGHTER_DRAW_HEIGHT;
+    const growth = giantActive ? Math.min(1, this.giantTransformAge / 24) : 0;
+    const baseH = FIGHTER_DRAW_HEIGHT, giantDrawH = Math.round(baseH * 1.35), giantFillY = 11 / 12;
+    const h = giantActive ? (giantPose ? baseH / giantFillY + (giantDrawH - baseH / giantFillY) * growth
+      : baseH + (giantDrawH - baseH) * growth) : baseH;
     const w = natW * (h / natH);
 
     /* La dirección lógica siempre apunta al oponente: 1 = derecha, -1 = izquierda.
@@ -2459,21 +2593,23 @@ class Projectile {
     this.owner = owner;
     this.team = owner.team;
     this.facing = owner.facing;
-    this.x = owner.x + owner.facing * 62;
+    this.x = Number.isFinite(spec.spawnX) ? spec.spawnX : owner.x + owner.facing * 62;
     this.prevX = this.x;
-    this.y = owner.y + spec.y;
+    this.y = Number.isFinite(spec.spawnY) ? spec.spawnY : owner.y + spec.y;
     this.vx = (spec.vx || 0) * owner.facing;
     this.vy = spec.vy || 0; this.vertical = !!spec.vertical;
-    this.w = spec.w * PROJ_SIZE; this.h = spec.h * PROJ_SIZE;
-    this.renderW = (spec.renderW || spec.w) * PROJ_SIZE;
-    this.renderH = (spec.renderH || spec.h) * PROJ_SIZE;
+    const rayScale = owner?.charId === 'miguel1' && move?.id === 'miguelRay' ? 3.5 / PROJ_SIZE : 1;
+    const projectileScale = PROJ_SIZE * rayScale;
+    this.w = spec.w * projectileScale; this.h = spec.h * projectileScale;
+    this.renderW = (spec.renderW || spec.w) * projectileScale;
+    this.renderH = (spec.renderH || spec.h) * projectileScale;
     this.artKey = owner?.charId === 'wero' ? 'weroProjectile' : (owner?.charId === 'toto' ? 'miguel1' : (spec.art || null));
     this.artYOffset = spec.artYOffset || 0;
     this.dmg = spec.damage; this.percentMaxHp = spec.percentMaxHp || 0; this.unblockable = !!spec.unblockable;
     this.hitstun = spec.hitstun; this.blockstun = spec.blockstun;
     this.hitstop = spec.hitstop;
     this.multiColor = isMulticolorProjectile(owner.char?.id);
-    this.color = projColorFor(owner.char?.id) || spec.color;
+    this.color = spec.forceColor || projColorFor(owner.char?.id) || spec.color;
     this.level = spec.level;
     this.life = spec.life; this.pierce = spec.pierce || 0;
     this.age = 0;
@@ -4313,9 +4449,15 @@ function getSelectEntries() {
   return entries;
 }
 function pickRandomCardResult() {
-  const randomPool = RANDOM_ROSTER.filter(isCharacterUnlockedForSelection);
+  const randomPool = RANDOM_ROSTER.filter((character) => character.id === 'raul' || isCharacterUnlockedForSelection(character));
   if (!randomPool.length) return null;
-  return randomPool[Math.floor(Math.random() * randomPool.length)];
+  const weightOf = (character) => character.id === 'raul' ? 4 : 1;
+  let ticket = Math.random() * randomPool.reduce((sum, character) => sum + weightOf(character), 0);
+  for (const character of randomPool) {
+    ticket -= weightOf(character);
+    if (ticket < 0) return character;
+  }
+  return randomPool[randomPool.length - 1];
 }
 function renderCharacterCard(container, character, focusIndex, state, side) {
   const locked = !isCharacterUnlockedForSelection(character);
