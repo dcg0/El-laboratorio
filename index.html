@@ -211,14 +211,14 @@
 
 <style>
 /* DC vs Wizz launch card */
-.project-card.game-card{min-height:490px;}
+.project-card.game-card{height:460px;min-height:460px;}
 .game-suspense{margin:9px 0 6px;color:#ff6d83;font:800 10px 'DM Mono',monospace;letter-spacing:.035em;line-height:1.35;text-shadow:0 0 12px #ff315466;animation:game-suspense-blink 1.2s steps(2,start) infinite;}
 @keyframes game-suspense-blink{0%,100%{opacity:.48}50%{opacity:1}}
 .game-card-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:8px;margin-top:auto;padding-top:6px;}
 .game-card-actions .project-link{display:inline-flex;min-width:0;justify-content:center;align-items:center;gap:8px;min-height:38px;padding:7px 8px;border:1px solid #ffae6575;border-radius:8px;background:#11131ecc;text-align:center;text-decoration:none;text-transform:none;line-height:1.25;font-size:10px;}
 .game-card-actions .btn-blink{display:flex;min-width:0;justify-content:center;align-items:center;gap:8px;min-height:38px;margin:0;padding:7px 8px;border:1px solid #ff9a3c;border-radius:8px;font-family:inherit;font-size:10px;letter-spacing:.02em;line-height:1.25;text-align:center;}
 .game-card-actions .project-link:hover{border-color:#ffae65;background:#24170f;transform:translateY(-2px);}
-@media(max-width:400px){.project-card.game-card{min-height:560px;}.game-suspense{font-size:9px;letter-spacing:.025em;}.game-card-actions{grid-template-columns:minmax(0,1fr);}.game-card-actions .project-link,.game-card-actions .btn-blink{grid-column:1;}}
+@media(max-width:400px){.project-card.game-card{height:460px;min-height:460px;}.game-suspense{font-size:9px;letter-spacing:.025em;}.game-card-actions{grid-template-columns:minmax(0,1fr);}.game-card-actions .project-link,.game-card-actions .btn-blink{grid-column:1;}}
 @media(prefers-reduced-motion:reduce){.game-suspense{animation:none;opacity:1;}}
 </style>
 </head>
