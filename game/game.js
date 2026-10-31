@@ -2487,6 +2487,21 @@ class Fighter {
 
   /* ---------- Dibujo ---------- */
   draw(g) {
+    if (this.team?.world?.morganPhaseActive && this.isBoss
+      && MorganFightArt.complete && MorganFightArt.naturalWidth > 0) {
+      const image = MorganFightArt;
+      const height = 270, width = height * image.naturalWidth / image.naturalHeight;
+      g.save(); g.globalAlpha = 0.34; g.fillStyle = '#000';
+      g.beginPath(); g.ellipse(this.x, GROUND_Y + 6, 60, 12, 0, 0, Math.PI * 2); g.fill(); g.restore();
+      g.save();
+      const lunge = this.state === STATE.ATTACK ? this.facing * 9 : 0;
+      g.translate(this.x + lunge, this.y);
+      if (this.facing < 0) g.scale(-1, 1);
+      if (this.invuln > 0) g.globalAlpha = 0.72;
+      g.filter = this.flashTimer > 0 ? 'brightness(1.8) saturate(2.6) drop-shadow(0 0 18px #ff234f)' : 'drop-shadow(0 0 12px rgba(255,42,89,.86))';
+      g.drawImage(image, -width / 2, -height, width, height); g.restore();
+      return;
+    }
     const art = Art.get(this.charId);
     if (!art.frames.length) return;
     const giantActive = this.charId === 'miguel1' && (this.giantFormTimer > 0 || this.giantFormPermanent) && art.giantFrame?.complete;
@@ -2992,6 +3007,10 @@ class World {
     this.boss = opts.boss || null;
     this.bossId = opts.bossId || 'miguel1';
     this.finalStage = !!opts.finalStage;
+    this.morganPhaseActive = false;
+    this.morganHitCount = 0;
+    this.morganFinishingHit = false;
+    this.morganExitSequenceStarted = false;
     this.hazardTimer = 0;
     this.finalSkullTimer = 0;
     this.morganProjectileTimer = 0;
@@ -3308,6 +3327,23 @@ class World {
       : Math.max(1, resolvedHit.damage * scale);
     const ok = victim.takeHit(resolvedHit, attacker, point);
     if (!ok) return false;
+    if (!blocked && this.morganPhaseActive && !this.morganFinishingHit
+      && victim === this.teams[2]?.members[0] && attacker?.team === this.teams[1]) {
+      this.morganHitCount++;
+      if (this.morganHitCount === 1) {
+        victim.hp = Math.max(1, Math.min(victim.hp, victim.maxHp * 0.5));
+        victim.redHp = 0;
+        victim.state = STATE.HITSTUN;
+        victim.stateFrame = 0;
+        victim.stunFrames = Math.max(12, victim.stunFrames || 0);
+        spawnFloater(victim.x, victim.y - 248, '1 / 2 GOLPES', '#ff7593', 30, 1.15);
+      } else {
+        this.morganFinishingHit = true;
+        victim.hp = 0; victim.redHp = 0; victim.state = STATE.KO; victim.stateFrame = 0;
+        victim.vx = attacker.facing * 8; victim.vy = -13; victim.onGround = false;
+        spawnFloater(victim.x, victim.y - 250, '¡MORGAN SALE VOLANDO!', '#ff426d', 34, 1.2);
+      }
+    }
 
     const heavy = hit.hitstop >= 7;
     this.hitstop = Math.max(this.hitstop, hit.hitstop);
@@ -3378,7 +3414,7 @@ class World {
       }
     }
 
-    if (this.finalStage) {
+    if (this.finalStage && !this.morganPhaseActive) {
       this.hazardTimer++;
       if (this.hazardTimer % 40 === 1) this.spawnHazard();
     }
@@ -3398,6 +3434,7 @@ class World {
   }
 
   updateBoss() {
+    if (this.morganPhaseActive) return;
     const boss = this.teams[2].members[0];
     if (!boss || !boss.isBoss) return;
     const foe = this.teams[1].active;
@@ -3499,7 +3536,10 @@ class World {
   checkKO() {
     if (this.boss) {
       const boss = this.teams[2].members[0];
-      if (boss && !boss.alive) this.finish(1, `${this.bossId === 'miguel1' ? 'MIGUEL 1' : 'MIGUEL 2'} DERROTADO`);
+      if (boss && !boss.alive) {
+        const bossName = this.bossId === 'miguel1' ? 'MIGUEL 1' : (this.bossId === 'morgan' ? 'MORGAN' : 'MIGUEL 2');
+        this.finish(1, `${bossName} DERROTADA`);
+      }
       return;
     }
     for (const side of [1, 2]) {
@@ -3579,7 +3619,8 @@ const HUD = {
     g.shadowBlur = 0;
     /* retrato recortado del sprite en reposo */
     const art = Art.get(act.charId);
-    const im = art.frames[POSE[act.char.bank].idle];
+    const im = team.world.morganPhaseActive && act.isBoss && MorganFightArt.complete && MorganFightArt.naturalWidth
+      ? MorganFightArt : art.frames[POSE[act.char.bank].idle];
     if (im) {
       const natW = im.naturalWidth || im.width, natH = im.naturalHeight || im.height;
       const scale = (portR * 2.5) / natH;
@@ -3629,8 +3670,9 @@ const HUD = {
     g.textAlign = left ? 'left' : 'right';
     g.fillStyle = '#fff';
     g.strokeStyle = '#000'; g.lineWidth = 5;
-    g.strokeText(act.char.name, left ? x + 6 : x + barW - 6, y - 8);
-    g.fillText(act.char.name, left ? x + 6 : x + barW - 6, y - 8);
+    const fighterName = act.displayNameOverride || act.char.name;
+    g.strokeText(fighterName, left ? x + 6 : x + barW - 6, y - 8);
+    g.fillText(fighterName, left ? x + 6 : x + barW - 6, y - 8);
     g.restore();
 
   },
@@ -4197,6 +4239,27 @@ const Game = {
     this.beginFight();
     return true;
   },
+  beginMorganPhase() {
+    const world = this.world;
+    const morgan = world?.teams?.[2]?.members?.[0];
+    if (!world || !morgan) return;
+    world.bossId = 'morgan'; world.morganPhaseActive = true;
+    world.morganHitCount = 0; world.morganFinishingHit = false; world.morganExitSequenceStarted = false;
+    world.over = false; world.winner = 0; world.result = null; world.timer = 99; world.timerMax = 99;
+    world.bossBeam = null; world.bossCharge = null; world.bossRayCooldown = 999; world.bossBeamUsed = true;
+    world.finalSkullTimer = 0; world.morganProjectileTimer = 0; world.hazardTimer = 0; world.projectiles = [];
+    world.teams[2].activeIndex = 0; world.teams[2].gauge = 0;
+    morgan.charId = 'miguel2'; morgan.displayNameOverride = 'MORGAN'; morgan.isBoss = true;
+    const target = world.teams[1].active;
+    const spawnX = target ? clamp(target.x + (target.x < VW / 2 ? 260 : -260), WALL_L + 65, WALL_R - 65) : VW / 2;
+    morgan.maxHp = LIFE; morgan.hp = LIFE; morgan.redHp = 0; morgan.reset(spawnX, target && target.x >= spawnX ? 1 : -1);
+    morgan.maxHp = LIFE; morgan.hp = LIFE; morgan.redHp = 0;
+    if (target) morgan.facing = target.x >= morgan.x ? 1 : -1;
+    world.teams[2].ai = new AiController(morgan, 0.78); world.teams[2].aiDiff = 0.78;
+    world.label = 'FASE FINAL · MORGAN'; world.announce('MORGAN · ¡DALE 2 GOLPES!', 2.8);
+    this.finalMorganWinSequenceActive = false; this.paused = false;
+    resetFx(); setScreen('fight'); Audio.sfx.round();
+  },
   onFightEnd() {
     const w = this.world;
     if (this.mode === 'practice') { return; }
@@ -4204,10 +4267,17 @@ const Game = {
     if (this.mode === 'arcade' && w?.finalStage && w.bossId === 'miguel2' && w.winner === 1 && !this.morganSceneShown) {
       this.morganSceneShown = true;
       this.finalMorganWinSequenceActive = true;
-      this.showFinalBossExplosion(() => this.showMorganFlight(() => {
+      this.showFinalBossExplosion(() => this.showMorganArrival(() => this.beginMorganPhase()));
+      return;
+    }
+    if (this.mode === 'arcade' && w?.finalStage && w.bossId === 'morgan'
+      && w.winner === 1 && !w.morganExitSequenceStarted) {
+      w.morganExitSequenceStarted = true;
+      this.finalMorganWinSequenceActive = true;
+      this.showMorganFlight(() => {
         this.finalMorganWinSequenceActive = false;
         this.onFightEnd();
-      }));
+      });
       return;
     }
     const firstRaulUnlock = w?.winner === 1
@@ -4218,7 +4288,7 @@ const Game = {
     const usedToto = this.p1.picks.some((p) => p.charId === 'toto');
     const firstMiguel1Win = w.winner === 1 && usedToto && !isMiguel1Unlocked();
     if (firstMiguel1Win) unlockMiguel1();
-    if (this.mode === 'arcade' && w?.finalStage && w.bossId === 'miguel2' && w.winner !== 1) {
+    if (this.mode === 'arcade' && w?.finalStage && ['miguel2', 'morgan'].includes(w.bossId) && w.winner !== 1) {
       this.finalMorganLossSequenceActive = true;
       this.showMorganDefeat(() => {
         this.stage = 0;
@@ -4233,7 +4303,7 @@ const Game = {
     if (this.mode === 'arcade') {
       if (w.winner === 1) {
         this.wins++;
-        const firstMistikwizzWin=w.bossId==='miguel2'&&!isMistikwizzUnlocked(); if(firstMistikwizzWin) unlockMistikwizz();
+        const firstMistikwizzWin=['miguel2', 'morgan'].includes(w.bossId)&&!isMistikwizzUnlocked(); if(firstMistikwizzWin) unlockMistikwizz();
         const firstDCAkumaWin = !isDCAkumaUnlocked();
         const usedWero = this.p1.picks.some((p) => p.charId === 'wero');
         const usedFinalTeam = this.p1.picks.some((p) => ['yiyo', 'manuelin', 'crater'].includes(p.charId));
@@ -4378,6 +4448,36 @@ const Game = {
     setTimeout(() => { overlay.remove(); done(); }, 3600);
   },
 
+  showMorganArrival(done) {
+    const stage = $('stage');
+    if (!stage) { done(); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;inset:0;z-index:49;overflow:hidden;background:linear-gradient(180deg,rgba(3,5,25,.92),rgba(12,8,35,.72));display:grid;place-items:center;pointer-events:auto;';
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes morganDescend {
+        0% { opacity:0; transform:translate(-50%,-68vh) rotate(-16deg) scale(.68); }
+        25% { opacity:1; }
+        78% { transform:translate(-50%,8px) rotate(2deg) scale(1.04); }
+        100% { opacity:1; transform:translate(-50%,0) rotate(0) scale(1); }
+      }
+      @media(prefers-reduced-motion:reduce){.morgan-arrival-sprite{animation-duration:.01ms!important}}
+    `;
+    const img = document.createElement('img');
+    img.className = 'morgan-arrival-sprite'; img.alt = 'Morgan baja volando a la arena';
+    img.src = 'assets/sprites/morganroja.png';
+    img.onerror = () => { img.onerror = null; img.src = 'assets/sprites/morgan.png'; };
+    img.style.cssText = 'position:absolute;left:50%;top:59%;width:min(42vw,370px);max-height:43vh;object-fit:contain;filter:drop-shadow(0 0 22px #ff315f);animation:morganDescend 2.2s cubic-bezier(.18,.72,.24,1) both;';
+    const title = document.createElement('div'); title.textContent = 'MORGAN DESCIENDE';
+    title.style.cssText = 'position:absolute;top:10%;left:0;right:0;text-align:center;color:#ff6684;font:900 clamp(24px,5vw,46px) Impact,sans-serif;letter-spacing:.16em;text-shadow:0 0 16px #ff174e,3px 3px 0 #071126;';
+    const hint = document.createElement('div'); hint.textContent = '¡DALE DOS GOLPES!';
+    hint.style.cssText = 'position:absolute;bottom:13%;left:0;right:0;text-align:center;color:#fff;font:900 clamp(20px,4vw,36px) Impact,sans-serif;letter-spacing:.1em;text-shadow:0 0 14px #ff315f,3px 3px 0 #071126;';
+    let finished = false, timer;
+    const finish = () => { if (finished) return; finished = true; clearTimeout(timer); overlay.remove(); done(); };
+    img.addEventListener('animationend', finish, { once: true });
+    timer = setTimeout(finish, 2500);
+    overlay.append(style, img, title, hint); stage.appendChild(overlay);
+  },
   showMorganFlight(done) {
     const stage = $('stage');
     if (!stage) { done(); return; }
@@ -4397,7 +4497,7 @@ const Game = {
     glow.style.cssText = 'position:absolute;width:34vw;height:20vw;border-radius:50%;background:radial-gradient(ellipse,rgba(255,48,98,.46),transparent 70%);filter:blur(20px);animation:morganDepartureGlow 2s ease-in-out infinite;';
     const img = document.createElement('img');
     img.alt = 'Morgan se va volando';
-    img.style.cssText = 'position:absolute;left:50%;top:58%;width:min(34vw,320px);max-height:40vh;object-fit:contain;image-rendering:auto;animation:morganFlyAway 9s ease-in 1 forwards;filter:drop-shadow(0 0 20px #ff315f);';
+    img.style.cssText = 'position:absolute;left:50%;top:58%;width:min(34vw,320px);max-height:40vh;object-fit:contain;image-rendering:auto;animation:morganFlyAway 4s ease-in 1 forwards;filter:drop-shadow(0 0 20px #ff315f);';
     let fallbackUsed = false;
     img.onerror = () => { if (fallbackUsed) return; fallbackUsed = true; img.src = 'assets/sprites/morgan.png'; };
     img.src = 'assets/sprites/morganroja.png';
@@ -4415,7 +4515,7 @@ const Game = {
     const finish = () => { if (finished) return; finished = true; clearTimeout(timer); overlay.remove(); done(); };
     skip.onclick = finish;
     img.addEventListener('animationend', finish, { once: true });
-    timer = setTimeout(finish, 10500);
+    timer = setTimeout(finish, 4500);
     overlay.append(style, glow, img, title, note, skip);
     stage.appendChild(overlay);
     setTimeout(() => skip.focus(), 0);
