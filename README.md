@@ -1,17 +1,3 @@
-El Laboratorio · DC Laboratory
-
-Portal de proyectos, herramientas y documentación de diagnóstico automotriz, sistemas embebidos y automatización.
-
-""Security checks" (https://github.com/dcg0/El-laboratorio/actions/workflows/security.yml/badge.svg?branch=main)" (https://github.com/dcg0/El-laboratorio/actions/workflows/security.yml)
-""CodeQL" (https://github.com/dcg0/El-laboratorio/actions/workflows/codeql.yml/badge.svg?branch=main)" (https://github.com/dcg0/El-laboratorio/actions/workflows/codeql.yml)
-""Portal web" (https://img.shields.io/badge/Portal-GitHub_Pages-2ea44f?logo=github)" (https://dcg0.github.io/El-laboratorio/)
-
-<p align="center">
-  <a href="https://dcg0.github.io/El-laboratorio/">
-    <img src="assets/dc-laboratory-banner.png" alt="DC Laboratory - El Laboratorio" width="100%" />
-  </a>
-</p>---
-
 Abrir el laboratorio
 
 <p>
