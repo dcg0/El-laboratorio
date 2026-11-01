@@ -23,9 +23,6 @@ EL LABORATORIO DC
 ://dcg0.github.io/El-laboratorio/)
 
 EL LABORATORIO
-
-"Abrir portal" (https://dcg0.github.io/El-laboratorio/) · "Proyectos" (https://github.com/dcg0?tab=repositories) · "Desarrollo" (https://github.com/dcg0/El-laboratorio)
-
 EL LABORATORIO DC reúne proyectos de software, herramientas de diagnóstico automotriz, sistemas embebidos, aplicaciones Android, automatización y desarrollo tecnológico.
 
 Contenido
