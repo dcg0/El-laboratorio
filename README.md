@@ -20,7 +20,7 @@
   <img src="https://img.shields.io/badge/platform-Android%20%7C%20Windows%20%7C%20Linux-informational" alt="Plataformas soportadas">
 EL LABORATORIO DC
 
-://dcg0.github.io/El-laboratorio/)
+🔗https://dcg0.github.io/El-laboratorio/
 
 EL LABORATORIO DC reúne proyectos de software, herramientas de diagnóstico automotriz, sistemas embebidos, aplicaciones Android, automatización y desarrollo tecnológico.
 
