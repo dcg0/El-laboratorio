@@ -1,5 +1,3 @@
-Abrir el laboratorio
-
 <p>
   <a href="https://github.com/dcg0/DC-laboratory/actions/workflows/security.yml">
     <img src="https://github.com/dcg0/DC-laboratory/actions/workflows/security.yml/badge.svg" alt="Security checks">
