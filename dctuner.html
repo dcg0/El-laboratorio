@@ -147,6 +147,9 @@
     .edition--web { --edition-accent: #e7f3fc; --edition-rgb: 215, 232, 246; }
     .edition--red { --edition-accent: #ff5362; --edition-rgb: 255, 67, 86; }
     .edition--pi { --edition-accent: #a6e9b7; --edition-rgb: 131, 211, 156; }
+    .edition--legacy { --edition-accent: #8cc8ff; --edition-rgb: 99, 174, 255; }
+    .legacy-visual img { max-height: 460px; object-fit: cover; object-position: center; }
+    .legacy-download { max-width: 560px; }
     .edition-heading { padding: clamp(22px, 4vw, 38px) clamp(20px, 4vw, 42px) 18px; }
     .edition-label { color: var(--edition-accent); }
     .edition h2 {
@@ -347,6 +350,27 @@
       </div>
     </section>
 
+    <section class="edition edition--legacy" id="windows-xp-32" aria-labelledby="legacy-title">
+      <figure class="edition-visual legacy-visual">
+        <img src="assets/windows-xp-legacy.jpg" alt="Escritorio clásico de Windows XP en una computadora antigua" width="641" height="480" loading="lazy" decoding="async">
+      </figure>
+      <header class="edition-heading">
+        <p class="edition-label">EQUIPOS MUY ANTIGUOS · WINDOWS XP</p>
+        <h2 id="legacy-title">Windows XP <span>32 bits</span></h2>
+        <p class="edition-description">Para máquinas super old con Windows XP de 32 bits.</p>
+      </header>
+      <div class="edition-content">
+        <p class="edition-note"><strong>Nota:</strong> el archivo es un ejecutable de 32 bits. La compatibilidad específica con Windows XP no está verificada; descárgalo y ejecútalo solo si confías en su origen.</p>
+        <div class="download-grid" aria-label="Descarga para Windows XP de 32 bits">
+          <a class="download-button legacy-download" href="downloads/DCTunerStudio.exe" download="DCTunerStudio.exe">
+            <span class="button-kicker">WINDOWS XP · 32 BITS</span>
+            <strong>DCTunerStudio.exe</strong>
+            <span class="button-detail">Descarga directa para equipos Windows de 32 bits.</span>
+            <span class="button-action">Descargar EXE ↓</span>
+          </a>
+        </div>
+      </div>
+    </section>
     <p class="footer-note">Los paquetes para Windows, Linux y Raspberry Pi no son APK de Android. Verifica la arquitectura y consulta las <a href="https://github.com/dcg0/DCtuneRstudio" target="_blank" rel="noopener">notas y el código fuente de DCtuneRstudio ↗</a> antes de instalar o conectar una ECU.</p>
   </main>
   <script src="assets/dctuner-ambience.js" defer></script>
