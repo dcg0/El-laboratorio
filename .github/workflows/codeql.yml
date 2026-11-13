@@ -23,17 +23,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [javascript, python, java-kotlin]
+        include:
+          - language: javascript
+            build-mode: none
+          - language: python
+            build-mode: none
+          - language: java-kotlin
+            build-mode: manual
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           persist-credentials: false
 
+      - name: Set up Java
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        if: matrix.language == 'java-kotlin'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Build Android projects for CodeQL
+        if: matrix.language == 'java-kotlin'
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null || true
+          gradle --no-daemon -p android-apps/sidc assembleDebug
+          gradle --no-daemon -p android-apps/rojo assembleDebug
 
       - name: Analyze
         uses: github/codeql-action/analyze@v4
