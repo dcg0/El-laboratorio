@@ -9,8 +9,8 @@
   const closeButton = document.createElement('button');
   closeButton.className = 'card-expand-close';
   closeButton.type = 'button';
-  closeButton.setAttribute('aria-label', 'Cerrar tarjeta ampliada');
-  closeButton.textContent = '×';
+  closeButton.setAttribute('aria-label', 'Regresar a la página del laboratorio');
+  closeButton.textContent = '← Regresar';
 
   const content = document.createElement('div');
   content.id = 'project-card-dialog-content';
