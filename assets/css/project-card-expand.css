@@ -9,6 +9,7 @@
 .project-grid .project-card {
   cursor: zoom-in;
   touch-action: manipulation;
+  user-select: none;
 }
 .project-grid .project-card:focus-visible {
   outline: 3px solid var(--cyan, #00ccff);

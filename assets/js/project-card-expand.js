@@ -69,6 +69,16 @@
     openCard(card);
   });
 
+  // Respaldo para navegadores de escritorio que no disparan `dblclick`
+  // de forma consistente sobre imágenes o elementos con transformaciones.
+  grid.addEventListener('click', (event) => {
+    if (event.detail !== 2 || event.target.closest(interactiveSelector)) return;
+    const card = event.target.closest('.project-card');
+    if (!card || !grid.contains(card)) return;
+    event.preventDefault();
+    openCard(card);
+  });
+
   // En pantallas táctiles, dos toques rápidos sobre la tarjeta equivalen al doble clic.
   grid.addEventListener('pointerup', (event) => {
     if (event.pointerType !== 'touch') return;
