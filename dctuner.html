@@ -148,7 +148,10 @@
     .edition--red { --edition-accent: #ff5362; --edition-rgb: 255, 67, 86; }
     .edition--pi { --edition-accent: #a6e9b7; --edition-rgb: 131, 211, 156; }
     .edition--legacy { --edition-accent: #8cc8ff; --edition-rgb: 99, 174, 255; }
+    .edition--audi { --edition-accent: #55d8ff; --edition-rgb: 55, 190, 255; }
     .legacy-visual img { max-height: 460px; object-fit: cover; object-position: center; }
+    .audi-card-link { display: block; color: inherit; text-decoration: none; }
+    .audi-card-link:focus-visible { outline: 2px solid var(--edition-accent); outline-offset: -2px; }
     .legacy-download { max-width: 560px; }
     .edition-heading { padding: clamp(22px, 4vw, 38px) clamp(20px, 4vw, 42px) 18px; }
     .edition-label { color: var(--edition-accent); }
@@ -367,6 +370,30 @@
             <strong>DCTunerStudio.exe</strong>
             <span class="button-detail">Descarga directa para equipos Windows de 32 bits.</span>
             <span class="button-action">Descargar EXE ↓</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="edition edition--audi" id="audi-tt-windows-xp" aria-labelledby="audi-tt-title">
+      <a class="audi-card-link" href="https://dctt.macaly.app" target="_blank" rel="noopener" aria-label="Abrir la app de Windows XP para diagnóstico del Audi TT">
+        <figure class="edition-visual legacy-visual">
+          <img src="assets/dctt-audi-tt-windows-xp.png" alt="DC TT Tuner Studio para Audi TT en Windows XP" width="520" height="372" loading="lazy" decoding="async">
+        </figure>
+      </a>
+      <header class="edition-heading">
+        <p class="edition-label">05 · APP WINDOWS XP / AUDI TT</p>
+        <h2 id="audi-tt-title">DC TT <span>para Audi TT</span></h2>
+        <p class="edition-description">App de Windows XP para Audi TT: diagnóstico en tiempo real con cable y PC.</p>
+      </header>
+      <div class="edition-content">
+        <p class="edition-note"><strong>Descripción:</strong> aplicación para Windows XP enfocada en el diagnóstico en tiempo real del Audi TT mediante cable y PC.</p>
+        <div class="download-grid" aria-label="Aplicación de diagnóstico para Audi TT">
+          <a class="download-button legacy-download" href="https://dctt.macaly.app" target="_blank" rel="noopener">
+            <span class="button-kicker">AUDI TT · WINDOWS XP</span>
+            <strong>Abrir DC TT</strong>
+            <span class="button-detail">Accede a la app de diagnóstico en tiempo real para Audi TT.</span>
+            <span class="button-action">Abrir aplicación ↗</span>
           </a>
         </div>
       </div>
