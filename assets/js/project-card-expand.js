@@ -1,6 +1,6 @@
 (() => {
   const grid = document.querySelector('.project-grid');
-  if (!grid || typeof HTMLDialogElement === 'undefined') return;
+  if (!grid) return;
 
   const dialog = document.createElement('dialog');
   dialog.id = 'project-card-dialog';
@@ -43,7 +43,9 @@
     content.replaceChildren(expanded);
     dialog.setAttribute('aria-label', `Tarjeta completa: ${title}`);
     opener = card;
-    dialog.showModal();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+    document.body.classList.add('card-dialog-active');
     closeButton.focus({ preventScroll: true });
   }
 
@@ -62,8 +64,9 @@
   });
 
   grid.addEventListener('dblclick', (event) => {
-    if (event.target.closest(interactiveSelector)) return;
-    const card = event.target.closest('.project-card');
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target || target.closest(interactiveSelector)) return;
+    const card = target.closest('.project-card');
     if (!card || !grid.contains(card)) return;
     event.preventDefault();
     openCard(card);
@@ -72,8 +75,9 @@
   // Respaldo para navegadores de escritorio que no disparan `dblclick`
   // de forma consistente sobre imágenes o elementos con transformaciones.
   grid.addEventListener('click', (event) => {
-    if (event.detail !== 2 || event.target.closest(interactiveSelector)) return;
-    const card = event.target.closest('.project-card');
+    const target = event.target instanceof Element ? event.target : null;
+    if (event.detail !== 2 || !target || target.closest(interactiveSelector)) return;
+    const card = target.closest('.project-card');
     if (!card || !grid.contains(card)) return;
     event.preventDefault();
     openCard(card);
@@ -100,10 +104,13 @@
   });
 
   closeButton.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('cancel', () => dialog.close());
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) dialog.close();
   });
   dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
+    document.body.classList.remove('card-dialog-active');
     content.replaceChildren();
     if (opener && opener.isConnected) opener.focus({ preventScroll: true });
     opener = null;
