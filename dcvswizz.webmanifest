@@ -8,7 +8,7 @@
   "start_url": "./game/game.html?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#0c0811",
   "theme_color": "#ff3154",
   "icons": [
