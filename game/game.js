@@ -4274,9 +4274,11 @@ const Game = {
       && w.winner === 1 && !w.morganExitSequenceStarted) {
       w.morganExitSequenceStarted = true;
       this.finalMorganWinSequenceActive = true;
+      const usedVictor = this.p1.picks.some((p) => p.charId === 'victor');
       this.showMorganFlight(() => {
         this.finalMorganWinSequenceActive = false;
-        this.onFightEnd();
+        if (usedVictor) this.playVictorEndingVideo();
+        else this.onFightEnd();
       });
       return;
     }
@@ -4591,6 +4593,27 @@ const Game = {
     overlay.appendChild(img);
     document.body.appendChild(overlay);
     setTimeout(() => overlay.focus(), 0);
+  },
+  playVictorEndingVideo() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;background:#000;display:grid;place-items:center;overflow:hidden;';
+    const video = document.createElement('video');
+    video.src = 'assets/video/videovictor.mp4'; video.autoplay = true; video.playsInline = true; video.controls = false;
+    video.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;background:#000;';
+    const skip = document.createElement('button'); skip.textContent = 'CONTINUAR';
+    skip.style.cssText = 'position:fixed;z-index:2;bottom:7%;left:50%;transform:translateX(-50%);padding:12px 24px;background:rgba(8,5,28,.9);color:#fff;border:2px solid #f8d34b;border-radius:8px;font:900 16px Impact,sans-serif;cursor:pointer;';
+    skip.setAttribute('aria-label', 'Continuar al menú');
+    overlay.append(video, skip); document.body.appendChild(overlay);
+    let finished = false, fallbackTimer;
+    const finish = () => {
+      if (finished) return; finished = true; clearTimeout(fallbackTimer);
+      overlay.remove(); this.reset(); setScreen('menu'); Audio.init(); Audio.resume();
+    };
+    skip.onclick = finish;
+    overlay.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); });
+    video.onended = finish; video.onerror = finish;
+    video.onloadedmetadata = () => { fallbackTimer = setTimeout(finish, Math.max(16000, Math.min((video.duration + 2) * 1000, 30000))); };
+    fallbackTimer = setTimeout(finish, 22000); video.play().catch(() => {});
   },
   playVictoryCinematic() {
     const stage = $('stage');
