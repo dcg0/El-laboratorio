@@ -4599,8 +4599,6 @@ const Game = {
     const usedTotoOrYiyo = this.p1.picks.some((p) => p.charId === 'toto' || p.charId === 'yiyo');
     const usedDc = this.p1.picks.some((p) => /^dc/.test(p.charId));
     const usedWizz = this.p1.picks.some((p) => /^wz/.test(p.charId));
-    /* Clips específicos preceden a las cinemáticas existentes; el nuevo clip
-     * cubre únicamente a los personajes sin video propio. */
     const cinematicSrc = usedCrater
       ? 'assets/video/crater-victory.mp4'
       : usedTotoOrYiyo
@@ -4614,60 +4612,43 @@ const Game = {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;display:grid;place-items:center;';
     const video = document.createElement('video');
-    video.src = cinematicSrc;
-    video.autoplay = true; video.playsInline = true; video.controls = false;
+    video.src = cinematicSrc; video.autoplay = true; video.playsInline = true; video.controls = false;
     video.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;background:#000;';
-    overlay.appendChild(video);
-    document.body.appendChild(overlay);
-    let finished = false;
+    const skip = document.createElement('button');
+    skip.textContent = 'CONTINUAR';
+    skip.style.cssText = 'position:fixed;z-index:2;bottom:7%;left:50%;transform:translateX(-50%);padding:12px 24px;background:rgba(8,5,28,.9);color:#fff;border:2px solid #f8d34b;border-radius:8px;font:900 16px Impact,sans-serif;cursor:pointer;';
+    skip.setAttribute('aria-label', 'Continuar al resultado final');
+    overlay.append(video, skip); document.body.appendChild(overlay);
+    let finished = false, fallbackTimer;
     const finish = () => {
-      if (finished) return;
-      finished = true;
-      window.removeEventListener('keydown', onKey);
-      overlay.remove();
-      this.finishMysticUnlock();
+      if (finished) return; finished = true; clearTimeout(fallbackTimer);
+      window.removeEventListener('keydown', onKey); overlay.remove(); this.finishMysticUnlock();
     };
-    const onKey = (e) => {
-      if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); finish(); }
-    };
-    overlay.addEventListener('click', () => {
-      if (video.paused) video.play().catch(() => {});
-      else if (video.duration > 30) finish();
-    });
-    window.addEventListener('keydown', onKey);
-    video.onended = finish;
-    video.onerror = finish;
-    video.play().catch(() => {});
+    const onKey = (e) => { if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); finish(); } };
+    skip.onclick = finish;
+    overlay.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); });
+    window.addEventListener('keydown', onKey); video.onended = finish; video.onerror = finish;
+    video.onloadedmetadata = () => { fallbackTimer = setTimeout(finish, Math.max(15000, Math.min((video.duration + 2) * 1000, 60000))); };
+    fallbackTimer = setTimeout(finish, 20000); video.play().catch(() => {});
   },
-
   playGameOverVideo(done) {
     const stage = $('stage');
     if (!stage) { done(); return; }
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;width:100vw;height:100vh;height:100dvh;background:#000;display:grid;place-items:center;overflow:hidden;';
     const video = document.createElement('video');
-    video.src = 'assets/video/gameover-final.mp4';
-    video.autoplay = true; video.playsInline = true; video.controls = false;
+    video.src = 'assets/video/gameover-final.mp4'; video.autoplay = true; video.playsInline = true; video.controls = false;
     video.style.cssText = 'width:100vw;height:100vh;height:100dvh;object-fit:contain;background:#000;';
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      window.removeEventListener('keydown', onKey);
-      overlay.remove();
-      done();
-    };
+    const skip = document.createElement('button'); skip.textContent = 'CONTINUAR';
+    skip.style.cssText = 'position:fixed;z-index:2;bottom:7%;left:50%;transform:translateX(-50%);padding:12px 24px;background:rgba(8,5,28,.9);color:#fff;border:2px solid #f8d34b;border-radius:8px;font:900 16px Impact,sans-serif;cursor:pointer;';
+    let finished = false, fallbackTimer;
+    const finish = () => { if (finished) return; finished = true; clearTimeout(fallbackTimer); window.removeEventListener('keydown', onKey); overlay.remove(); done(); };
     const onKey = (e) => { if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); finish(); } };
-    overlay.addEventListener('click', () => {
-      if (video.paused) video.play().catch(() => {});
-      else finish();
-    });
-    video.onended = finish;
-    video.onerror = finish;
-    window.addEventListener('keydown', onKey);
-    overlay.appendChild(video);
-    document.body.appendChild(overlay);
-    video.play().catch(() => {});
+    skip.onclick = finish; overlay.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); else finish(); });
+    video.onended = finish; video.onerror = finish; window.addEventListener('keydown', onKey);
+    overlay.append(video, skip); document.body.appendChild(overlay);
+    video.onloadedmetadata = () => { fallbackTimer = setTimeout(finish, Math.max(12000, Math.min((video.duration + 2) * 1000, 45000))); };
+    fallbackTimer = setTimeout(finish, 18000); video.play().catch(() => {});
   },
   finishMysticUnlock() {
     this.arcadeComplete = true;
