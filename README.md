@@ -1,3 +1,5 @@
+![Texto descriptivo](dcdcdc.png)
+🔗https://dcg0.github.io/El-laboratorio/
 🔗https://dcg0.github.io/El-laboratorio/
 <p>
   <a href="https://github.com/dcg0/El-laboratorio/actions/workflows/security.yml">
@@ -25,6 +27,8 @@ EL LABORATORIO DC
 
 EL LABORATORIO DC reúne proyectos de software, herramientas de diagnóstico automotriz, sistemas embebidos, aplicaciones Android, automatización y desarrollo tecnológico.
 
+![Texto descriptivo](dcdcdc.jpg)
+
 Contenido
 
 Área| Descripción
@@ -35,6 +39,9 @@ Automatización| Sistemas, interfaces y utilidades automatizadas.
 Desarrollo web| Portales, interfaces y aplicaciones web.
 Videojuegos| Juegos, experimentos y demostraciones.
 Herramientas| Utilidades y proyectos experimentales.
+
+
+![Texto descriptivo](dcdcdc.png)
 
 Plataforma
 
