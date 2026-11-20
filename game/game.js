@@ -537,6 +537,7 @@ const BANKS = {
   miguelnew: { spriteFacesRight: true, frames: Array.from({length: 2}, (_, i) => `assets/sprites/newchars/miguelnew/miguelnew-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
   victor: { spriteFacesRight: false, frames: [...Array.from({length: 7}, (_, i) => `assets/sprites/newchars/victor/victor-0${i + 1}.png`), 'assets/sprites/newchars/victor/victor-walk.png'], drawH: 330, feetPad: 6, recolor: [] },
   raul: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/newchars/raul/raul-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
+  adrian: { spriteFacesRight: false, frames: Array.from({length: 8}, (_, i) => `assets/sprites/adrian/adrian-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
 };
 
 /* --- Plantilla de personajes jugables (paletas del mismo material). --- */
@@ -560,6 +561,7 @@ const ROSTER = [
   { id: 'wzm',   name: 'WIZZ MÍSTICO', bank: 'wmistiko', hue: 0.78,  chroma: '#b44cff', chroma2: '#f1a7ff' },
   { id: 'dcakuma', name: 'DCAKUMA', bank: 'dcakuma', hue: null, chroma: '#168cff', chroma2: '#74b9ff' },
   { id: 'raul', name: 'RAÚL', bank: 'raul', hue: null, chroma: '#ff2bd6', chroma2: '#00e6ff' },
+  { id: 'adrian', name: 'ADRIAN', bank: 'adrian', hue: null, chroma: '#ff304f', chroma2: '#ffd0d8' },
 ];
 const BOSS_ROSTER = [
   { id: 'miguel1', name: 'MIGUEL 1', bank: 'miguel1', hue: null, chroma: '#ff1533', chroma2: '#ff9a6a' },
@@ -570,14 +572,14 @@ const PANEL_CHARACTER_ORDER = [
   'manuelin', 'toto', 'yiyo',
   'wero', 'crater', 'aron',
   'victor', 'dcr', 'kato',
-  'dc', 'miguelnew', 'wz',
+  'dc', 'miguelnew', 'wz', 'adrian',
 ];
 const PANEL_CHARACTER_IDS = new Set(PANEL_CHARACTER_ORDER);
 const PANEL_CHARACTER_LABELS = {
   manuelin: 'Manuelín', toto: 'Toto', yiyo: 'Yiyo',
   wero: 'Wero', crater: 'Crater', aron: 'Aron',
   victor: 'Víctor', dcr: 'Rojo', kato: 'Kato',
-  dc: 'DC', miguelnew: 'Miguel', wz: 'Wizz',
+  dc: 'DC', miguelnew: 'Miguel', wz: 'Wizz', adrian: 'ADRIAN',
 };
 const SELECTABLE_ROSTER = PANEL_CHARACTER_ORDER
   .map((id) => ROSTER.find((c) => c.id === id))
@@ -600,6 +602,7 @@ const SELECT_PORTRAITS = {
   dandy: 'assets/sprites/newchars/dandy/dandy-01.png',
   miguelnew: 'assets/sprites/newchars/miguelnew/miguelnew-01.png',
   victor: 'assets/sprites/newchars/victor/victor-01.png',
+  adrian: 'assets/sprites/adrian/adrian-01.png',
   mistikwiz: 'assets/portraits/mistikwiz.png',
 };
 
@@ -785,6 +788,7 @@ POSE.raul = {
   launcherP: 1, launcherK: 6, assistP: 1, assistK: 6, win: 0,
 };
 POSE.miguelnew = { idle: 0, walk: [0, 1], crouch: 0, jump: 1, fall: 1, sLP: 0, sMP: 1, sHP: 1, sLK: 0, sMK: 1, sHK: 1, cLP: 0, cMP: 1, cHP: 1, cLK: 0, cMK: 1, cHK: 1, jLP: 0, jMP: 1, jHP: 1, jLK: 0, jMK: 1, jHK: 1, dashF: 1, dashB: 0, block: 1, blockLow: 0, blockAir: 1, hit: 0, hitLow: 1, hitAir: 1, down: 0, getUp: 1, specialP: 1, specialK: 0, hyper: 1, hyperAlt: 0, launcherP: 1, launcherK: 0, assistP: 1, assistK: 0, win: 0 };
+POSE.adrian = { idle: 0, walk: [1, 2], crouch: 0, jump: 1, fall: 1, sLP: 2, sMP: 3, sHP: 6, sLK: 4, sMK: 5, sHK: 5, cLP: 2, cMP: 3, cHP: 6, cLK: 4, cMK: 5, cHK: 5, jLP: 2, jMP: 3, jHP: 6, jLK: 4, jMK: 5, jHK: 6, dashF: 1, dashB: 0, block: 0, blockLow: 0, blockAir: 1, hit: 3, hitLow: 3, hitAir: 1, down: 0, getUp: 1, specialP: 6, specialK: 5, hyper: 7, hyperAlt: 7, launcherP: 6, launcherK: 5, assistP: 6, assistK: 5, win: 7 };
 
 /* --- Carga de sprites + generación de paletas alternativas. --- */
 const Art = {
@@ -1003,7 +1007,7 @@ function buildMoves(bank) {
 
   // Los bancos de sprites tienen nombres propios, pero comparten familias de movimientos.
   const profile = {
-    refresh: 'dc', kato: 'dc', dcnormal: 'dc', dcazul: 'dc', dcrojo: 'dc', dcakuma: 'dc', crater: 'dc',
+    refresh: 'dc', kato: 'dc', dcnormal: 'dc', dcazul: 'dc', dcrojo: 'dc', dcakuma: 'dc', crater: 'dc', adrian: 'dc',
     wiznew: 'wizz', mistikwiz: 'wizz', wizznew: 'wizz', wmistiko: 'wizz',
     dcBlack: 'noir', miguel2: 'noir',
   }[bank] || bank;
@@ -1198,7 +1202,7 @@ const MOVES = {
   wiznew: buildMoves('wiznew'), wizz: buildMoves('wizz'), wizznew: buildMoves('wizznew'),
   mistikwiz: buildMoves('mistikwiz'), wmistiko: buildMoves('wmistiko'),
   noir: buildMoves('noir'), miguel2: buildMoves('miguel2'),
-  manuelin: buildMoves('manuelin'), toto: buildMoves('toto'), wero: buildMoves('wero'), yiyo: buildMoves('yiyo'),
+  manuelin: buildMoves('manuelin'), toto: buildMoves('toto'), wero: buildMoves('wero'), yiyo: buildMoves('yiyo'), adrian: buildMoves('adrian'),
 };
 /* Miguel1 conserva su rayo de LP/A y añade el ataque ilustrado y la lata como movimientos separados. */
 const MIGUEL1_NORMALS = Object.fromEntries([
@@ -1484,6 +1488,12 @@ class Fighter {
 
   /* ---------- Animación ---------- */
   currentPoseIndex() {
+    /* ADRIAN es más pequeño y debe sentirse más ágil: aceleramos solo
+     * el cambio visual de poses, no la duración de golpes ni la física. */
+    const animationRate = this.charId === 'adrian' ? 1.35 : 1;
+    const animStateFrame = Math.floor(this.stateFrame * animationRate);
+    const animMoveFrame = Math.floor(this.moveFrame * animationRate);
+    const animWalkTimer = this.walkTimer * animationRate;
     const P = POSE[this.char.bank];
     const scalar = (role, fallback = 0) => {
       const v = P[role];
@@ -1495,8 +1505,8 @@ class Fighter {
     const normalWizz = this.char.bank === 'wizznew';
     const mystic = this.char.bank === 'wmistiko';
     const wizIdle = () => 0;
-    const wizzIdle = () => [0, 0, 1, 0][Math.floor(this.stateFrame / 10) % 4];
-    const mysticIdle = () => [0, 0, 5, 0][Math.floor(this.stateFrame / 12) % 4];
+    const wizzIdle = () => [0, 0, 1, 0][Math.floor(animStateFrame / 10) % 4];
+    const mysticIdle = () => [0, 0, 5, 0][Math.floor(animStateFrame / 12) % 4];
     const attackFrameSequence = (id) => {
       const key = String(id || '').toLowerCase();
       const button = /(?:^|[^a-z])(lp|mp|hp|lk|mk|hk)(?:$|[^a-z])/.exec(key)?.[1]
@@ -1512,7 +1522,7 @@ class Fighter {
     };
     const wizzAttack = (m) => {
       const seq = attackFrameSequence(m?.id);
-      return seq[Math.floor(this.moveFrame / 3) % seq.length];
+      return seq[Math.floor(animMoveFrame / 3) % seq.length];
     };
     const mysticAttack = (m) => {
       const id = String(m?.id || '').toLowerCase();
@@ -1524,15 +1534,15 @@ class Fighter {
         lk: [2, 8, 3, 7], mk: [8, 3, 7, 2], hk: [3, 7, 2, 8],
       };
       const seq = hyper ? [1] : (magic ? [4, 6, 7, 3] : (byButton[button] || [5, 0, 6, 1]));
-      return seq[Math.floor(this.moveFrame / 3) % seq.length];
+      return seq[Math.floor(animMoveFrame / 3) % seq.length];
     };
     const wizAttack = (m) => {
       const seq = attackFrameSequence(m?.id);
-      return seq[Math.floor(this.moveFrame / 3) % seq.length];
+      return seq[Math.floor(animMoveFrame / 3) % seq.length];
     };
     switch (this.state) {
       case STATE.IDLE: return wiz ? wizIdle() : (normalWizz ? wizzIdle() : (mystic ? mysticIdle() : scalar('idle')));
-      case STATE.WALK: return wiz ? [0, 2, 0, 1][Math.floor(this.walkTimer * 8) % 4] : (normalWizz ? [0, 1, 0, 1][Math.floor(this.walkTimer * 8) % 4] : (mystic ? [0, 5, 0, 5][Math.floor(this.walkTimer * 8) % 4] : (Array.isArray(P.walk) ? P.walk[Math.floor(this.walkTimer * 7) % P.walk.length] : P.walk)));
+      case STATE.WALK: return wiz ? [0, 2, 0, 1][Math.floor(animWalkTimer * 8) % 4] : (normalWizz ? [0, 1, 0, 1][Math.floor(animWalkTimer * 8) % 4] : (mystic ? [0, 5, 0, 5][Math.floor(animWalkTimer * 8) % 4] : (Array.isArray(P.walk) ? P.walk[Math.floor(animWalkTimer * 7) % P.walk.length] : P.walk)));
       case STATE.CROUCH: return scalar('crouch');
       case STATE.JUMP: return scalar(this.vy < 0 ? 'jump' : 'fall');
       case STATE.DASH: return scalar(this.dashDir > 0 ? 'dashF' : 'dashB');
@@ -1554,7 +1564,7 @@ class Fighter {
         if (this.charId === 'miguel1' && m.type === 'normal') {
           const button = /(?:lp|mp|hp|lk|mk|hk)/.exec(String(m.id || '').toLowerCase())?.[0];
           if (button) {
-            const phase = this.moveFrame < m.startup ? 0 : (this.moveFrame < m.startup + m.active ? 1 : 2);
+            const phase = animMoveFrame < m.startup ? 0 : (animMoveFrame < m.startup + m.active ? 1 : 2);
             return /^(?:lk|mk|hk)$/.test(button) ? [4, 5, 0][phase] : [1, 2, 3][phase];
           }
         }
@@ -1580,7 +1590,7 @@ class Fighter {
         if (exitPose === pose || exitPose === entryPose) exitPose = (exitPose + 1) % frameCount;
         if (frameCount === 1) return pose;
         const seq = [entryPose, pose, exitPose, entryPose];
-        return seq[Math.floor(this.moveFrame / 3) % seq.length];
+        return seq[Math.floor(animMoveFrame / 3) % seq.length];
       }
       default: return wiz ? wizIdle() : (normalWizz ? wizzIdle() : (mystic ? mysticIdle() : scalar('idle')));
     }
@@ -2519,8 +2529,11 @@ class Fighter {
     const natH = im.naturalHeight || im.height;
     const growth = giantActive ? Math.min(1, this.giantTransformAge / 24) : 0;
     const baseH = FIGHTER_DRAW_HEIGHT, giantDrawH = Math.round(baseH * 1.35), giantFillY = 11 / 12;
-    const h = giantActive ? (giantPose ? baseH / giantFillY + (giantDrawH - baseH / giantFillY) * growth
-      : baseH + (giantDrawH - baseH) * growth) : baseH;
+    /* ADRIAN es un niño: conservar sus sprites, pero representarlo más pequeño
+     * en combate sin alterar sus cajas de combate ni sus animaciones. */
+    const visualScale = this.charId === 'adrian' ? 0.78 : 1;
+    const h = (giantActive ? (giantPose ? baseH / giantFillY + (giantDrawH - baseH / giantFillY) * growth
+      : baseH + (giantDrawH - baseH) * growth) : baseH) * visualScale;
     const w = natW * (h / natH);
 
     /* La dirección lógica siempre apunta al oponente: 1 = derecha, -1 = izquierda.
@@ -4826,40 +4839,41 @@ function renderSelect() {
 function moveSelectFocus(direction) {
   const state = Game.selectSide === 1 ? Game.p1 : Game.p2;
   const entries = getSelectEntries();
+  const panelCount = SELECTABLE_ROSTER.length;
+  const columns = 3;
+  const rows = Math.ceil(panelCount / columns);
   const randomIndex = entries.findIndex((entry) => entry.kind === 'random');
   const dcaIndex = entries.findIndex((entry) => entry.key === 'dcakuma');
   const mysticIndex = entries.findIndex((entry) => entry.key === 'wzm');
   let index = Math.max(0, Math.min(state.focus, entries.length - 1));
-  if (index < 12) {
-    const row = Math.floor(index / 3);
-    const column = index % 3;
-    if (direction === 'left') {
-      if (index === 9 && dcaIndex >= 0) index = dcaIndex;
-      else index = row * 3 + (column + 2) % 3;
-    } else if (direction === 'right') {
-      if (index === 11 && mysticIndex >= 0) index = mysticIndex;
-      else index = row * 3 + (column + 1) % 3;
-    } else if (direction === 'up') {
-      index = ((row + 3) % 4) * 3 + column;
-    } else if (row === 3) {
-      index = column === 0 && dcaIndex >= 0 ? dcaIndex
-        : column === 2 && mysticIndex >= 0 ? mysticIndex : randomIndex;
+  if (index < panelCount) {
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    if (direction === 'left' || direction === 'right') {
+      const first = row * columns;
+      const last = Math.min(panelCount - 1, first + columns - 1);
+      index = direction === 'left'
+        ? (column === 0 ? last : index - 1)
+        : (index === last ? first : index + 1);
     } else {
-      index = (row + 1) * 3 + column;
+      let targetRow = direction === 'up' ? row - 1 : row + 1;
+      if (targetRow < 0) targetRow = rows - 1;
+      if (targetRow >= rows) targetRow = 0;
+      index = Math.min(panelCount - 1, targetRow * columns + column);
     }
   } else if (index === randomIndex) {
-    if (direction === 'up') index = 10;
-    else if (direction === 'left') index = dcaIndex >= 0 ? dcaIndex : 9;
-    else if (direction === 'right') index = mysticIndex >= 0 ? mysticIndex : 11;
-    else index = 1;
+    if (direction === 'up') index = panelCount - 1;
+    else if (direction === 'left') index = dcaIndex >= 0 ? dcaIndex : panelCount - 1;
+    else if (direction === 'right') index = mysticIndex >= 0 ? mysticIndex : panelCount - 1;
+    else index = 0;
   } else if (index === dcaIndex) {
-    if (direction === 'right' || direction === 'up') index = 9;
+    if (direction === 'right' || direction === 'up') index = panelCount - 1;
     else if (direction === 'down') index = randomIndex;
-    else index = mysticIndex >= 0 ? mysticIndex : 11;
+    else index = mysticIndex >= 0 ? mysticIndex : panelCount - 1;
   } else if (index === mysticIndex) {
-    if (direction === 'left' || direction === 'up') index = 11;
+    if (direction === 'left' || direction === 'up') index = panelCount - 1;
     else if (direction === 'down') index = randomIndex;
-    else index = dcaIndex >= 0 ? dcaIndex : 9;
+    else index = dcaIndex >= 0 ? dcaIndex : panelCount - 1;
   }
   state.focus = index;
   renderSelect();
