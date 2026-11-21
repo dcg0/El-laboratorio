@@ -509,7 +509,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
   refresh: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 260, feetPad: 6, recolor: [] },
-  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato-v2/kato-${i + 1}.png?v=kato2`), 'assets/sprites/kato-v2/kato-walk.png?v=kato2'], drawH: 315, feetPad: 8, recolor: [] },
+  kato:    { spriteFacesRight: true, frames: [...Array.from({length: 12}, (_, i) => `assets/sprites/kato-v2/kato-${i + 1}.png?v=kato3`), 'assets/sprites/kato-v2/kato-walk.png?v=kato3'], drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal.map((src, i) => ({ 1: 'assets/sprites/dcnormal/dc-punch.png', 4: 'assets/sprites/dcnormal/dc-charge.png', 5: 'assets/sprites/dcnormal/dc-beam.png' }[i] || src)), drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC,
     'assets/sprites/miguel1/miguel1-punch-windup.png',
