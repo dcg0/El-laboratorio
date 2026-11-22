@@ -1231,7 +1231,7 @@ function buildMoves(bank) {
     hits: customUltimate ? 1 : 18, hitGap: 4,
     damage: (totoUltimate || craterUltimate || manuelinUltimate || adrianUltimate) ? 0 : 5.2,
     startup: (totoUltimate || manuelinUltimate || adrianUltimate) ? 1 : (craterUltimate ? 10 : (signatureUltimate ? 10 : 12)),
-    active: (totoUltimate || craterUltimate || manuelinUltimate || adrianUltimate) ? (adrianUltimate ? 360 : 1) : (yiyoUltimate ? 38 : (weroUltimate ? 180 : 62)),
+    active: (totoUltimate || craterUltimate || manuelinUltimate || adrianUltimate) ? (adrianUltimate ? 600 : 1) : (yiyoUltimate ? 38 : (weroUltimate ? 180 : 62)),
     recovery: (totoUltimate || manuelinUltimate || adrianUltimate) ? 1 : (craterUltimate ? 20 : (weroUltimate ? 1 : (signatureUltimate ? 24 : 40))),
     hitstun: weroUltimate ? 36 : 22, blockstun: 14,
     hitstop: weroUltimate ? 12 : 5,
@@ -1256,7 +1256,7 @@ function buildMoves(bank) {
       level: 'low', pierce: 0, unblockable: true, art: 'craterCow',
       renderW: 72, renderH: 49, artYOffset: -42,
     } : undefined,
-    label: adrianUltimate ? 'ADRIÁN · CHARIZARD · 3 BOTONES · VUELO Y FUEGO HACIA ABAJO · 6 SEGUNDOS'
+    label: adrianUltimate ? 'ADRIÁN · CHARIZARD · 3 BOTONES · VUELO Y FUEGO HACIA ABAJO · 10 SEGUNDOS'
       : weroUltimate ? 'WERO · GÜEREJA GIGANTE · 40% DE DAÑO · 3 BOTONES · 3 SEGUNDOS'
       : craterUltimate ? 'CRATER · VACA · 35% DE DAÑO · DOBLE ↓↘→ + P·P (Nv.2)'
       : manuelinUltimate ? 'MANUELÍN · -30% TAMAÑO · +15% DAÑO · 20 SEGUNDOS (Nv.2)'
