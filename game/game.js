@@ -509,7 +509,7 @@ const MIGUEL2_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDcAAAK0CAYAA
 const BANKS = {
   dc:     { frames: SPRITE_DATA.dc,      drawH: 306, feetPad: 8,  recolor: [[0.50, 0.74]] },
   refresh: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/refresh/refresh-${String(i + 1).padStart(2, '0')}.png`), drawH: 260, feetPad: 6, recolor: [] },
-  kato:    { spriteFacesRight: true, frames: Array.from({length: 8}, (_, i) => `assets/sprites/kato-v2/kato-${i + 1}.png?v=kato5`), drawH: 315, feetPad: 8, recolor: [] },
+  kato:    { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/kato-v3/kato-${i + 1}.png?v=katooo1`), drawH: 315, feetPad: 8, recolor: [] },
   dcnormal: { frames: SPRITE_DATA.dcnormal.map((src, i) => ({ 1: 'assets/sprites/dcnormal/dc-punch.png', 4: 'assets/sprites/dcnormal/dc-charge.png', 5: 'assets/sprites/dcnormal/dc-beam.png' }[i] || src)), drawH: 306, feetPad: 8, recolor: [] },
   miguel1: { frames: [MIGUEL1_SRC,
     'assets/sprites/miguel1/miguel1-punch-windup.png',
@@ -898,14 +898,14 @@ const Art = {
 };
 
 POSE.kato = {
-  idle: 0, walk: [0, 4], crouch: 6, jump: 5, fall: 7,
-  sLP: 2, sMP: 3, sHP: 5, sLK: 1, sMK: 7, sHK: 6,
-  cLP: 2, cMP: 3, cHP: 5, cLK: 1, cMK: 7, cHK: 6,
-  jLP: 2, jMP: 5, jHP: 7, jLK: 1, jMK: 3, jHK: 5,
-  dashF: 3, dashB: 0, block: 4, blockLow: 6, blockAir: 7,
-  hit: 3, hitLow: 6, hitAir: 7, down: 6, getUp: 4,
-  specialP: 1, specialK: 2, hyper: 5, hyperAlt: 3,
-  launcherP: 2, launcherK: 7, assistP: 1, assistK: 5, win: 0
+  idle: 0, walk: [1, 2], crouch: 5, jump: 3, fall: 4,
+  sLP: 2, sMP: 3, sHP: 5, sLK: 4, sMK: 7, sHK: 8,
+  cLP: 5, cMP: 2, cHP: 6, cLK: 3, cMK: 7, cHK: 8,
+  jLP: 2, jMP: 3, jHP: 4, jLK: 5, jMK: 7, jHK: 8,
+  dashF: 3, dashB: 1, block: 2, blockLow: 5, blockAir: 4,
+  hit: 3, hitLow: 5, hitAir: 4, down: 5, getUp: 0,
+  specialP: 6, specialK: 7, hyper: 5, hyperAlt: 8,
+  launcherP: 2, launcherK: 4, assistP: 6, assistK: 7, win: 0
 };
 /* ======================= DEFINICIÓN DE MOVIMIENTOS ====================== */
 /* Origen de coordenadas = pies del luchador, +x hacia adelante, -y hacia
