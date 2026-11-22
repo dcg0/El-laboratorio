@@ -255,7 +255,12 @@
 @media(max-width:720px){.mini-term-input{gap:7px;padding:7px 9px}.mini-term-input label{font-size:9px}.mini-term-input input{height:25px;font-size:10px}.mini-term-input button{width:25px;min-width:25px;height:25px;font-size:12px}}
 </style>
 <link rel="stylesheet" href="assets/css/project-card-expand.css">
-<style>.apk-download-link{animation:apkRemasterBlink 1s steps(2,start) infinite;}@keyframes apkRemasterBlink{0%,100%{opacity:.45}50%{opacity:1;text-shadow:0 0 12px currentColor}}</style></head>
+<style>.apk-download-link{animation:apkRemasterBlink 1s steps(2,start) infinite;}@keyframes apkRemasterBlink{0%,100%{opacity:.45}50%{opacity:1;text-shadow:0 0 12px currentColor}}</style><style>
+@keyframes dcvswizz-link-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.game-card .game-card-actions .project-link { animation: dcvswizz-link-blink 1s steps(1, end) infinite; }
+@media (prefers-reduced-motion: reduce) { .game-card .game-card-actions .project-link { animation: none; } }
+</style>
+</head>
 <body>
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
 <div aria-hidden="true" class="ambient one"></div><div aria-hidden="true" class="ambient two"></div><div aria-hidden="true" class="circuit"></div>
