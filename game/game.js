@@ -356,24 +356,25 @@ const Audio = (() => {
   const DOG_BARK_SOUND = 'assets/audio/dog-catch-bark.mp3';
   const PROJECTILE_LAUNCH_SOUND = 'assets/audio/projectile-launch.mp3';
   let ac = null, musicGain = null, sfxGain = null, musicTimer = null, musicAudio = null, dogBarkAudio = null, projectileLaunchAudio = null;
-  let musicSource = null, master = null, currentMusic = DEFAULT_MUSIC;
+  let master = null, currentMusic = DEFAULT_MUSIC, musicRequested = false, audioInitialized = false;
   function init() {
-    if (ac) return;
-    const C = window.AudioContext || window.webkitAudioContext;
-    if (!C) return;
-    ac = new C();
-    /* Mezcla común con compresión suave para conservar impacto sin saturar. */
-    master = ac.createDynamicsCompressor();
-    master.threshold.value = -18; master.knee.value = 12; master.ratio.value = 5;
-    master.attack.value = 0.004; master.release.value = 0.16; master.connect(ac.destination);
-    musicGain = ac.createGain(); musicGain.gain.value = 0.115; musicGain.connect(master);
-    sfxGain = ac.createGain(); sfxGain.gain.value = 0.30; sfxGain.connect(master);
+    if (audioInitialized) return;
+    audioInitialized = true;
     musicAudio = new window.Audio(currentMusic);
     musicAudio.loop = true;
     musicAudio.preload = 'auto';
-    musicAudio.volume = 1;
-    musicSource = ac.createMediaElementSource(musicAudio);
-    musicSource.connect(musicGain);
+    musicAudio.volume = 0.85;
+    musicAudio.addEventListener('playing', stopSynthMusic);
+    musicAudio.addEventListener('error', () => { if (musicRequested) startSynthMusic(); });
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    ac = new C();
+    /* Mezcla común para los efectos y la música de respaldo sintetizada. */
+    master = ac.createDynamicsCompressor();
+    master.threshold.value = -18; master.knee.value = 12; master.ratio.value = 5;
+    master.attack.value = 0.004; master.release.value = 0.16; master.connect(ac.destination);
+    musicGain = ac.createGain(); musicGain.gain.value = 0.38; musicGain.connect(master);
+    sfxGain = ac.createGain(); sfxGain.gain.value = 0.30; sfxGain.connect(master);
     dogBarkAudio = new window.Audio(DOG_BARK_SOUND);
     dogBarkAudio.preload = 'auto';
     dogBarkAudio.volume = 1;
@@ -458,25 +459,11 @@ const Audio = (() => {
     [131, 0.24], [196, 0.24], [262, 0.24], [196, 0.24],
   ];
   let step = 0;
-  function setMusicTrack(track) {
-    const next = track || DEFAULT_MUSIC;
-    currentMusic = next;
-    if (!musicAudio) return;
-    const wasPlaying = !musicAudio.paused;
-    if (musicAudio.src.endsWith(next)) return;
-    musicAudio.pause();
-    musicAudio.src = next;
-    musicAudio.load();
-    if (wasPlaying) musicAudio.play().catch(() => {});
+  function stopSynthMusic() {
+    if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
   }
-  function startMusic() {
-    if (!ac) init();
-    resume();
-    if (musicAudio) {
-      musicAudio.play().catch(() => {});
-      return;
-    }
-    if (musicTimer) return;
+  function startSynthMusic() {
+    if (!ac || musicTimer) return;
     const tick = () => {
       const [f, d] = pattern[step % pattern.length];
       const t0 = ac.currentTime;
@@ -491,11 +478,35 @@ const Audio = (() => {
     };
     tick(); musicTimer = setInterval(tick, 235);
   }
-  function stopMusic() {
-    if (musicAudio) musicAudio.pause();
-    if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+  function playMusicElement() {
+    if (!musicAudio) { startSynthMusic(); return; }
+    const attempt = musicAudio.play();
+    if (attempt && typeof attempt.catch === 'function') {
+      attempt.catch(() => { if (musicRequested) startSynthMusic(); });
+    }
   }
-  function isMusicPlaying() { return musicAudio ? !musicAudio.paused : !!musicTimer; }
+  function setMusicTrack(track) {
+    const next = track || DEFAULT_MUSIC;
+    currentMusic = next;
+    if (!musicAudio) return;
+    if (musicAudio.src.endsWith(next)) return;
+    musicAudio.pause();
+    musicAudio.src = next;
+    musicAudio.load();
+    if (musicRequested) playMusicElement();
+  }
+  function startMusic() {
+    if (!ac && !audioInitialized) init();
+    resume();
+    musicRequested = true;
+    playMusicElement();
+  }
+  function stopMusic() {
+    musicRequested = false;
+    if (musicAudio) musicAudio.pause();
+    stopSynthMusic();
+  }
+  function isMusicPlaying() { return !!(musicAudio && !musicAudio.paused) || !!musicTimer; }
   return { init, resume, sfx, setMusicTrack, startMusic, stopMusic, isMusicPlaying, get ctx() { return ac; } };
 })();
 
