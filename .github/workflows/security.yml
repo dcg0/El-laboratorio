@@ -65,6 +65,31 @@ jobs:
           test -s downloads/DCA-ChromeOS.apk.sha256
           sha256sum -c downloads/DCA-ChromeOS.apk.sha256
 
+      - name: Verify remastered DC vs Wizz APK checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s downloads/dc-vs-wizkas-morgan-debug.apk.sha256
+          if test -s downloads/dc-vs-wizkas-morgan-debug.apk; then
+            sha256sum -c downloads/dc-vs-wizkas-morgan-debug.apk.sha256
+          else
+            asset_url="https://github.com/dcg0/El-laboratorio/releases/download/dc-vs-wizkas-morgan-v1.0.0/dc-vs-wizkas-morgan-debug.apk"
+            curl --fail --silent --show-error --location --retry 3 "$asset_url" -o /tmp/dc-vs-wizkas-morgan-debug.apk
+            expected="$(awk '{print $1}' downloads/dc-vs-wizkas-morgan-debug.apk.sha256)"
+            actual="$(sha256sum /tmp/dc-vs-wizkas-morgan-debug.apk | awk '{print $1}')"
+            test "$expected" = "$actual"
+          fi
+
+      - name: Validate arcade source and reproducible balance simulation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check game/game.js
+          node --check tools/simulate_angel_miguel.mjs
+          node tools/simulate_angel_miguel.mjs > /tmp/angel-miguel-simulation.log
+          grep -q 'Angel' /tmp/angel-miguel-simulation.log
+          grep -q 'Miguel' /tmp/angel-miguel-simulation.log
+
       - name: Check for unsafe external target links
         shell: bash
         run: |

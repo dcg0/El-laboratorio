@@ -20,3 +20,6 @@ coverage/
 __pycache__/
 *.py[cod]
 *.log
+
+# Large release assets are distributed through GitHub Releases, not Git history
+downloads/dc-vs-wizkas-morgan-debug.apk
