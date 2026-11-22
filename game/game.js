@@ -3595,7 +3595,7 @@ class World {
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
-      spawnX, spawnY, vx: 1.65, vy: 0, w: 11, h: 9, renderW: 38, renderH: 28,
+      spawnX, spawnY, vx: 1.65, vy: 0, w: 11, h: 9, renderW: 52, renderH: 38,
       damage: 0, percentMaxHp: 0.10, hitstun: 18, blockstun: 8, hitstop: 5,
       color: '#d59a63', forceColor: '#d59a63', life: 600, level: 'low', pierce: 0,
       dogSupport: true,
