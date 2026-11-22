@@ -1234,7 +1234,7 @@ function buildMoves(bank) {
       level: 'low', pierce: 0, unblockable: true, art: 'craterCow',
       renderW: 72, renderH: 49, artYOffset: -42,
     } : undefined,
-    label: weroUltimate ? 'WERO · 95% DE DAÑO · DOBLE ↓↘→ + P·P (Nv.2)'
+    label: weroUltimate ? 'WERO · GÜEREJA GIGANTE · 95% DE DAÑO · 3 BOTONES O DOBLE ↓↘→ + P·P (Nv.2)'
       : (craterUltimate ? 'CRATER · VACA · 35% DE DAÑO · DOBLE ↓↘→ + P·P (Nv.2)'
         : (manuelinUltimate ? 'MANUELÍN · -30% TAMAÑO · +15% DAÑO · 20 SEGUNDOS (Nv.2)'
           : (signatureUltimate ? 'DOBLE ↓↘→ + P·P (Nv.2)'
@@ -2163,6 +2163,14 @@ class Fighter {
     const backHeld = facing === 1 ? d.left : d.right;
     const team = this.team;
     const freshQcf = mb.qcf() && mb.recent(6);
+    /* Güero: tres botones de ataque juntos activan la Güereja gigante.
+     * Se conserva el costo del hiper para que el atajo no sea gratuito. */
+    const tripleButtonTap = BTN.filter((button) => tap[button]).length >= 3;
+    if (!input._ai && this.charId === 'wero' && onGround && tripleButtonTap
+      && m.hyUlt && team && team.gauge >= (m.hyUlt.cost || 3) * SUPER_LEVEL) {
+      mb.clear();
+      return { id: 'hyUlt' };
+    }
     const freshQcb = mb.qcb() && mb.recent(6);
     const freshDp = mb.dp() && mb.recent(6);
     /* Raúl consume A + R1 como aumento visual; no inicia un movimiento ni crea hitboxes. */
