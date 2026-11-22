@@ -1859,7 +1859,8 @@ class Fighter {
         const d = input.dir || {};
         const direction = Number(!!d.right) - Number(!!d.left);
         this.onGround = false;
-        this.y = GROUND_Y - 260;
+        // Adriancín permanece claramente en el aire durante todo el hiper.
+        this.y = GROUND_Y - 330;
         this.vy = 0;
         this.vx = direction ? direction * 6.2 : 0;
         const fireTap = BTN.some((button) => input.tap?.[button]);
@@ -2227,14 +2228,18 @@ class Fighter {
     const freshQcf = mb.qcf() && mb.recent(6);
     /* Güero: tres botones de ataque juntos activan la Güereja gigante.
      * Se conserva el costo del hiper para que el atajo no sea gratuito. */
+    // En pantallas táctiles los tres toques pueden no llegar en el mismo frame;
+    // aceptar también tres botones mantenidos evita perder la transformación.
     const tripleButtonTap = BTN.filter((button) => tap[button]).length >= 3;
-    if (!input._ai && this.charId === 'wero' && onGround && tripleButtonTap
+    const tripleButtonHeld = BTN.filter((button) => input.btn?.[button]).length >= 3;
+    const tripleButtonTrigger = tripleButtonTap || tripleButtonHeld;
+    if (!input._ai && this.charId === 'wero' && onGround && tripleButtonTrigger
       && m.hyUlt && team && team.gauge >= (m.hyUlt.cost || 3) * SUPER_LEVEL) {
       mb.clear();
       return { id: 'hyUlt' };
     }
     /* Adrián: tres botones simultáneos activan su transformación Charizard. */
-    if (!input._ai && this.charId === 'adrian' && onGround && tripleButtonTap
+    if (!input._ai && this.charId === 'adrian' && onGround && tripleButtonTrigger
       && m.hyUlt && team && team.gauge >= (m.hyUlt.cost || 3) * SUPER_LEVEL) {
       mb.clear();
       return { id: 'hyUlt' };
@@ -2965,11 +2970,27 @@ class Fighter {
       g.save(); g.translate(this.x, this.y); if (this.facing < 0) g.scale(-1, 1);
       g.filter = 'drop-shadow(0 0 20px #38d9ff)'; g.drawImage(image, -w / 2, -h, w, h); g.restore(); return;
     }
+    const weroGuerejaActive = this.charId === 'wero' && this.state === STATE.ATTACK
+      && this.move?.id === 'hyUlt' && SpecialArt.wero?.complete && SpecialArt.wero.naturalWidth > 0;
+    if (weroGuerejaActive) {
+      // La transformación reemplaza por completo al sprite normal de Wero.
+      const image = SpecialArt.wero;
+      const h = 430;
+      const w = (image.naturalWidth / image.naturalHeight) * h;
+      g.save();
+      g.translate(this.x, this.y);
+      if (this.facing < 0) g.scale(-1, 1);
+      g.globalAlpha = this.invuln > 0 ? 0.72 : 1;
+      g.filter = 'drop-shadow(0 0 22px #ff4d9a)';
+      g.drawImage(image, -w / 2, -h, w, h);
+      g.restore();
+      return;
+    }
     const adrianCharizard = this.charId === 'adrian' && this.state === STATE.ATTACK
       && this.move?.adrianFlight && SpecialArt.adrian?.complete && SpecialArt.adrian.naturalWidth > 0;
     if (adrianCharizard) {
       const image = SpecialArt.adrian;
-      const h = 280;
+      const h = 340;
       const w = (image.naturalWidth / image.naturalHeight) * h;
       g.save();
       g.translate(this.x, this.y);
@@ -3595,7 +3616,7 @@ class World {
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
-      spawnX, spawnY, vx: 1.65, vy: 0, w: 11, h: 9, renderW: 52, renderH: 38,
+      spawnX, spawnY, vx: 1.15, vy: 0, w: 11, h: 9, renderW: 60, renderH: 44,
       damage: 0, percentMaxHp: 0.10, hitstun: 18, blockstun: 8, hitstop: 5,
       color: '#d59a63', forceColor: '#d59a63', life: 600, level: 'low', pierce: 0,
       dogSupport: true,
