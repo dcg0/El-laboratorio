@@ -351,9 +351,11 @@ function rotate(n) {
 /* ======================= AUDIO (Web Audio, chiptune) ==================== */
 
 const Audio = (() => {
-  const DEFAULT_MUSIC = 'assets/rola2.m4a';
+  const DEFAULT_MUSIC = 'assets/audio/rola2.m4a';
   const VICTOR_MUSIC = 'assets/audio/victor-flow.m4a';
-  let ac = null, musicGain = null, sfxGain = null, musicTimer = null, musicAudio = null;
+  const DOG_BARK_SOUND = 'assets/audio/dog-catch-bark.mp3';
+  const PROJECTILE_LAUNCH_SOUND = 'assets/audio/projectile-launch.mp3';
+  let ac = null, musicGain = null, sfxGain = null, musicTimer = null, musicAudio = null, dogBarkAudio = null, projectileLaunchAudio = null;
   let musicSource = null, master = null, currentMusic = DEFAULT_MUSIC;
   function init() {
     if (ac) return;
@@ -372,6 +374,14 @@ const Audio = (() => {
     musicAudio.volume = 1;
     musicSource = ac.createMediaElementSource(musicAudio);
     musicSource.connect(musicGain);
+    dogBarkAudio = new window.Audio(DOG_BARK_SOUND);
+    dogBarkAudio.preload = 'auto';
+    dogBarkAudio.volume = 1;
+    ac.createMediaElementSource(dogBarkAudio).connect(sfxGain);
+    projectileLaunchAudio = new window.Audio(PROJECTILE_LAUNCH_SOUND);
+    projectileLaunchAudio.preload = 'auto';
+    projectileLaunchAudio.volume = 1;
+    ac.createMediaElementSource(projectileLaunchAudio).connect(sfxGain);
   }
   function resume() { if (ac && ac.state === 'suspended') ac.resume(); }
   function tone(freq, dur, type = 'square', vol = 0.4, slide = 0, delay = 0) {
@@ -409,7 +419,10 @@ const Audio = (() => {
     dash: () => { noise(0.14, 0.20, 900, 0.8); },
     launch: () => { tone(180, 0.28, 'sawtooth', 0.34, 420); noise(0.16, 0.24, 700, 1); },
     special: () => { tone(300, 0.22, 'square', 0.32, 420); noise(0.16, 0.20, 1500, 1); },
-    fireball: () => { tone(520, 0.26, 'sawtooth', 0.26, -260); noise(0.22, 0.22, 1700, 1.2); },
+    fireball: () => {
+      if (!projectileLaunchAudio) return;
+      try { projectileLaunchAudio.currentTime = 0; projectileLaunchAudio.play().catch(() => {}); } catch (_) {}
+    },
     hyper: () => { for (let i = 0; i < 7; i++) tone(180 + i * 130, 0.20, 'square', 0.34, 140, i * 0.05); },
     superFlash: () => { tone(900, 0.5, 'sine', 0.3, -600); noise(0.4, 0.2, 900, 0.6); },
     tag: () => { tone(420, 0.10, 'square', 0.28, 200); tone(700, 0.12, 'square', 0.26, -180, 0.08); },
@@ -420,6 +433,10 @@ const Audio = (() => {
     round: () => { tone(440, 0.11, 'square', 0.3); tone(660, 0.11, 'square', 0.3, 0, 0.11); tone(880, 0.24, 'square', 0.34, 0, 0.22); },
     ok: () => { tone(600, 0.06, 'square', 0.24); tone(900, 0.10, 'square', 0.22, 0, 0.05); },
     denied: () => { tone(220, 0.16, 'sawtooth', 0.26, -80); },
+    dogBark: () => {
+      if (!dogBarkAudio) return;
+      try { dogBarkAudio.currentTime = 0; dogBarkAudio.play().catch(() => {}); } catch (_) {}
+    },
   };
 
   /* Limita ráfagas repetidas de impactos, saltos y proyectiles. */
@@ -3065,6 +3082,7 @@ const PROJ_GROUP_OF = {
 function projColorFor(charId) { return PROJ_COLOR[PROJ_GROUP_OF[charId]] || PROJ_COLOR.yellow; }
 function isMulticolorProjectile(charId) { return charId === 'crater'; }
 const PROJ_SIZE = 2.64;
+const DOG_SUPPORT_SPEED = 0.54; // 20% más rápido que la velocidad base 0.45.
 const PROJ_COST = SUPER_LEVEL / 2;
 const RAIN_COST = SUPER_LEVEL;
 
@@ -3127,15 +3145,15 @@ class Projectile {
       if (reachedOppositeEnd) {
         this.dogCrossedField = true;
         this.facing = this.target.x >= this.x ? 1 : -1;
-        this.vx = 0.45 * this.facing;
+        this.vx = DOG_SUPPORT_SPEED * this.facing;
       } else {
-        this.vx = 0.45 * this.dogCrossDirection;
+        this.vx = DOG_SUPPORT_SPEED * this.dogCrossDirection;
         this.facing = this.dogCrossDirection;
       }
     } else if (this.isDogSupport && this.dogCrossedField && this.target?.alive) {
       // Después del cruce, corrige el rumbo lentamente hacia el rival.
       const seekDirection = Math.sign(this.target.x - this.x) || this.facing || 1;
-      this.vx = 0.45 * seekDirection;
+      this.vx = DOG_SUPPORT_SPEED * seekDirection;
       this.facing = seekDirection;
     }
     this.x += this.vx;
@@ -3654,7 +3672,7 @@ class World {
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
-      spawnX, spawnY, vx: 0.45 * crossDirection, vy: 0, w: 11, h: 9, renderW: 96, renderH: 70,
+      spawnX, spawnY, vx: DOG_SUPPORT_SPEED * crossDirection, vy: 0, w: 11, h: 9, renderW: 86, renderH: 63,
       damage: 0, percentMaxHp: 0, hitstun: 0, blockstun: 0, hitstop: 0,
       color: '#d59a63', forceColor: '#d59a63', life: 3600, level: 'low', pierce: 0,
       dogSupport: true, dogVariant,
@@ -3887,6 +3905,7 @@ class World {
             /* El perro no hace daño: al tocar al rival solo se adhiere.
                Tras cruzar la arena, se adhiere exactamente 5 segundos (300 frames). */
             pr.dogHasHit = true;
+            Audio.sfx.dogBark();
             pr.attachedTo = d;
             pr.attachOffsetX = point.x - d.x;
             pr.attachOffsetY = point.y - d.y;
@@ -4856,7 +4875,7 @@ const Game = {
     /* Víctor impone su tema en todas las peleas donde fue seleccionado;
      * en cualquier otro caso se restaura la pista normal. */
     const victorSelected = [...this.p1.picks, ...this.p2.picks].some((pick) => pick.charId === 'victor');
-    Audio.setMusicTrack(victorSelected ? 'assets/audio/victor-flow.m4a' : 'assets/rola2.m4a');
+    Audio.setMusicTrack(victorSelected ? 'assets/audio/victor-flow.m4a' : 'assets/audio/rola2.m4a');
     Audio.startMusic();
   },
 
