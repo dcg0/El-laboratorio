@@ -7,13 +7,13 @@
 
 ## Estado de publicación
 
-Al iniciar la auditoría, la copia local contenía cuatro commits posteriores a `origin/main`, incluidos Morgan, la APK remasterizada y los cambios de la tarjeta. La página pública todavía servía el commit anterior y la URL pública de la APK remasterizada devolvía `404`. Estos commits se publicarán después de cerrar las correcciones de CI descritas en este documento.
+Al iniciar la auditoría, la copia local contenía cuatro commits posteriores a `origin/main`, incluidos Morgan, la APK remasterizada y los cambios de la tarjeta. Se publicó el commit final `e148801`; GitHub Pages ya despliega la página actualizada y la APK se distribuye mediante el Release `dc-vs-wizkas-morgan-v1.0.0`.
 
 ## Insignias y CI
 
 Los últimos workflows visibles en GitHub para el commit público anterior (`e6c0425`) estaban en estado exitoso: Security checks, CodeQL y Pages deployment. El workflow de seguridad se amplió para que, además de validar `DCA-ChromeOS.apk`, compruebe el checksum del asset de GitHub Release `dc-vs-wizkas-morgan-v1.0.0`, la sintaxis de `game/game.js` y `tools/simulate_angel_miguel.mjs`, y que la simulación reproducible produzca resultados para Angel y Miguel.
 
-La insignia no se considera definitivamente aprobada hasta que GitHub ejecute esos checks sobre el nuevo commit publicado. No se encontró una insignia roja en los runs consultados; el estado del nuevo commit queda pendiente de ejecución.
+Los runs de Security checks, CodeQL y Pages terminaron en verde sobre `e148801`. Security checks también terminó correctamente para la etiqueta del Release. No se encontró una insignia roja en los runs consultados.
 
 ## Seguridad de GitHub
 
@@ -46,26 +46,24 @@ Asset: `dc-vs-wizkas-morgan-v1.0.0/dc-vs-wizkas-morgan-debug.apk`
 
 No se pudo ejecutar la APK en un emulador Android real porque este entorno no tiene emulador ni dispositivo ADB conectado. La validación Android queda limitada a compilación, integridad del ZIP, contenido del APK y validación web/estática.
 
-## Puntuación provisional
+## Puntuación actual
 
 | Categoría | Puntos | Resultado |
 |---|---:|---|
-| Insignias sin errores | 25 | 20 — runs públicos anteriores exitosos; falta ejecutar el nuevo commit |
+| Insignias sin errores | 25 | 25 — Security checks, CodeQL y Pages en verde sobre `e148801` |
 | Sin vulnerabilidades críticas | 25 | 15 — no hay hallazgos locales, pero las alertas privadas no son consultables |
 | Sin vulnerabilidades altas | 20 | 12 — mismo límite de permisos de seguridad |
 | Buenas prácticas de código | 15 | 13 — escáner de secretos, CSP, `noopener`, CodeQL y pruebas locales presentes |
 | Documentación y estructura | 15 | 11 — `SECURITY.md`, `CODEOWNERS` y Dependabot presentes; falta licencia y protección de `main` |
-| **Total** | **100** | **71/100** |
+| **Total** | **100** | **76/100** |
 
 ## Veredicto
 
-**REQUIERE REVISIÓN.** No hay evidencia local de vulnerabilidad crítica ni secretos expuestos, pero no corresponde declarar aprobación total mientras las alertas de seguridad no puedan consultarse y `main` permanezca sin protección. Después de publicar los commits, se debe confirmar que Security checks, CodeQL y Pages terminan exitosamente sobre el nuevo SHA y volver a comprobar la URL pública de la APK.
+**REQUIERE REVISIÓN.** La publicación, la página, la descarga y los checks de CI están correctos. No corresponde declarar aprobación total mientras las alertas privadas de seguridad no puedan consultarse y `main` permanezca sin protección.
 
 ## Acciones pendientes, en orden
 
-1. Publicar los cuatro commits locales y la corrección del workflow.
-2. Confirmar los nuevos runs de Security checks, CodeQL y Pages.
-3. Habilitar un conector/token con permisos de lectura de Code Scanning, Dependabot alerts y Secret Scanning alerts.
-4. Configurar protección de `main` con los checks requeridos y revisión obligatoria.
-5. Añadir una licencia explícita si el propietario confirma qué licencia desea aplicar.
-6. Repetir la auditoría para el siguiente repositorio de `dcg0` únicamente después de cerrar los pasos anteriores.
+1. Habilitar un conector/token con permisos de lectura de Code Scanning, Dependabot alerts y Secret Scanning alerts.
+2. Configurar protección de `main` con los checks requeridos y revisión obligatoria.
+3. Añadir una licencia explícita si el propietario confirma qué licencia desea aplicar.
+4. Mantener la validación de la APK desde el Release y no volver a rastrear el binario de 310 MB en Git.
