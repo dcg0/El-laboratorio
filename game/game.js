@@ -3088,7 +3088,7 @@ class Projectile {
   }
   draw(g) {
     if (this.isDogSupport) {
-      const frame = ProjectileArt[`dog${(Math.floor(this.age / 7) % 3) + 1}`];
+      const frame = ProjectileArt[`dog${((this.frameOffset || 0) + Math.floor(this.age / 7)) % 3 + 1}`];
       if (frame?.complete && frame.naturalWidth > 0) {
         const scale = Math.min(this.renderW / frame.naturalWidth, this.renderH / frame.naturalHeight);
         const w = frame.naturalWidth * scale, h = frame.naturalHeight * scale;
@@ -3589,6 +3589,9 @@ class World {
     }, { id: 'dogSupport' }));
     const dog = this.projectiles[this.projectiles.length - 1];
     dog.isDogSupport = true;
+    /* Cada pelea empieza con una raza/fotograma distinto y luego rota los
+       tres perros para que la ayuda no sea siempre la misma. */
+    dog.frameOffset = Math.floor(rand(0, 3));
     dog.target = target;
     this.dogSupport = dog;
     this.announce('¡AYUDA PERRUNA!', 1.35, 'special');
