@@ -3076,6 +3076,13 @@ class Projectile {
   update() {
     this.prevX = this.x;
     this.prevY = this.y;
+    if (this.isDogSupport && this.attachedTo?.alive) {
+      this.x = this.attachedTo.x + (this.attachOffsetX || 0);
+      this.y = this.attachedTo.y + (this.attachOffsetY || 0);
+      this.age++;
+      if (this.age >= this.life) this.dead = true;
+      return;
+    }
     this.x += this.vx;
     this.y += this.vy + (this.spiral ? Math.sin(this.age * this.spiralFrequency) * this.spiralStrength : 0);
     this.age++;
@@ -3814,7 +3821,16 @@ class World {
           };
           const res = this.applyHit(d, pr.owner, hit, point, pr.color);
           if (res) {
-            if (pr.pierce > 0) pr.pierce--;
+            if (pr.isDogSupport) {
+              /* El perro aplica una sola vez el 10% y queda pegado al punto
+                 donde alcanzó al usuario o a la IA durante 2 segundos. */
+              pr.attachedTo = d;
+              pr.attachOffsetX = point.x - d.x;
+              pr.attachOffsetY = point.y - d.y;
+              pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 120;
+              pr.prevX = pr.x; pr.prevY = pr.y;
+              pr.target = d;
+            } else if (pr.pierce > 0) pr.pierce--;
             else pr.dead = true;
             break;
           }
