@@ -2743,6 +2743,9 @@ class Fighter {
     if (this.charId === 'angel' && !this.angelSprunkiUsed && this.hp > 0 && this.hp / this.maxHp <= 0.90) {
       this.activateAngelSprunki(this.team?.world); return true;
     }
+    if (this.hp > 0 && this.maxHp > 0 && this.hp / this.maxHp <= 0.30) {
+      this.team?.world?.spawnDogSupport(this);
+    }
     const angelSprunkiActive = this.charId === 'angel' && this.angelSprunkiTimer > 0;
 
     /* Feedback de impacto: parpadeo rojo breve y retroceso suave.
@@ -3053,6 +3056,7 @@ class Projectile {
     this.artKey = owner?.charId === 'wero' ? 'weroProjectile' : (owner?.charId === 'toto' ? 'miguel1' : (spec.art || null));
     this.artYOffset = spec.artYOffset || 0;
     this.dmg = spec.damage; this.percentMaxHp = spec.percentMaxHp || 0; this.unblockable = !!spec.unblockable;
+    this.isDogSupport = !!spec.dogSupport;
     this.hitstun = spec.hitstun; this.blockstun = spec.blockstun;
     this.hitstop = spec.hitstop;
     this.multiColor = isMulticolorProjectile(owner.char?.id);
@@ -3080,6 +3084,24 @@ class Projectile {
     if (this.age > this.life || this.x < -80 || this.x > VW + 80 || this.y < -120 || this.y > VH + 120) this.dead = true;
   }
   draw(g) {
+    if (this.isDogSupport) {
+      const w = this.renderW, h = this.renderH;
+      g.save();
+      g.translate(this.x, this.y);
+      g.scale(this.facing, 1);
+      g.globalAlpha = 0.98;
+      g.fillStyle = '#7a4528'; g.beginPath(); g.ellipse(0, 0, w * 0.34, h * 0.30, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#d59a63'; g.beginPath(); g.ellipse(w * 0.30, -h * 0.16, w * 0.25, h * 0.23, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#5b301f'; g.beginPath(); g.moveTo(w * 0.18, -h * 0.30); g.lineTo(w * 0.29, -h * 0.58); g.lineTo(w * 0.38, -h * 0.25); g.fill();
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(w * 0.39, -h * 0.21, 2.1, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#151515'; g.beginPath(); g.arc(w * 0.41, -h * 0.21, 1.0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#5b301f'; g.lineWidth = 3; g.lineCap = 'round';
+      const step = Math.sin(this.age * 0.42) * h * 0.15;
+      for (const lx of [-w * 0.18, w * 0.12]) { g.beginPath(); g.moveTo(lx, h * 0.18); g.lineTo(lx - w * 0.05, h * 0.48 + step); g.stroke(); }
+      g.beginPath(); g.moveTo(-w * 0.30, -h * 0.02); g.quadraticCurveTo(-w * 0.58, -h * 0.30, -w * 0.42, -h * 0.48); g.stroke();
+      g.restore();
+      return;
+    }
     const customArt = this.artKey ? ProjectileArt[this.artKey] : null;
     if (customArt?.complete && customArt.naturalWidth > 0) {
       const scale = Math.min(this.renderW / customArt.naturalWidth, this.renderH / customArt.naturalHeight);
@@ -3446,6 +3468,10 @@ class World {
     this.bossBeamUsed = false;
     this.bossRayCooldown = 0;
     this.bossCharge = null;
+    /* Apoyo único por pelea: el primero que alcanza 30% de vida restante
+       llama al perro diminuto. */
+    this.dogSupportTriggered = false;
+    this.dogSupport = null;
     this.paused = false;
     this.teams = {
       1: new Team(this, 1, picks1, { isCPU: !!opts.cpu1, gauge: MAX_SUPER_LEVELS * SUPER_LEVEL }),
@@ -3542,6 +3568,35 @@ class World {
     this.announce_text = text;
     this.announceTimer = seconds * 60;
     this.announceStyle = style;
+  }
+
+  spawnDogSupport(owner) {
+    if (this.dogSupportTriggered || this.over || !owner?.alive) return false;
+    const targetTeam = owner.team === this.teams[1] ? this.teams[2] : this.teams[1];
+    const target = targetTeam?.active;
+    if (!target?.alive) return false;
+    const facing = target.x >= owner.x ? 1 : -1;
+    owner.facing = facing;
+    this.dogSupportTriggered = true;
+    const spawnX = clamp(owner.x + facing * 72, WALL_L, WALL_R);
+    const spawnY = GROUND_Y - 28;
+    const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
+      x: spawnX, y: spawnY, facing };
+    this.projectiles.push(new Projectile(dogOwner, {
+      spawnX, spawnY, vx: 1.65, vy: 0, w: 11, h: 9, renderW: 38, renderH: 28,
+      damage: 0, percentMaxHp: 0.10, hitstun: 18, blockstun: 8, hitstop: 5,
+      color: '#d59a63', forceColor: '#d59a63', life: 600, level: 'low', pierce: 0,
+      dogSupport: true,
+    }, { id: 'dogSupport' }));
+    const dog = this.projectiles[this.projectiles.length - 1];
+    dog.isDogSupport = true;
+    dog.target = target;
+    this.dogSupport = dog;
+    this.announce('¡AYUDA PERRUNA!', 1.35, 'special');
+    spawnRing(spawnX, spawnY - 12, '#d59a63', 82, 0.3);
+    spawnSpark(spawnX, spawnY - 18, '#ffe0a8', 16, 0.9);
+    Audio.sfx.assist();
+    return true;
   }
 
   beginSuperFlash(fighter, move) {
@@ -3678,8 +3733,26 @@ class World {
         this.resolveFighterHits(a, defTeam, defenders);
       }
     }
+    /* Un proyectil enemigo puede quitar al perro antes de que llegue. */
+    const dogs = this.projectiles.filter((p) => p.isDogSupport && !p.dead);
+    for (const dog of dogs) {
+      const dogBox = dog.box();
+      for (const shot of this.projectiles) {
+        if (shot === dog || shot.dead || shot.isDogSupport || shot.team === dog.team) continue;
+        const shotBox = shot.box();
+        if (overlap(dogBox, shotBox)) {
+          dog.dead = true;
+          shot.dead = true;
+          spawnSpark(dog.x, dog.y - 12, '#ffe14a', 20, 1.1);
+          spawnFloater(dog.x, dog.y - 50, 'PERRO DETENIDO', '#ffe7a8', 16, 0.8);
+          Audio.sfx.guardPush();
+          break;
+        }
+      }
+    }
     /* proyectiles */
     for (const pr of this.projectiles) {
+      if (pr.dead) continue;
       const defTeam = pr.team === this.teams[1] ? this.teams[2] : this.teams[1];
       const defenders = [defTeam.active, defTeam.assistActor].filter((d) => d && d.alive);
       const current = pr.box();
