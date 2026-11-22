@@ -1,5 +1,37 @@
 plugins { id 'com.android.application' }
 
-android { namespace 'com.dclaboratory.sidc'; compileSdk 35
-    defaultConfig { applicationId 'com.dclaboratory.sidc'; minSdk 21; targetSdk 35; versionCode 15; versionName '1.2.4' }
+def releaseStorePath = System.getenv('DCVSWIZZ_STORE_FILE')
+
+def releaseStorePassword = System.getenv('DCVSWIZZ_STORE_PASSWORD')
+def releaseKeyAlias = System.getenv('DCVSWIZZ_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('DCVSWIZZ_KEY_PASSWORD')
+
+android {
+    namespace 'com.dclaboratory.sidc'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.dclaboratory.sidc'
+        minSdk 21
+        targetSdk 35
+        versionCode 16
+        versionName '1.2.5'
+    }
+    signingConfigs {
+        release {
+            if (releaseStorePath && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                storeFile file(releaseStorePath)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (releaseStorePath && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                signingConfig signingConfigs.release
+            }
+            minifyEnabled false
+        }
+    }
 }

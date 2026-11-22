@@ -3091,6 +3091,8 @@ class Projectile {
     this.artYOffset = spec.artYOffset || 0;
     this.dmg = spec.damage; this.percentMaxHp = spec.percentMaxHp || 0; this.unblockable = !!spec.unblockable;
     this.isDogSupport = !!spec.dogSupport;
+    // La variante se decide al crear el apoyo y no cambia durante el combate.
+    this.dogVariant = spec.dogVariant || 1;
     this.adrianFireball = !!spec.adrianFireball;
     // Un perro solo puede hacer un impacto de 10%; al adherirse deja de ser dañino.
     this.dogHasHit = false;
@@ -3154,7 +3156,7 @@ class Projectile {
   }
   draw(g) {
     if (this.isDogSupport) {
-      const frame = ProjectileArt[`dog${((this.frameOffset || 0) + Math.floor(this.age / 7)) % 3 + 1}`];
+      const frame = ProjectileArt[`dog${this.dogVariant || 1}`];
       if (frame?.complete && frame.naturalWidth > 0) {
         const scale = Math.min(this.renderW / frame.naturalWidth, this.renderH / frame.naturalHeight);
         const w = frame.naturalWidth * scale, h = frame.naturalHeight * scale;
@@ -3636,7 +3638,8 @@ class World {
   }
 
   spawnDogSupport(owner) {
-    if (this.dogSupportTriggered || this.over || !owner?.alive) return false;
+    // Defensa adicional: nunca crear un segundo perro mientras haya uno activo.
+    if (this.dogSupportTriggered || this.projectiles.some((p) => p.isDogSupport && !p.dead) || this.over || !owner?.alive) return false;
     const targetTeam = owner.team === this.teams[1] ? this.teams[2] : this.teams[1];
     const target = targetTeam?.active;
     if (!target?.alive) return false;
@@ -3647,19 +3650,18 @@ class World {
     this.dogSupportTriggered = true;
     const spawnX = clamp(owner.x + crossDirection * 72, WALL_L + 24, WALL_R - 24);
     const spawnY = GROUND_Y - 28;
+    const dogVariant = 1 + Math.floor(rand(0, 3));
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
       spawnX, spawnY, vx: 0.45 * crossDirection, vy: 0, w: 11, h: 9, renderW: 96, renderH: 70,
       damage: 0, percentMaxHp: 0, hitstun: 0, blockstun: 0, hitstop: 0,
       color: '#d59a63', forceColor: '#d59a63', life: 3600, level: 'low', pierce: 0,
-      dogSupport: true,
+      dogSupport: true, dogVariant,
     }, { id: 'dogSupport' }));
     const dog = this.projectiles[this.projectiles.length - 1];
     dog.isDogSupport = true;
-    /* Cada pelea empieza con una raza/fotograma distinto y luego rota los
-       tres perros para que la ayuda no sea siempre la misma. */
-    dog.frameOffset = Math.floor(rand(0, 3));
+    // Un combate conserva esta raza; el siguiente combate vuelve a sortearla.
     dog.stickDuration = 300;
     dog.target = target;
     dog.dogCrossDirection = crossDirection;
