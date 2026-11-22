@@ -2986,19 +2986,22 @@ class Fighter {
       g.restore();
       return;
     }
-    const adrianCharizard = this.charId === 'adrian' && this.state === STATE.ATTACK
-      && this.move?.adrianFlight && SpecialArt.adrian?.complete && SpecialArt.adrian.naturalWidth > 0;
+    // Durante todo el vuelo, Charmeleon queda oculto: esta rama sustituye
+    // completamente su sprite por Charizard, incluso mientras termina de cargar.
+    const adrianCharizard = this.charId === 'adrian' && this.move?.adrianFlight;
     if (adrianCharizard) {
       const image = SpecialArt.adrian;
-      const h = 340;
-      const w = (image.naturalWidth / image.naturalHeight) * h;
-      g.save();
-      g.translate(this.x, this.y);
-      if (this.facing < 0) g.scale(-1, 1);
-      g.globalAlpha = this.invuln > 0 ? 0.72 : 1;
-      g.filter = 'drop-shadow(0 0 18px #ff6a00)';
-      g.drawImage(image, -w / 2, -h, w, h);
-      g.restore();
+      if (image?.complete && image.naturalWidth > 0) {
+        const h = 360;
+        const w = (image.naturalWidth / image.naturalHeight) * h;
+        g.save();
+        g.translate(this.x, this.y);
+        if (this.facing < 0) g.scale(-1, 1);
+        g.globalAlpha = this.invuln > 0 ? 0.72 : 1;
+        g.filter = 'drop-shadow(0 0 22px #ff6a00)';
+        g.drawImage(image, -w / 2, -h, w, h);
+        g.restore();
+      }
       return;
     }
     if (this.blocking || this.state === STATE.BLOCKSTUN) {
