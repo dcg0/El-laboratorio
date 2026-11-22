@@ -1205,13 +1205,13 @@ function buildMoves(bank) {
   const manuelinUltimate = profile === 'manuelin';
   const customUltimate = signatureUltimate || totoUltimate || craterUltimate || manuelinUltimate;
   set.hyUlt = hyper({
-    id: 'hyUlt', name: craterUltimate ? 'VACA LANZADA' : (manuelinUltimate ? 'PODER MANUELÍN' : names.ult), pose: P.hyperAlt,
+    id: 'hyUlt', name: craterUltimate ? 'VACA LANZADA' : (manuelinUltimate ? 'PODER MANUELÍN' : (weroUltimate ? 'GÜEREJA GIGANTE' : names.ult)), pose: P.hyperAlt,
     cost: customUltimate ? 2 : 3,
     hits: customUltimate ? 1 : 18, hitGap: 4,
     damage: (totoUltimate || craterUltimate || manuelinUltimate) ? 0 : 5.2,
     startup: (totoUltimate || manuelinUltimate) ? 1 : (craterUltimate ? 10 : (signatureUltimate ? 10 : 12)),
-    active: (totoUltimate || craterUltimate || manuelinUltimate) ? 1 : (yiyoUltimate ? 38 : (weroUltimate ? 32 : 62)),
-    recovery: (totoUltimate || manuelinUltimate) ? 1 : (craterUltimate ? 20 : (signatureUltimate ? 24 : 40)),
+    active: (totoUltimate || craterUltimate || manuelinUltimate) ? 1 : (yiyoUltimate ? 38 : (weroUltimate ? 180 : 62)),
+    recovery: (totoUltimate || manuelinUltimate) ? 1 : (craterUltimate ? 20 : (weroUltimate ? 1 : (signatureUltimate ? 24 : 40))),
     hitstun: weroUltimate ? 36 : 22, blockstun: 14,
     hitstop: weroUltimate ? 12 : 5,
     meter: 0,
@@ -1219,13 +1219,13 @@ function buildMoves(bank) {
     fx: 'ultimate', sfx: 'hyper', flash: totoUltimate ? 24 : (signatureUltimate ? 28 : 34),
     boxes: (totoUltimate || craterUltimate || manuelinUltimate) ? [] : (yiyoUltimate
       ? [{ x: 36, y: -232, w: 232, h: 220 }]
-      : (weroUltimate ? [{ x: 32, y: -240, w: 248, h: 230 }]
+      : (weroUltimate ? [{ x: 20, y: -300, w: 360, h: 330 }]
         : [{ x: 36, y: -240, w: 260, h: 250 }])),
-    percentMaxHp: yiyoUltimate ? 0.30 : (weroUltimate ? 0.95 : 0),
+    percentMaxHp: yiyoUltimate ? 0.30 : (weroUltimate ? 0.40 : 0),
     unblockable: weroUltimate,
     mobileSpecial: yiyoUltimate,
     freezeSelf: weroUltimate,
-    sizeBoostFrames: weroUltimate ? 60 : (totoUltimate ? 20 * 60 : 0),
+    sizeBoostFrames: weroUltimate ? 3 * 60 : (totoUltimate ? 20 * 60 : 0),
     sizeDownFrames: manuelinUltimate ? 20 * 60 : 0,
     damageBoostFrames: manuelinUltimate ? 20 * 60 : 0,
     proj: craterUltimate ? {
@@ -1234,7 +1234,7 @@ function buildMoves(bank) {
       level: 'low', pierce: 0, unblockable: true, art: 'craterCow',
       renderW: 72, renderH: 49, artYOffset: -42,
     } : undefined,
-    label: weroUltimate ? 'WERO · GÜEREJA GIGANTE · 95% DE DAÑO · 3 BOTONES O DOBLE ↓↘→ + P·P (Nv.2)'
+    label: weroUltimate ? 'WERO · GÜEREJA GIGANTE · 40% DE DAÑO · 3 BOTONES · 3 SEGUNDOS'
       : (craterUltimate ? 'CRATER · VACA · 35% DE DAÑO · DOBLE ↓↘→ + P·P (Nv.2)'
         : (manuelinUltimate ? 'MANUELÍN · -30% TAMAÑO · +15% DAÑO · 20 SEGUNDOS (Nv.2)'
           : (signatureUltimate ? 'DOBLE ↓↘→ + P·P (Nv.2)'
@@ -2838,7 +2838,7 @@ class Fighter {
     }
     if (this.state === STATE.ATTACK && this.move && (this.move.type === 'hyper')) filter += `drop-shadow(0 0 18px ${this.move.color}) `;
     if (filter) g.filter = filter;
-    const spriteScale = this.sizeDownTimer > 0 ? 0.7 : (this.charId === 'raul' && this.raulGiantTimer > 0 ? 1.3 : (this.sizeBoostTimer > 0 ? 1.25 : 1));
+    const spriteScale = this.sizeDownTimer > 0 ? 0.7 : (this.charId === 'raul' && this.raulGiantTimer > 0 ? 1.3 : (this.sizeBoostTimer > 0 ? (this.charId === 'wero' ? 1.7 : 1.25) : 1));
     g.drawImage(im, -w * spriteScale / 2, -h * spriteScale, w * spriteScale, h * spriteScale);
     g.filter = 'none';
     g.restore();
