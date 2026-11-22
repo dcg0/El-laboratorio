@@ -1585,6 +1585,8 @@ class Fighter {
     this.downTapHistory = [];
     this.doubleJumpAvailable = true;
     this.specialEvadeTimer = 0;
+    this.universalShieldTimer = 0;
+    this.universalShieldUsed = false;
     this.downTimer = 0;
     this.getupInvuln = 0;
     this.poseIndex = 0;
@@ -1759,6 +1761,7 @@ class Fighter {
     this.guardBreakTimer = Math.max(0, this.guardBreakTimer - 1);
     this.getupInvuln = Math.max(0, this.getupInvuln - 1);
     this.specialEvadeTimer = Math.max(0, this.specialEvadeTimer - 1);
+    this.universalShieldTimer = Math.max(0, this.universalShieldTimer - 1);
     this.sizeBoostTimer = Math.max(0, this.sizeBoostTimer - 1);
     this.raulGiantTimer = Math.max(0, this.raulGiantTimer - 1);
     this.angelSharkTimer = Math.max(0, this.angelSharkTimer - 1);
@@ -2315,6 +2318,17 @@ class Fighter {
     spawnDashFx(this);
   }
 
+  activateUniversalShield(world) {
+    if (this.universalShieldUsed || !this.alive) return false;
+    this.universalShieldUsed = true;
+    this.universalShieldTimer = 4 * 60;
+    this.specialEvadeTimer = Math.max(this.specialEvadeTimer, this.universalShieldTimer);
+    Audio.sfx.special();
+    world?.announce?.(`${this.char?.name || this.charId} · ESCUDO · 4 SEGUNDOS`, 1.7);
+    spawnRing(this.x, this.y - 120, '#38d9ff', 210, 0.56);
+    spawnSpark(this.x, this.y - 145, '#d8fbff', 30, 1.25);
+    return true;
+  }
   activateAngelSprunki(world) {
     if (this.charId !== 'angel' || this.angelSprunkiUsed || !this.alive) return false;
     this.angelSprunkiUsed = true; this.angelSprunkiTimer = 10 * 60;
@@ -2680,6 +2694,17 @@ class Fighter {
   /* ---------- Reacción a impactos ---------- */
   takeHit(hit, attacker, hitPoint) {
     if (!this.alive || this.state === STATE.KO) return false;
+    if (this.universalShieldTimer > 0) {
+      this.flashTimer = 4;
+      if (attacker && attacker !== this && attacker.team !== this.team) {
+        attacker.vx = -attacker.facing * 8;
+        attacker.x = clamp(attacker.x - attacker.facing * 8, WALL_L, WALL_R);
+      }
+      spawnRing(hitPoint?.x ?? this.x, hitPoint?.y ?? this.y - 120, '#8fe6ff', 95, 0.24);
+      spawnSpark(hitPoint?.x ?? this.x, hitPoint?.y ?? this.y - 120, '#ffffff', 14, 0.8);
+      Audio.sfx.block();
+      return true;
+    }
     if (this.charId === 'miguelnew') {
       this.receiveMiguelNewHit(attacker, hitPoint);
       if (!this.alive) return true;
@@ -2712,6 +2737,9 @@ class Fighter {
       this.redHp = Math.min(this.maxHp - this.hp, this.redHp + dmg * 0.55);
     }
     if (this.team) this.team.gauge = Math.min(MAX_SUPER_LEVELS * SUPER_LEVEL, this.team.gauge + dmg * 1.5);
+    if (!this.universalShieldUsed && this.hp > 0 && this.hp / this.maxHp <= 0.90) {
+      this.activateUniversalShield(this.team?.world);
+    }
     if (this.charId === 'angel' && !this.angelSprunkiUsed && this.hp > 0 && this.hp / this.maxHp <= 0.90) {
       this.activateAngelSprunki(this.team?.world); return true;
     }
@@ -2905,6 +2933,21 @@ class Fighter {
     g.ellipse(this.x, GROUND_Y + 6, 62 * shadowScale, 12 * shadowScale, 0, 0, Math.PI * 2);
     g.fill();
     g.restore();
+    if (this.universalShieldTimer > 0) {
+      const pulse = 1 + Math.sin(this.universalShieldTimer * 0.16) * 0.035;
+      g.save();
+      g.globalAlpha = 0.30;
+      g.strokeStyle = '#8fe6ff';
+      g.fillStyle = 'rgba(57, 214, 255, 0.12)';
+      g.lineWidth = 7;
+      g.shadowColor = '#38d9ff';
+      g.shadowBlur = 24;
+      g.beginPath();
+      g.ellipse(this.x, this.y - 120, 92 * pulse, 150 * pulse, 0, 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+      g.restore();
+    }
     const angelSprunkiActive = this.charId === 'angel' && this.move?.angelSprunki && this.angelSprunkiTimer > 0
       && SpecialArt.angelSprunki?.complete && SpecialArt.angelSprunki.naturalWidth > 0;
     if (angelSprunkiActive) {
