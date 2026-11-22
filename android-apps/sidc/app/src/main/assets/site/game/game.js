@@ -2328,10 +2328,10 @@ class Fighter {
   }
   fireAngelSprunki(world) {
     const colors = ['#ff3b5f', '#ffd21f', '#38d9ff', '#7dff67', '#b86cff', '#ff8a35', '#ffffff'];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 16; i++) {
       const angle = rand(0, Math.PI * 2), speed = rand(4.8, 8.2), color = colors[(this.moveFrame + i) % colors.length];
       world.spawnProjectile(this, { vx: Math.cos(angle) * speed * this.facing, vy: Math.sin(angle), w: 10, h: 10,
-        spawnX: this.x, spawnY: this.y - 170, damage: 4, hitstun: 12, blockstun: 8, hitstop: 3,
+        spawnX: this.x, spawnY: this.y - 170, damage: 0, percentMaxHp: 0.05, hitstun: 12, blockstun: 8, hitstop: 3,
         forceColor: color, color, life: 100, level: 'mid', pierce: 0 }, this.move);
     }
     spawnSpark(this.x, this.y - 170, '#ffffff', 12, 0.7);
