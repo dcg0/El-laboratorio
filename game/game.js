@@ -351,8 +351,10 @@ function rotate(n) {
 /* ======================= AUDIO (Web Audio, chiptune) ==================== */
 
 const Audio = (() => {
+  const DEFAULT_MUSIC = 'assets/rola2.m4a';
+  const VICTOR_MUSIC = 'assets/audio/victor-flow.m4a';
   let ac = null, musicGain = null, sfxGain = null, musicTimer = null, musicAudio = null;
-  let musicSource = null, master = null;
+  let musicSource = null, master = null, currentMusic = DEFAULT_MUSIC;
   function init() {
     if (ac) return;
     const C = window.AudioContext || window.webkitAudioContext;
@@ -364,7 +366,7 @@ const Audio = (() => {
     master.attack.value = 0.004; master.release.value = 0.16; master.connect(ac.destination);
     musicGain = ac.createGain(); musicGain.gain.value = 0.115; musicGain.connect(master);
     sfxGain = ac.createGain(); sfxGain.gain.value = 0.30; sfxGain.connect(master);
-    musicAudio = new window.Audio('assets/rola2.m4a');
+    musicAudio = new window.Audio(currentMusic);
     musicAudio.loop = true;
     musicAudio.preload = 'auto';
     musicAudio.volume = 1;
@@ -439,6 +441,17 @@ const Audio = (() => {
     [131, 0.24], [196, 0.24], [262, 0.24], [196, 0.24],
   ];
   let step = 0;
+  function setMusicTrack(track) {
+    const next = track || DEFAULT_MUSIC;
+    currentMusic = next;
+    if (!musicAudio) return;
+    const wasPlaying = !musicAudio.paused;
+    if (musicAudio.src.endsWith(next)) return;
+    musicAudio.pause();
+    musicAudio.src = next;
+    musicAudio.load();
+    if (wasPlaying) musicAudio.play().catch(() => {});
+  }
   function startMusic() {
     if (!ac) init();
     resume();
@@ -466,7 +479,7 @@ const Audio = (() => {
     if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
   }
   function isMusicPlaying() { return musicAudio ? !musicAudio.paused : !!musicTimer; }
-  return { init, resume, sfx, startMusic, stopMusic, isMusicPlaying, get ctx() { return ac; } };
+  return { init, resume, sfx, setMusicTrack, startMusic, stopMusic, isMusicPlaying, get ctx() { return ac; } };
 })();
 
 /* ======================= SPRITES, PALETAS Y POSES ======================= */
@@ -4534,7 +4547,10 @@ const Game = {
     setScreen('fight');
     if (!this.world.boss || this.world.bossId !== 'miguel2') this.world.announce(this.world.boss ? 'JEFE FINAL · 20 SEGUNDOS' : 'FIGHT!', 1.5);
     Audio.sfx.round();
-    /* Inicia la pista al comenzar el combate tras el gesto del usuario. */
+    /* Víctor impone su tema en todas las peleas donde fue seleccionado;
+     * en cualquier otro caso se restaura la pista normal. */
+    const victorSelected = [...this.p1.picks, ...this.p2.picks].some((pick) => pick.charId === 'victor');
+    Audio.setMusicTrack(victorSelected ? 'assets/audio/victor-flow.m4a' : 'assets/rola2.m4a');
     Audio.startMusic();
   },
 
