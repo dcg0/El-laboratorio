@@ -2923,7 +2923,11 @@ class Projectile {
       const w = customArt.naturalWidth * scale, h = customArt.naturalHeight * scale;
       g.save();
       g.translate(this.x, this.y + this.artYOffset);
-      if (this.facing < 0 && this.artKey !== 'miguel1Can') g.scale(-1, 1);
+      /* angel-shark.png nace mirando a la izquierda; para Ángel debe
+       * invertirse cuando el proyectil viaja hacia la derecha, de modo que
+       * la boca siempre quede orientada hacia el contrincante. */
+      const flipCustomArt = this.artKey === 'angelShark' ? this.facing > 0 : this.facing < 0;
+      if (flipCustomArt && this.artKey !== 'miguel1Can') g.scale(-1, 1);
       g.drawImage(customArt, -w / 2, -h / 2, w, h);
       g.restore();
       return;
