@@ -502,6 +502,8 @@ SpecialArt.wero.src = 'assets/specials/wero-special.png';
 SpecialArt.adrian = new Image();
 SpecialArt.adrian.src = 'assets/specials/adrian-charizard.png';
 SpecialArt.angel.src = 'assets/specials/angel-sprunkys.png';
+SpecialArt.angelSprunki = new Image();
+SpecialArt.angelSprunki.src = 'assets/specials/angel-sprunki-rainbow.png';
 const Miguel1MoveArt = { attack: new Image() };
 Miguel1MoveArt.attack.src = 'assets/specials/miguel1-can-attack.png';
 const MIGUEL1_AIR_ART = new Image();
@@ -1540,6 +1542,9 @@ class Fighter {
     this.sizeBoostTimer = 0;
     this.raulGiantTimer = 0;
     this.angelSharkTimer = 0;
+    this.angelSprunkiTimer = 0;
+    this.angelSprunkiUsed = false;
+    this.angelSprunkiMove = null;
     this.giantFormTimer = 0;
     this.giantFormCooldown = 0;
     this.giantTransformAge = 0;
@@ -1757,6 +1762,13 @@ class Fighter {
     this.sizeBoostTimer = Math.max(0, this.sizeBoostTimer - 1);
     this.raulGiantTimer = Math.max(0, this.raulGiantTimer - 1);
     this.angelSharkTimer = Math.max(0, this.angelSharkTimer - 1);
+    if (this.angelSprunkiTimer > 0) {
+      this.angelSprunkiTimer--;
+      if (this.angelSprunkiTimer === 0 && this.move?.angelSprunki) {
+        this.move = null; this.state = STATE.IDLE; this.stateFrame = 0; this.vx = 0;
+        world.announce?.('SPRUNKI TERMINÓ', 1.2);
+      }
+    }
     const giantExpiring = !this.giantFormPermanent && this.giantFormTimer === 1;
     if (!this.giantFormPermanent) this.giantFormTimer = Math.max(0, this.giantFormTimer - 1);
     this.giantFormCooldown = Math.max(0, this.giantFormCooldown - 1);
@@ -1831,6 +1843,9 @@ class Fighter {
         const direction = Number(!!d.right) - Number(!!d.left);
         this.vx = direction * MORGAN_MOVE_SPEED;
         this.updateAttack(world);
+      } else if (this.move?.angelSprunki && input) {
+        this.vx = 0; this.vy = 0; this.onGround = true;
+        if (BTN.some((button) => input.tap?.[button])) this.fireAngelSprunki(world);
       } else if (this.move?.adrianFlight && input) {
         const d = input.dir || {};
         const direction = Number(!!d.right) - Number(!!d.left);
@@ -2300,6 +2315,27 @@ class Fighter {
     spawnDashFx(this);
   }
 
+  activateAngelSprunki(world) {
+    if (this.charId !== 'angel' || this.angelSprunkiUsed || !this.alive) return false;
+    this.angelSprunkiUsed = true; this.angelSprunkiTimer = 10 * 60;
+    this.angelSprunkiMove = { id: 'angelSprunki', type: 'special', kind: 'normal', angelSprunki: true,
+      startup: 0, active: 600, recovery: 0, boxes: [], damage: 0, hitstun: 0, blockstun: 0, hitstop: 0, color: '#38d9ff' };
+    this.move = this.angelSprunkiMove; this.moveFrame = 0; this.state = STATE.ATTACK; this.stateFrame = 0;
+    this.vx = 0; this.vy = 0; this.onGround = true; this.blocking = false;
+    Audio.sfx.special(); world.announce?.('ÁNGEL · SPRUNKI · 10 SEGUNDOS', 2.0);
+    spawnRing(this.x, this.y - 170, '#38d9ff', 220, 0.58); spawnSpark(this.x, this.y - 180, '#ffffff', 36, 1.35);
+    return true;
+  }
+  fireAngelSprunki(world) {
+    const colors = ['#ff3b5f', '#ffd21f', '#38d9ff', '#7dff67', '#b86cff', '#ff8a35', '#ffffff'];
+    for (let i = 0; i < 7; i++) {
+      const angle = rand(0, Math.PI * 2), speed = rand(4.8, 8.2), color = colors[(this.moveFrame + i) % colors.length];
+      world.spawnProjectile(this, { vx: Math.cos(angle) * speed * this.facing, vy: Math.sin(angle), w: 10, h: 10,
+        spawnX: this.x, spawnY: this.y - 170, damage: 4, hitstun: 12, blockstun: 8, hitstop: 3,
+        forceColor: color, color, life: 100, level: 'mid', pierce: 0 }, this.move);
+    }
+    spawnSpark(this.x, this.y - 170, '#ffffff', 12, 0.7);
+  }
   startMove(world, entry, keepChain) {
     if (this.charId === 'miguel1' && entry?.id === 'miguelGiant') {
       const giantArt = Art.get('miguel1').giantFrame;
@@ -2676,13 +2712,25 @@ class Fighter {
       this.redHp = Math.min(this.maxHp - this.hp, this.redHp + dmg * 0.55);
     }
     if (this.team) this.team.gauge = Math.min(MAX_SUPER_LEVELS * SUPER_LEVEL, this.team.gauge + dmg * 1.5);
+    if (this.charId === 'angel' && !this.angelSprunkiUsed && this.hp > 0 && this.hp / this.maxHp <= 0.90) {
+      this.activateAngelSprunki(this.team?.world); return true;
+    }
+    const angelSprunkiActive = this.charId === 'angel' && this.angelSprunkiTimer > 0;
 
     /* Feedback de impacto: parpadeo rojo breve y retroceso suave.
        Se aplica también a proyectiles porque ambos pasan por takeHit(). */
     this.flashTimer = 8;
     this.blocking = false;
-    this.move = null;
+    this.move = angelSprunkiActive ? this.angelSprunkiMove : null;
     this.hitList.clear();
+    if (angelSprunkiActive && this.alive) {
+      this.state = STATE.ATTACK;
+      this.stateFrame = 0;
+      this.vx = 0;
+      this.vy = 0;
+      this.onGround = true;
+      return true;
+    }
 
     const launched = hit.launch || hit.launcherFlag;
     const wasAir = !this.onGround;
@@ -2857,6 +2905,13 @@ class Fighter {
     g.ellipse(this.x, GROUND_Y + 6, 62 * shadowScale, 12 * shadowScale, 0, 0, Math.PI * 2);
     g.fill();
     g.restore();
+    const angelSprunkiActive = this.charId === 'angel' && this.move?.angelSprunki && this.angelSprunkiTimer > 0
+      && SpecialArt.angelSprunki?.complete && SpecialArt.angelSprunki.naturalWidth > 0;
+    if (angelSprunkiActive) {
+      const image = SpecialArt.angelSprunki, h = 380, w = image.naturalWidth / image.naturalHeight * h;
+      g.save(); g.translate(this.x, this.y); if (this.facing < 0) g.scale(-1, 1);
+      g.filter = 'drop-shadow(0 0 20px #38d9ff)'; g.drawImage(image, -w / 2, -h, w, h); g.restore(); return;
+    }
     const adrianCharizard = this.charId === 'adrian' && this.state === STATE.ATTACK
       && this.move?.adrianFlight && SpecialArt.adrian?.complete && SpecialArt.adrian.naturalWidth > 0;
     if (adrianCharizard) {
