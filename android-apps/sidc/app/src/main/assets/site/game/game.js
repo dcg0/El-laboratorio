@@ -1847,7 +1847,10 @@ class Fighter {
       if (this.charId === 'morgan') {
         const d = input?.dir || {};
         const direction = Number(!!d.right) - Number(!!d.left);
-        this.vx = direction * MORGAN_MOVE_SPEED;
+        // Morgan se desplaza directamente para que el movimiento no dependa
+        // de la física de suelo mientras dispara.
+        if (direction) this.x = clamp(this.x + direction * MORGAN_MOVE_SPEED, WALL_L, WALL_R);
+        this.vx = 0;
         this.updateAttack(world);
       } else if (this.move?.angelSprunki && input) {
         this.vx = 0; this.vy = 0; this.onGround = true;
@@ -1923,7 +1926,9 @@ class Fighter {
       const direction = Number(!!d.right) - Number(!!d.left);
       if (direction) {
         this.setFreeState(STATE.WALK);
-        this.vx = direction * MORGAN_MOVE_SPEED;
+        // Movimiento lateral directo y rápido, también en WebView/táctil.
+        this.x = clamp(this.x + direction * MORGAN_MOVE_SPEED, WALL_L, WALL_R);
+        this.vx = 0;
         this.walkTimer += STEP;
       } else {
         this.vx = 0;
