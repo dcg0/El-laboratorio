@@ -3064,6 +3064,8 @@ class Projectile {
     this.artYOffset = spec.artYOffset || 0;
     this.dmg = spec.damage; this.percentMaxHp = spec.percentMaxHp || 0; this.unblockable = !!spec.unblockable;
     this.isDogSupport = !!spec.dogSupport;
+    // Un perro solo puede hacer un impacto de 10%; al adherirse deja de ser dañino.
+    this.dogHasHit = false;
     this.hitstun = spec.hitstun; this.blockstun = spec.blockstun;
     this.hitstop = spec.hitstop;
     this.multiColor = isMulticolorProjectile(owner.char?.id);
@@ -3776,6 +3778,8 @@ class World {
         h: Math.max(current.y + current.h, previous.y + previous.h) - Math.min(current.y, previous.y) };
       for (const d of defenders) {
         if (d.invuln > 0) continue;
+        // El perro adherido se dibuja y sigue al objetivo, pero no vuelve a golpear.
+        if (pr.isDogSupport && pr.dogHasHit) continue;
         const hurt = fighterHurtboxes(d);
         if (hurt.some((h) => overlap(pbox, h))) {
           const point = { x: pr.x, y: pr.y };
@@ -3827,8 +3831,9 @@ class World {
           const res = this.applyHit(d, pr.owner, hit, point, pr.color);
           if (res) {
             if (pr.isDogSupport) {
-              /* El perro aplica una sola vez el 10% y queda pegado al punto
-                 donde alcanzó al usuario o a la IA durante 2 segundos. */
+              /* Un único impacto de 10%; después solo queda visualmente pegado
+                 durante 2, 3 o 4 segundos sin volver a causar daño. */
+              pr.dogHasHit = true;
               pr.attachedTo = d;
               pr.attachOffsetX = point.x - d.x;
               pr.attachOffsetY = point.y - d.y;
