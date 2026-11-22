@@ -587,7 +587,7 @@ const PANEL_CHARACTER_ORDER = [
   'manuelin', 'toto', 'yiyo',
   'wero', 'crater', 'aron',
   'victor', 'dcr', 'kato',
-  'dc', 'wz', 'morgan', 'adrian', 'angel',
+  'dc', 'wz', 'morgan', 'adrian', 'angel', 'miguel1',
 ];
 const PANEL_CHARACTER_IDS = new Set(PANEL_CHARACTER_ORDER);
 const PANEL_CHARACTER_LABELS = {
@@ -595,6 +595,7 @@ const PANEL_CHARACTER_LABELS = {
   wero: 'Wero', crater: 'Crater', aron: 'Aron',
   victor: 'Víctor', dcr: 'Rojo', kato: 'Kato',
   dc: 'DC', wz: 'Wizz', morgan: 'Morgan', adrian: 'ADRIAN', angel: 'Angel',
+  miguel1: 'Miguel 1 · 50%',
 };
 const SELECTABLE_ROSTER = PANEL_CHARACTER_ORDER
   .map((id) => ROSTER.find((c) => c.id === id))
@@ -4586,8 +4587,6 @@ const Game = {
     if (firstRaulUnlock) unlockRaul();
     const firstDandyUnlock = this.mode === 'arcade' && recordArcadeBattle(w);
     const usedToto = this.p1.picks.some((p) => p.charId === 'toto');
-    const firstMiguel1Win = w.winner === 1 && usedToto && !isMiguel1Unlocked();
-    if (firstMiguel1Win) unlockMiguel1();
     if (this.mode === 'arcade' && w?.finalStage && ['miguel2', 'morgan'].includes(w.bossId) && w.winner !== 1) {
       this.finalMorganLossSequenceActive = true;
       this.showMorganDefeat(() => {
@@ -4630,12 +4629,6 @@ const Game = {
             proceedAfterUnlocks();
           };
           const showWeroScene = () => {
-            if (firstMiguel1Win) {
-              this.showUnlockPoster('miguel1', '¡MIGUEL 1 DESBLOQUEADO!', () => {
-                showWeroScene();
-              });
-              return;
-            }
             if (usedWero) {
               this.showVictoryImage('assets/victories/wero-level-complete.jpg', 'WERO · NIVEL SUPERADO', showTeamVictoryScene);
               return;
@@ -4661,7 +4654,7 @@ const Game = {
     }
     if (this.mode === 'versus') {
       const txt = w.winner === 0 ? 'EMPATE' : (w.winner === 1 ? 'JUGADOR 1 GANA' : 'JUGADOR 2 GANA');
-      this.showResult(w.result, [txt, ...(firstMiguel1Win ? ['¡MIGUEL 1 DESBLOQUEADO POR GANAR CON TOTO!'] : []), ...(firstRaulUnlock ? ['¡RAÚL DESBLOQUEADO! DISPONIBLE EN SELECCIÓN'] : []), `P1: ${this.p1.picks.map((p) => CHAR[p.charId].name).join('')}`, `P2: ${this.p2.picks.map((p) => CHAR[p.charId].name).join('')}`]);
+      this.showResult(w.result, [txt, ...(firstRaulUnlock ? ['¡RAÚL DESBLOQUEADO! DISPONIBLE EN SELECCIÓN'] : []), `P1: ${this.p1.picks.map((p) => CHAR[p.charId].name).join('')}`, `P2: ${this.p2.picks.map((p) => CHAR[p.charId].name).join('')}`]);
     }
   },
 
@@ -5056,6 +5049,8 @@ function renderCharacterCard(container, character, focusIndex, state, side) {
     + (locked ? ' · se desbloquea al completar la ruta arcade' : ''));
   card.setAttribute('aria-disabled', String(locked));
   card.style.setProperty('--char-accent', character.chroma);
+  card.style.setProperty('--char-bg', character.chroma);
+  card.style.setProperty('--char-bg2', character.chroma2 || character.chroma);
   card.style.borderColor = character.chroma;
 
   const art = Art.get(character.id);

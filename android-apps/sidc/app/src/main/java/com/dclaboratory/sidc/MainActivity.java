@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
                 return openExternalIfNeeded(url);
             }
         });
-        webView.loadUrl("file:///android_asset/site/cotizador.html");
+        webView.loadUrl("file:///android_asset/site/game/game.html");
         setContentView(webView);
     }
     private boolean openExternalIfNeeded(String url) {

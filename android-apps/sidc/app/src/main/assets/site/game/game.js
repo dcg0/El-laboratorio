@@ -550,6 +550,7 @@ const BANKS = {
     'assets/sprites/newchars/angel/angel-06.png',
     'assets/sprites/newchars/angel/angel-shark.png',
   ], drawH: 306, feetPad: 6, recolor: [] },
+  morgan: { spriteFacesRight: true, frames: ['assets/sprites/newchars/morgan/morgan-01.png?v=morgan1'], drawH: 306, feetPad: 6, recolor: [] },
 };
 
 /* --- Plantilla de personajes jugables (paletas del mismo material). --- */
@@ -566,6 +567,7 @@ const ROSTER = [
   { id: 'crater', name: 'CrATtEr', bank: 'crater', hue: null, chroma: '#ff6a2a', chroma2: '#ffd21f' },
   { id: 'dcr',   name: 'ROJO',  bank: 'dcrojo',   hue: 0.995, chroma: '#ff4d63', chroma2: '#ffc078' },
   { id: 'wz',    name: 'WIZZ',     bank: 'wizznew', hue: null, chroma: '#ff3b52', chroma2: '#ffb43c' },
+  { id: 'morgan', name: 'MORGAN', bank: 'morgan', hue: null, chroma: '#ff5abf', chroma2: '#ffd1ef' },
   { id: 'manuelin', name: 'MANUELÍN', bank: 'manuelin', hue: null, chroma: '#31a9ff', chroma2: '#8fe6ff' },
   { id: 'toto',     name: 'TOTO',     bank: 'toto',     hue: null, chroma: '#ffd21f', chroma2: '#fff08a' },
   { id: 'wero',     name: 'WERO',     bank: 'wero',     hue: null, chroma: '#ff4d9a', chroma2: '#ffd0e6' },
@@ -585,19 +587,20 @@ const PANEL_CHARACTER_ORDER = [
   'manuelin', 'toto', 'yiyo',
   'wero', 'crater', 'aron',
   'victor', 'dcr', 'kato',
-  'dc', 'miguelnew', 'wz', 'adrian', 'angel',
+  'dc', 'wz', 'morgan', 'adrian', 'angel', 'miguel1',
 ];
 const PANEL_CHARACTER_IDS = new Set(PANEL_CHARACTER_ORDER);
 const PANEL_CHARACTER_LABELS = {
   manuelin: 'Manuelín', toto: 'Toto', yiyo: 'Yiyo',
   wero: 'Wero', crater: 'Crater', aron: 'Aron',
   victor: 'Víctor', dcr: 'Rojo', kato: 'Kato',
-  dc: 'DC', miguelnew: 'Miguel', wz: 'Wizz', adrian: 'ADRIAN', angel: 'Angel',
+  dc: 'DC', wz: 'Wizz', morgan: 'Morgan', adrian: 'ADRIAN', angel: 'Angel',
+  miguel1: 'Miguel 1 · 50%',
 };
 const SELECTABLE_ROSTER = PANEL_CHARACTER_ORDER
   .map((id) => ROSTER.find((c) => c.id === id))
   .filter(Boolean);
-const RANDOM_EXCLUDED_IDS = new Set(['dcakuma', 'wzm']);
+const RANDOM_EXCLUDED_IDS = new Set(['dcakuma', 'wzm', 'miguelnew']);
 const RANDOM_ROSTER = [...ROSTER, ...BOSS_ROSTER]
   .filter((c) => !PANEL_CHARACTER_IDS.has(c.id) && !RANDOM_EXCLUDED_IDS.has(c.id));
 const SELECT_PORTRAITS = {
@@ -617,11 +620,22 @@ const SELECT_PORTRAITS = {
   victor: 'assets/sprites/newchars/victor/victor-01.png',
   adrian: 'assets/sprites/adrian/adrian-01.png',
   angel: 'assets/portraits/angel.png',
+  morgan: 'assets/sprites/newchars/morgan/morgan-01.png?v=morgan1',
   mistikwiz: 'assets/portraits/mistikwiz.png',
 };
 
 /* --- Poses: índice del sprite que representa cada estado por banco. --- */
 const POSE = {
+  morgan: {
+    idle: 0, walk: [0], crouch: 0, jump: 0, fall: 0,
+    sLP: 0, sMP: 0, sHP: 0, sLK: 0, sMK: 0, sHK: 0,
+    cLP: 0, cMP: 0, cHP: 0, cLK: 0, cMK: 0, cHK: 0,
+    jLP: 0, jMP: 0, jHP: 0, jLK: 0, jMK: 0, jHK: 0,
+    dashF: 0, dashB: 0, block: 0, blockLow: 0, blockAir: 0,
+    hit: 0, hitLow: 0, hitAir: 0, down: 0, getUp: 0,
+    specialP: 0, specialK: 0, hyper: 0, hyperAlt: 0,
+    launcherP: 0, launcherK: 0, assistP: 0, assistK: 0, win: 0,
+  },
   angel: {
     idle: 0, walk: [1, 0], crouch: 1, jump: 2, fall: 3,
     sLP: 2, sMP: 3, sHP: 4, sLK: 2, sMK: 4, sHK: 5,
@@ -937,6 +951,9 @@ POSE.kato = {
 
 const RAD = 0.01745;
 const CHAIN_ORDER = { lp: 0, mp: 1, hp: 2, lk: 3, mk: 4, hk: 5 };
+const MORGAN_PROJECTILE_COLOR = '#ff5abf';
+const MORGAN_HITS_TO_KO = 5;
+const MIGUEL_NEW_EXPLOSIONS_TO_KO = 3;
 
 function normal(o) {
   return Object.assign({
@@ -1028,6 +1045,29 @@ function normals(poses) {
 function buildMoves(bank) {
   const P = POSE[bank];
   const set = normals(P);
+  if (bank === 'morgan') {
+    const vxByButton = { lp: 1.1, mp: 1.1, hp: 0, lk: 0, mk: -1.1, hk: -1.1 };
+    for (const button of BTN) {
+      for (const prefix of ['s', 'c', 'j']) {
+        const id = prefix + button.toUpperCase();
+        set[id] = normal({
+          id, name: 'PROYECTIL ROSA', pose: P[id], chain: CHAIN_ORDER[button],
+          startup: 7, active: 1, recovery: 14, damage: 0, meter: 0,
+          hitstun: 20, blockstun: 10, hitstop: 5, boxes: [], cancel: [],
+          color: MORGAN_PROJECTILE_COLOR, sfx: 'fireball', fx: 'orb',
+          proj: {
+            vx: vxByButton[button], vy: 1.45, w: 18, h: 19, renderW: 26, renderH: 27, y: -145,
+            damage: 0, percentMaxHp: 0.20, hitstun: 20, blockstun: 10, hitstop: 5,
+            color: MORGAN_PROJECTILE_COLOR, forceColor: MORGAN_PROJECTILE_COLOR,
+            life: 360, level: 'overhead', pierce: 0,
+            ignoreCpuDamageScale: true, ignoreDamageBoost: true,
+          },
+          label: 'PROYECTIL ROSA LENTO · 20%',
+        });
+      }
+    }
+    return set;
+  }
 
   // Los bancos de sprites tienen nombres propios, pero comparten familias de movimientos.
   const profile = {
@@ -1224,13 +1264,18 @@ const ASSIST_TYPES = {
 function assistMove(bank, type) {
   const P = POSE[bank];
   const profile = { kato: 'dc', dcnormal: 'dc', dcazul: 'dc', dcrojo: 'dc', dcakuma: 'dc', crater: 'dc', wiznew: 'wizz', mistikwiz: 'wizz', wizznew: 'wizz', wmistiko: 'wizz', dcBlack: 'noir' }[bank] || bank;
-  const tint = { dc: '#39a7ff', wizz: '#ff3b52', noir: '#6f5bff' }[profile];
+  const tint = { dc: '#39a7ff', wizz: '#ff3b52', noir: '#6f5bff', morgan: MORGAN_PROJECTILE_COLOR }[profile];
   if (type === 'a') {
     return special({
       id: 'asProj', name: 'ASISTENCIA PROYECTIL', pose: P.assistP, startup: 12, active: 4, recovery: 26,
-      damage: 10, hitstun: 18, blockstun: 12, hitstop: 5, meter: 3, color: tint, fx: 'orb',
+      damage: bank === 'morgan' ? 0 : 10, percentMaxHp: bank === 'morgan' ? 0.20 : 0,
+      hitstun: 18, blockstun: 12, hitstop: 5, meter: 3, color: tint, fx: 'orb',
       sfx: 'fireball', boxes: [], isAssist: true,
-      proj: { vx: 8.4, w: 58, h: 48, y: -140, damage: 10, hitstun: 18, blockstun: 12, hitstop: 5, color: tint, life: 130, level: 'mid', pierce: 0 },
+      proj: bank === 'morgan'
+        ? { vx: 0, vy: 1.45, w: 18, h: 19, y: -145, damage: 0, percentMaxHp: 0.20,
+          hitstun: 20, blockstun: 10, hitstop: 5, color: tint, forceColor: tint, life: 360,
+          level: 'overhead', pierce: 0, ignoreCpuDamageScale: true, ignoreDamageBoost: true }
+        : { vx: 8.4, w: 58, h: 48, y: -140, damage: 10, hitstun: 18, blockstun: 12, hitstop: 5, color: tint, life: 130, level: 'mid', pierce: 0 },
     });
   }
   if (type === 'b') {
@@ -1256,7 +1301,7 @@ const MOVES = {
   dcrojo: buildMoves('dcrojo'), dcakuma: buildMoves('dcakuma'), crater: buildMoves('crater'),
   wiznew: buildMoves('wiznew'), wizz: buildMoves('wizz'), wizznew: buildMoves('wizznew'),
   mistikwiz: buildMoves('mistikwiz'), wmistiko: buildMoves('wmistiko'),
-  noir: buildMoves('noir'), miguel2: buildMoves('miguel2'),
+  noir: buildMoves('noir'), miguel2: buildMoves('miguel2'), morgan: buildMoves('morgan'),
   manuelin: buildMoves('manuelin'), toto: buildMoves('toto'), wero: buildMoves('wero'), yiyo: buildMoves('yiyo'), adrian: buildMoves('adrian'), angel: buildMoves('angel'),
 };
 /* Miguel1 conserva su rayo de LP/A y añade el ataque ilustrado y la lata como movimientos separados. */
@@ -1448,11 +1493,15 @@ class Fighter {
   }
 
   reset(x, facing) {
-    this.x = x; this.y = GROUND_Y;
-    this.prevX = x; this.prevY = GROUND_Y;
+    const isSelectableMorgan = this.charId === 'morgan';
+    this.maxHp = isSelectableMorgan ? MORGAN_HITS_TO_KO : LIFE;
+    this.hp = this.maxHp; this.redHp = 0;
+    const startY = isSelectableMorgan ? GROUND_Y - 220 : GROUND_Y;
+    this.x = x; this.y = startY;
+    this.prevX = x; this.prevY = startY;
     this.vx = 0; this.vy = 0;
     this.facing = facing;
-    this.onGround = true;
+    this.onGround = !isSelectableMorgan;
     this.state = STATE.IDLE;
     this.stateFrame = 0;
     this.move = null;
@@ -1495,6 +1544,7 @@ class Fighter {
     this.manuelinChargeFlashTimer = 0;
     this.lastTap = { left: -99, right: -99, up: -99, down: -99 };
     this.miguelNewGrowth = 0;
+    this.miguelNewExplosionCount = 0;
     this.upTapHistory = [];
     this.downTapHistory = [];
     this.doubleJumpAvailable = true;
@@ -1745,7 +1795,12 @@ class Fighter {
 
     /* --- Estado accionable --- */
     if (this.state === STATE.ATTACK) {
-      if (this.move?.mobileSpecial && input) {
+      if (this.charId === 'morgan') {
+        const d = input?.dir || {};
+        const direction = Number(!!d.right) - Number(!!d.left);
+        this.vx = direction * PHYS.walkF;
+        this.updateAttack(world);
+      } else if (this.move?.mobileSpecial && input) {
         const d = input.dir || {};
         const direction = Number(!!d.right) - Number(!!d.left);
         if (this.onGround && input.tapDir?.up) {
@@ -1794,6 +1849,20 @@ class Fighter {
   /* ---------- Movimiento libre, bloqueo, dash, super salto ---------- */
   updateFree(world, input) {
     const d = input.dir;
+    if (this.charId === 'morgan') {
+      const direction = Number(!!d.right) - Number(!!d.left);
+      if (direction) {
+        this.setFreeState(STATE.WALK);
+        this.vx = direction * PHYS.walkF;
+        this.walkTimer += STEP;
+      } else {
+        this.vx = 0;
+        this.setFreeState(STATE.IDLE);
+      }
+      const pick = this.chooseMove(input, world);
+      if (pick) { this.chainUsed.clear(); this.airChainUsed.clear(); this.startMove(world, pick); }
+      return;
+    }
     const facing = this.facing;
     const fwd = facing === 1 ? d.right : d.left;
     const back = facing === 1 ? d.left : d.right;
@@ -2043,6 +2112,11 @@ class Fighter {
 
   chooseMove(input, world) {
     const m = this.moves;
+    if (this.charId === 'morgan') {
+      if (input._motion) return { id: 'jLP' };
+      const button = BTN.find((key) => input.tap?.[key]);
+      return button ? { id: `j${button.toUpperCase()}` } : null;
+    }
     /* Miguel 1 conserva ataques propios y también usa la selección estándar. */
     if (this.charId === 'miguel1') {
       const d = input.dir || {}; const tap = input.tap || {}; const btn = input.btn || {};
@@ -2363,6 +2437,18 @@ class Fighter {
 
   /* ---------- Física ---------- */
   updatePhysics(world) {
+    const selectableMorgan = this.charId === 'morgan' && this.alive && this.state !== STATE.KO;
+    if (selectableMorgan) {
+      this.vy = 0;
+      this.y = GROUND_Y - 220;
+      this.prevY = this.y;
+      this.onGround = false;
+      if (this.state !== STATE.WALK && this.state !== STATE.ATTACK) this.vx *= PHYS.friction;
+      if (Math.abs(this.vx) < 0.1) this.vx = 0;
+      this.vx = clamp(this.vx, -8, 8);
+      this.x = clamp(this.x + this.vx, WALL_L, WALL_R);
+      return;
+    }
     const hoveringMorgan = this.isBoss && this.charId === 'miguel2'
       && world?.morganPhaseActive && this.alive && this.state !== STATE.KO;
     if (hoveringMorgan) {
@@ -2462,12 +2548,23 @@ class Fighter {
     if (this.miguelNewGrowth < 100) return;
     const world = this.team?.world;
     const rival = attacker && attacker !== this && attacker.team !== this.team ? attacker : this.opponent();
+    const explosionNumber = (this.miguelNewExplosionCount || 0) + 1;
+    this.miguelNewExplosionCount = explosionNumber;
+    const finalMiguelBoss = this.isBoss && world?.boss && world.bossId === 'miguelnew';
+    const defeatedByThirdExplosion = finalMiguelBoss && explosionNumber >= MIGUEL_NEW_EXPLOSIONS_TO_KO;
     this.miguelNewGrowth = 0;
-    this.hp = this.maxHp;
     this.redHp = 0;
+    if (defeatedByThirdExplosion) {
+      this.hp = 0; this.state = STATE.KO; this.stateFrame = 0; this.move = null;
+      this.vx = 0; this.vy = -10.5; this.onGround = false;
+    } else {
+      this.hp = this.maxHp;
+    }
     spawnRing(this.x, this.y - 125, '#ff315f', 260, 0.52);
     spawnSpark(this.x, this.y - 135, '#ffd45c', 42, 1.65);
-    spawnFloater(this.x, this.y - 285, '¡EXPLOSIÓN! -20%', '#ff315f', 28, 1.0);
+    spawnFloater(this.x, this.y - 285,
+      defeatedByThirdExplosion ? '¡MIGUEL DERROTADO · 3/3!' : `¡EXPLOSIÓN ${explosionNumber}/3! -20%`,
+      '#ff315f', 28, 1.0);
     if (world) {
       world.shake = Math.max(world.shake, 16);
       world.hitstop = Math.max(world.hitstop, 10);
@@ -2477,12 +2574,16 @@ class Fighter {
         pushHit: 8, pushBlock: 0, kind: 'explosion', color: '#ff315f',
       }, { x: rival.x, y: rival.y - 120 }, '#ff315f');
     }
-    Audio.sfx.hyper();
+    if (this.hp <= 0) Audio.sfx.ko();
+    else Audio.sfx.hyper();
   }
   /* ---------- Reacción a impactos ---------- */
   takeHit(hit, attacker, hitPoint) {
     if (!this.alive || this.state === STATE.KO) return false;
-    if (this.charId === 'miguelnew') this.receiveMiguelNewHit(attacker, hitPoint);
+    if (this.charId === 'miguelnew') {
+      this.receiveMiguelNewHit(attacker, hitPoint);
+      if (!this.alive) return true;
+    }
     this.manuelinChargeActive = false;
     this.manuelinChargeFrames = 0;
     this.manuelinChargeBlinks = 0;
@@ -2501,11 +2602,11 @@ class Fighter {
 
     const scale = this.comboScaling();
     const resistance = this.isBoss && this.charId === 'miguel2' && hit.kind !== 'proj' ? 0.10 : 1;
-    const damageBoost = attacker?.damageBoostTimer > 0 ? 1.15 : 1;
-    /* Los impactos porcentuales son exactos y no se reducen por combo. */
-    const dmg = hit.percentMaxHp
+    const damageBoost = attacker?.damageBoostTimer > 0 && !hit.ignoreDamageBoost ? 1.15 : 1;
+    /* Morgan seleccionable cae al quinto impacto; sus golpes no dependen del daño nominal. */
+    const dmg = this.charId === 'morgan' ? 1 : (hit.percentMaxHp
       ? this.maxHp * hit.percentMaxHp * damageBoost
-      : Math.max(hit.kind === 'proj' ? 1 : 0.2, hit.damage * scale * resistance * damageBoost);
+      : Math.max(hit.kind === 'proj' ? 1 : 0.2, hit.damage * scale * resistance * damageBoost));
     if (this.charId !== 'miguelnew') {
       this.hp = Math.max(0, this.hp - dmg);
       this.redHp = Math.min(this.maxHp - this.hp, this.redHp + dmg * 0.55);
@@ -2663,8 +2764,8 @@ class Fighter {
     /* ADRIAN es un niño: conservar sus sprites, pero representarlo más pequeño
      * en combate sin alterar sus cajas de combate ni sus animaciones. */
     const visualScale = this.charId === 'angel'
-      ? (this.angelSharkTimer > 0 ? 1.08 : 0.56)
-      : (this.charId === 'adrian' ? 0.78 : 1);
+      ? (this.angelSharkTimer > 0 ? 1.08 : 0.82)
+      : (this.charId === 'refresh' ? 0.74 : (this.charId === 'adrian' ? 0.78 : 1));
     const h = (giantActive ? (giantPose ? baseH / giantFillY + (giantDrawH - baseH / giantFillY) * giantGrowth
       : baseH + (giantDrawH - baseH) * giantGrowth) : baseH)
       * (this.charId === 'miguelnew' ? 1 + this.miguelNewGrowth / 100 : 1) * visualScale;
@@ -3182,7 +3283,7 @@ class World {
     this.hazardTimer = 0;
     this.finalSkullTimer = 0;
     this.morganProjectileTimer = 0;
-    this.morganHeartCount = 0;
+    this.morganProjectileCount = 0;
     if (this.boss) this.setupBoss();
     WORLD = this;
   }
@@ -3207,6 +3308,8 @@ class World {
     f.maxHp = this.bossId === 'miguel1' ? 280 : 460;
     f.hp = f.maxHp;
     f.isBoss = true;
+    f.miguelNewExplosionCount = 0;
+    f.miguelNewGrowth = 0;
     t.helperAiDiff = 0;
     this.timer = this.bossId === 'miguel2' ? 24 : 20;
     this.timerMax = this.timer;
@@ -3222,7 +3325,10 @@ class World {
       f.onGround = false;
       f.vy = 0;
     }
-    if (this.bossId !== 'miguel2') this.announce(`MIGUEL 1 · JEFE FINAL · ${this.timer} SEGUNDOS`, 2.4);
+    if (this.bossId !== 'miguel2') {
+      const bossName = this.bossId === 'miguelnew' ? 'MIGUEL EXPLOSIVO' : 'MIGUEL 1';
+      this.announce(`${bossName} · JEFE FINAL · ${this.timer} SEGUNDOS`, 2.4);
+    }
   }
 
   aiTargetOf(f) {
@@ -3334,19 +3440,18 @@ class World {
       team: this.teams[2], charId: 'morgan', char: boss.char,
       x: position.x, y: position.y + 18, facing,
     };
-    /* El corazón cae deliberadamente muy lento: el jugador tiene tiempo de
-     * leerlo y esquivarlo, pero no puede ignorarlo porque quita 60% de vida. */
-    const vx = clamp((target.x - owner.x) / 180, -2.4, 2.4);
+    /* Orbe genérico rosa, de caída lenta y daño exacto del 20%. */
+    const vx = clamp((target.x - owner.x) / 240, -1.1, 1.1);
     this.spawnProjectile(owner, {
       spawnX: owner.x, spawnY: owner.y + 24,
-      vx, vy: 1.65, w: 18, h: 19, renderW: 34, renderH: 36,
-      damage: 0, percentMaxHp: 0.60, ignoreCpuDamageScale: true,
-      hitstun: 22, blockstun: 10, hitstop: 6,
-      color: '#ff315f', forceColor: '#ff315f', life: 440, level: 'overhead', pierce: 0,
-      art: 'morganHeart', artYOffset: 0,
-    }, { id: 'morganHeartProjectile' });
-    this.morganHeartCount++;
-    spawnSpark(owner.x, owner.y + 24, '#ff5279', 13, 0.9);
+      vx, vy: 1.45, w: 18, h: 19, renderW: 26, renderH: 27,
+      damage: 0, percentMaxHp: 0.20, ignoreCpuDamageScale: true, ignoreDamageBoost: true,
+      hitstun: 20, blockstun: 10, hitstop: 5,
+      color: MORGAN_PROJECTILE_COLOR, forceColor: MORGAN_PROJECTILE_COLOR,
+      life: 360, level: 'overhead', pierce: 0,
+    }, { id: 'morganPinkProjectile' });
+    this.morganProjectileCount++;
+    spawnSpark(owner.x, owner.y + 24, MORGAN_PROJECTILE_COLOR, 13, 0.9);
   }
 
   /* ---------------- Resolución de golpes ---------------- */
@@ -3518,14 +3623,14 @@ class World {
     if (!blocked && this.morganPhaseActive && !this.morganFinishingHit
       && victim === this.teams[2]?.members[0] && attacker?.team === this.teams[1]) {
       this.morganHitCount++;
-      const hitsLeft = 3 - this.morganHitCount;
-      if (this.morganHitCount < 3) {
-        victim.hp = Math.max(1, victim.maxHp * (hitsLeft / 3));
+      const hitsLeft = MORGAN_HITS_TO_KO - this.morganHitCount;
+      if (this.morganHitCount < MORGAN_HITS_TO_KO) {
+        victim.hp = Math.max(1, victim.maxHp * (hitsLeft / MORGAN_HITS_TO_KO));
         victim.redHp = 0;
         victim.state = STATE.HITSTUN;
         victim.stateFrame = 0;
         victim.stunFrames = Math.max(16, victim.stunFrames || 0);
-        spawnFloater(victim.x, victim.y - 248, `${this.morganHitCount} / 3 GOLPES`, '#ff7593', 30, 1.15);
+        spawnFloater(victim.x, victim.y - 248, `${this.morganHitCount} / ${MORGAN_HITS_TO_KO} GOLPES`, '#ff7593', 30, 1.15);
       } else {
         this.morganFinishingHit = true;
         victim.hp = 0; victim.redHp = 0; victim.state = STATE.KO; victim.stateFrame = 0;
@@ -3623,7 +3728,7 @@ class World {
   }
 
   updateBoss() {
-    if (this.morganPhaseActive) return;
+    if (this.morganPhaseActive || this.bossId === 'miguelnew') return;
     const boss = this.teams[2].members[0];
     if (!boss || !boss.isBoss) return;
     const foe = this.teams[1].active;
@@ -3726,7 +3831,9 @@ class World {
     if (this.boss) {
       const boss = this.teams[2].members[0];
       if (boss && !boss.alive) {
-        const bossName = this.bossId === 'miguel1' ? 'MIGUEL 1' : (this.bossId === 'morgan' ? 'MORGAN' : 'MIGUEL 2');
+        const bossName = this.bossId === 'miguel1' ? 'MIGUEL 1'
+          : (this.bossId === 'miguelnew' ? 'MIGUEL EXPLOSIVO'
+            : (this.bossId === 'morgan' ? 'MORGAN' : 'MIGUEL 2'));
         this.finish(1, `${bossName} DERROTADA`);
       }
       return;
@@ -4227,17 +4334,20 @@ function drawParticles(g) {
 /* ======================= MÁQUINA DE ESTADOS DEL JUEGO =================== */
 
 const DIFFICULTY_PRESETS = { easy: 0.72, normal: 1, hard: 1.28 };
-/* La cantidad de combates de Migueles aún no está confirmada. `rounds: null`
- * conserva la secuencia actual; al recibir el número se puede sustituir por
- * una lista de rondas sin alterar el resto de la ruta. */
+/* La secuencia final reserva el penúltimo combate para el Miguel explosivo.
+ * `rounds: null` conserva esta ruta definida debajo. */
 const ARCADE_MIGUEL_FINALE_CONFIG = Object.freeze({ rounds: null, difficulty: 'easy' });
 const CURRENT_MIGUEL_FINALE_ROUNDS = [
   { chars: ['miguel1', 'crater'], assists: ['a', 'a'], diff: 0, label: 'JEFE FINAL · MIGUEL 1', boss: true, bossId: 'miguel1' },
   { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'JEFE FINAL · MIGUEL 2', boss: true, bossId: 'miguel2' },
-  { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'NIVEL FINAL', boss: true, bossId: 'miguel2', final: true },
+  { chars: ['miguelnew', 'crater'], assists: ['a', 'a'], diff: 0, label: 'PENÚLTIMO NIVEL · MIGUEL EXPLOSIVO (3 EXPLOSIONES)', boss: true, bossId: 'miguelnew' },
+  { chars: ['miguel2', 'crater'], assists: ['a', 'a'], diff: 0, label: 'NIVEL FINAL · MIGUEL 2 + MORGAN', boss: true, bossId: 'miguel2', final: true },
 ];
+const ARCADE_STANDARD_ROSTER = ROSTER.filter((c) => !['miguelnew', 'morgan', 'wz'].includes(c.id));
 const ARCADE_ROUTE = [
-  ...ROSTER.map((c, i) => ({ chars: [c.id], assists: ['a'], diff: Math.min(1.34, 0.68 + i * 0.035), label: `NIVEL ${i + 1} · ${c.name}` })),
+  ...ARCADE_STANDARD_ROSTER.map((c, i) => ({ chars: [c.id], assists: ['a'], diff: Math.min(1.34, 0.68 + i * 0.035), label: `NIVEL ${i + 1} · ${c.name}` })),
+  { chars: ['wz'], assists: ['a'], diff: Math.min(1.34, 0.68 + ARCADE_STANDARD_ROSTER.length * 0.035), label: `NIVEL ${ARCADE_STANDARD_ROSTER.length + 1} · WIZZ` },
+  { chars: ['morgan'], assists: ['a'], diff: Math.min(1.34, 0.68 + (ARCADE_STANDARD_ROSTER.length + 1) * 0.035), label: `NIVEL ${ARCADE_STANDARD_ROSTER.length + 2} · MORGAN` },
   ...(Array.isArray(ARCADE_MIGUEL_FINALE_CONFIG.rounds)
     ? ARCADE_MIGUEL_FINALE_CONFIG.rounds
     : CURRENT_MIGUEL_FINALE_ROUNDS),
@@ -4436,7 +4546,7 @@ const Game = {
     world.morganHitCount = 0; world.morganFinishingHit = false; world.morganExitSequenceStarted = false;
     world.over = false; world.winner = 0; world.result = null; world.timer = 99; world.timerMax = 99;
     world.bossBeam = null; world.bossCharge = null; world.bossRayCooldown = 999; world.bossBeamUsed = true;
-    world.finalSkullTimer = 0; world.morganProjectileTimer = 0; world.morganHeartCount = 0; world.hazardTimer = 0; world.projectiles = [];
+    world.finalSkullTimer = 0; world.morganProjectileTimer = 0; world.morganProjectileCount = 0; world.hazardTimer = 0; world.projectiles = [];
     world.teams[2].activeIndex = 0; world.teams[2].gauge = 0;
     morgan.charId = 'miguel2'; morgan.displayNameOverride = 'MORGAN'; morgan.isBoss = true;
     const target = world.teams[1].active;
@@ -4445,7 +4555,7 @@ const Game = {
     morgan.maxHp = LIFE; morgan.hp = LIFE; morgan.redHp = 0;
     if (target) morgan.facing = target.x >= morgan.x ? 1 : -1;
     world.teams[2].ai = new AiController(morgan, 0.78); world.teams[2].aiDiff = 0.78;
-    world.label = 'FASE FINAL · MORGAN'; world.announce('MORGAN · ¡DALE 3 GOLPES!', 2.8);
+    world.label = 'FASE FINAL · MORGAN'; world.announce('MORGAN · ¡DALE 5 GOLPES!', 2.8);
     this.finalMorganWinSequenceActive = false; this.paused = false;
     resetFx(); setScreen('fight'); Audio.sfx.round();
   },
@@ -4477,8 +4587,6 @@ const Game = {
     if (firstRaulUnlock) unlockRaul();
     const firstDandyUnlock = this.mode === 'arcade' && recordArcadeBattle(w);
     const usedToto = this.p1.picks.some((p) => p.charId === 'toto');
-    const firstMiguel1Win = w.winner === 1 && usedToto && !isMiguel1Unlocked();
-    if (firstMiguel1Win) unlockMiguel1();
     if (this.mode === 'arcade' && w?.finalStage && ['miguel2', 'morgan'].includes(w.bossId) && w.winner !== 1) {
       this.finalMorganLossSequenceActive = true;
       this.showMorganDefeat(() => {
@@ -4521,12 +4629,6 @@ const Game = {
             proceedAfterUnlocks();
           };
           const showWeroScene = () => {
-            if (firstMiguel1Win) {
-              this.showUnlockPoster('miguel1', '¡MIGUEL 1 DESBLOQUEADO!', () => {
-                showWeroScene();
-              });
-              return;
-            }
             if (usedWero) {
               this.showVictoryImage('assets/victories/wero-level-complete.jpg', 'WERO · NIVEL SUPERADO', showTeamVictoryScene);
               return;
@@ -4552,7 +4654,7 @@ const Game = {
     }
     if (this.mode === 'versus') {
       const txt = w.winner === 0 ? 'EMPATE' : (w.winner === 1 ? 'JUGADOR 1 GANA' : 'JUGADOR 2 GANA');
-      this.showResult(w.result, [txt, ...(firstMiguel1Win ? ['¡MIGUEL 1 DESBLOQUEADO POR GANAR CON TOTO!'] : []), ...(firstRaulUnlock ? ['¡RAÚL DESBLOQUEADO! DISPONIBLE EN SELECCIÓN'] : []), `P1: ${this.p1.picks.map((p) => CHAR[p.charId].name).join('')}`, `P2: ${this.p2.picks.map((p) => CHAR[p.charId].name).join('')}`]);
+      this.showResult(w.result, [txt, ...(firstRaulUnlock ? ['¡RAÚL DESBLOQUEADO! DISPONIBLE EN SELECCIÓN'] : []), `P1: ${this.p1.picks.map((p) => CHAR[p.charId].name).join('')}`, `P2: ${this.p2.picks.map((p) => CHAR[p.charId].name).join('')}`]);
     }
   },
 
@@ -4947,6 +5049,8 @@ function renderCharacterCard(container, character, focusIndex, state, side) {
     + (locked ? ' · se desbloquea al completar la ruta arcade' : ''));
   card.setAttribute('aria-disabled', String(locked));
   card.style.setProperty('--char-accent', character.chroma);
+  card.style.setProperty('--char-bg', character.chroma);
+  card.style.setProperty('--char-bg2', character.chroma2 || character.chroma);
   card.style.borderColor = character.chroma;
 
   const art = Art.get(character.id);
