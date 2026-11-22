@@ -24,6 +24,8 @@
 const VW = 1280;              // ancho del lienzo
 const VH = 720;               // alto del lienzo
 const GROUND_Y = 566;         // línea de piso (pies del luchador)
+const MORGAN_PLAY_Y = GROUND_Y - 260; // Morgan jugable flota un poco más arriba
+const MORGAN_MOVE_SPEED = 13.5; // desplazamiento lateral rápido y controlable
 const WALL_L = 70;
 const WALL_R = VW - 70;
 const STEP = 1 / 60;          // paso fijo de simulación (60 Hz)
@@ -1046,23 +1048,34 @@ function buildMoves(bank) {
   const P = POSE[bank];
   const set = normals(P);
   if (bank === 'morgan') {
-    const vxByButton = { lp: 1.1, mp: 1.1, hp: 0, lk: 0, mk: -1.1, hk: -1.1 };
+    /* Cada botón tiene una trayectoria propia: LP/LK suben, MP/MK van
+     * inclinados y HP/HK bajan. `vx` siempre avanza; Projectile aplica
+     * automáticamente el facing para que funcione hacia ambos lados. */
+    const trajectoryByButton = {
+      lp: { vx: 11.5, vy: -6.2, label: 'ALTO' },
+      mp: { vx: 12.5, vy: -2.4, label: 'DIAGONAL' },
+      hp: { vx: 13.5, vy: 3.8, label: 'BAJO' },
+      lk: { vx: 10.5, vy: -8.0, label: 'MUY ALTO' },
+      mk: { vx: 12.0, vy: 4.8, label: 'DIAGONAL BAJO' },
+      hk: { vx: 14.0, vy: 7.0, label: 'CAÍDA' },
+    };
     for (const button of BTN) {
+      const trajectory = trajectoryByButton[button];
       for (const prefix of ['s', 'c', 'j']) {
         const id = prefix + button.toUpperCase();
         set[id] = normal({
-          id, name: 'PROYECTIL ROSA', pose: P[id], chain: CHAIN_ORDER[button],
-          startup: 7, active: 1, recovery: 14, damage: 0, meter: 0,
+          id, name: `PROYECTIL ROSA · ${trajectory.label}`, pose: P[id], chain: CHAIN_ORDER[button],
+          startup: 5, active: 1, recovery: 10, damage: 0, meter: 0,
           hitstun: 20, blockstun: 10, hitstop: 5, boxes: [], cancel: [],
           color: MORGAN_PROJECTILE_COLOR, sfx: 'fireball', fx: 'orb',
           proj: {
-            vx: vxByButton[button], vy: 1.45, w: 18, h: 19, renderW: 26, renderH: 27, y: -145,
+            vx: trajectory.vx, vy: trajectory.vy, w: 22, h: 22, renderW: 30, renderH: 30, y: -145,
             damage: 0, percentMaxHp: 0.20, hitstun: 20, blockstun: 10, hitstop: 5,
             color: MORGAN_PROJECTILE_COLOR, forceColor: MORGAN_PROJECTILE_COLOR,
-            life: 360, level: 'overhead', pierce: 0,
+            life: 240, level: trajectory.vy > 2 ? 'low' : 'overhead', pierce: 0,
             ignoreCpuDamageScale: true, ignoreDamageBoost: true,
           },
-          label: 'PROYECTIL ROSA LENTO · 20%',
+          label: `BOTÓN ${button.toUpperCase()} · ${trajectory.label} · 20%`,
         });
       }
     }
@@ -1496,7 +1509,7 @@ class Fighter {
     const isSelectableMorgan = this.charId === 'morgan';
     this.maxHp = isSelectableMorgan ? MORGAN_HITS_TO_KO : LIFE;
     this.hp = this.maxHp; this.redHp = 0;
-    const startY = isSelectableMorgan ? GROUND_Y - 220 : GROUND_Y;
+    const startY = isSelectableMorgan ? MORGAN_PLAY_Y : GROUND_Y;
     this.x = x; this.y = startY;
     this.prevX = x; this.prevY = startY;
     this.vx = 0; this.vy = 0;
@@ -1798,7 +1811,7 @@ class Fighter {
       if (this.charId === 'morgan') {
         const d = input?.dir || {};
         const direction = Number(!!d.right) - Number(!!d.left);
-        this.vx = direction * PHYS.walkF;
+        this.vx = direction * MORGAN_MOVE_SPEED;
         this.updateAttack(world);
       } else if (this.move?.mobileSpecial && input) {
         const d = input.dir || {};
@@ -1853,7 +1866,7 @@ class Fighter {
       const direction = Number(!!d.right) - Number(!!d.left);
       if (direction) {
         this.setFreeState(STATE.WALK);
-        this.vx = direction * PHYS.walkF;
+        this.vx = direction * MORGAN_MOVE_SPEED;
         this.walkTimer += STEP;
       } else {
         this.vx = 0;
@@ -2113,9 +2126,10 @@ class Fighter {
   chooseMove(input, world) {
     const m = this.moves;
     if (this.charId === 'morgan') {
-      if (input._motion) return { id: 'jLP' };
+      /* Morgan no depende del estado aéreo: aunque flote, sus botones son
+       * proyectiles jugables normales y conservan la trayectoria de cada botón. */
       const button = BTN.find((key) => input.tap?.[key]);
-      return button ? { id: `j${button.toUpperCase()}` } : null;
+      return button ? { id: `s${button.toUpperCase()}` } : null;
     }
     /* Miguel 1 conserva ataques propios y también usa la selección estándar. */
     if (this.charId === 'miguel1') {
@@ -2440,12 +2454,12 @@ class Fighter {
     const selectableMorgan = this.charId === 'morgan' && this.alive && this.state !== STATE.KO;
     if (selectableMorgan) {
       this.vy = 0;
-      this.y = GROUND_Y - 220;
+      this.y = MORGAN_PLAY_Y;
       this.prevY = this.y;
       this.onGround = false;
       if (this.state !== STATE.WALK && this.state !== STATE.ATTACK) this.vx *= PHYS.friction;
       if (Math.abs(this.vx) < 0.1) this.vx = 0;
-      this.vx = clamp(this.vx, -8, 8);
+      this.vx = clamp(this.vx, -MORGAN_MOVE_SPEED, MORGAN_MOVE_SPEED);
       this.x = clamp(this.x + this.vx, WALL_L, WALL_R);
       return;
     }
