@@ -499,6 +499,8 @@ SpecialArt.yiyo = new Image();
 SpecialArt.yiyo.src = 'assets/specials/yiyo-special.png';
 SpecialArt.wero = new Image();
 SpecialArt.wero.src = 'assets/specials/wero-special.png';
+SpecialArt.adrian = new Image();
+SpecialArt.adrian.src = 'assets/specials/adrian-charizard.png';
 SpecialArt.angel.src = 'assets/specials/angel-sprunkys.png';
 const Miguel1MoveArt = { attack: new Image() };
 Miguel1MoveArt.attack.src = 'assets/specials/miguel1-can-attack.png';
@@ -1213,31 +1215,33 @@ function buildMoves(bank) {
   const yiyoUltimate = profile === 'yiyo';
   const weroUltimate = profile === 'wero';
   const totoUltimate = profile === 'toto';
+  const adrianUltimate = profile === 'adrian';
   const signatureUltimate = yiyoUltimate || weroUltimate;
   const craterUltimate = bank === 'crater';
   const manuelinUltimate = profile === 'manuelin';
-  const customUltimate = signatureUltimate || totoUltimate || craterUltimate || manuelinUltimate;
+  const customUltimate = signatureUltimate || totoUltimate || adrianUltimate || craterUltimate || manuelinUltimate;
   set.hyUlt = hyper({
-    id: 'hyUlt', name: craterUltimate ? 'VACA LANZADA' : (manuelinUltimate ? 'PODER MANUELÍN' : (weroUltimate ? 'GÜEREJA GIGANTE' : names.ult)), pose: P.hyperAlt,
+    id: 'hyUlt', name: craterUltimate ? 'VACA LANZADA' : (manuelinUltimate ? 'PODER MANUELÍN' : (weroUltimate ? 'GÜEREJA GIGANTE' : (adrianUltimate ? 'CHARIZARD · FUEGO AÉREO' : names.ult))), pose: P.hyperAlt,
     cost: customUltimate ? 2 : 3,
     hits: customUltimate ? 1 : 18, hitGap: 4,
-    damage: (totoUltimate || craterUltimate || manuelinUltimate) ? 0 : 5.2,
-    startup: (totoUltimate || manuelinUltimate) ? 1 : (craterUltimate ? 10 : (signatureUltimate ? 10 : 12)),
-    active: (totoUltimate || craterUltimate || manuelinUltimate) ? 1 : (yiyoUltimate ? 38 : (weroUltimate ? 180 : 62)),
-    recovery: (totoUltimate || manuelinUltimate) ? 1 : (craterUltimate ? 20 : (weroUltimate ? 1 : (signatureUltimate ? 24 : 40))),
+    damage: (totoUltimate || craterUltimate || manuelinUltimate || adrianUltimate) ? 0 : 5.2,
+    startup: (totoUltimate || manuelinUltimate || adrianUltimate) ? 1 : (craterUltimate ? 10 : (signatureUltimate ? 10 : 12)),
+    active: (totoUltimate || craterUltimate || manuelinUltimate || adrianUltimate) ? (adrianUltimate ? 360 : 1) : (yiyoUltimate ? 38 : (weroUltimate ? 180 : 62)),
+    recovery: (totoUltimate || manuelinUltimate || adrianUltimate) ? 1 : (craterUltimate ? 20 : (weroUltimate ? 1 : (signatureUltimate ? 24 : 40))),
     hitstun: weroUltimate ? 36 : 22, blockstun: 14,
     hitstop: weroUltimate ? 12 : 5,
     meter: 0,
-    color: yiyoUltimate ? '#ff8a35' : (weroUltimate ? '#ff4d9a' : (totoUltimate ? '#ffd21f' : '#ff2bd6')),
+    color: yiyoUltimate ? '#ff8a35' : (weroUltimate ? '#ff4d9a' : (adrianUltimate ? '#ff6a00' : (totoUltimate ? '#ffd21f' : '#ff2bd6'))),
     fx: 'ultimate', sfx: 'hyper', flash: totoUltimate ? 24 : (signatureUltimate ? 28 : 34),
-    boxes: (totoUltimate || craterUltimate || manuelinUltimate) ? [] : (yiyoUltimate
+    boxes: (totoUltimate || craterUltimate || manuelinUltimate || adrianUltimate) ? [] : (yiyoUltimate
       ? [{ x: 36, y: -232, w: 232, h: 220 }]
       : (weroUltimate ? [{ x: 20, y: -300, w: 360, h: 330 }]
         : [{ x: 36, y: -240, w: 260, h: 250 }])),
     percentMaxHp: yiyoUltimate ? 0.30 : (weroUltimate ? 0.40 : 0),
     unblockable: weroUltimate,
-    mobileSpecial: yiyoUltimate,
     freezeSelf: weroUltimate,
+    mobileSpecial: yiyoUltimate || adrianUltimate,
+    adrianFlight: adrianUltimate,
     sizeBoostFrames: weroUltimate ? 3 * 60 : (totoUltimate ? 20 * 60 : 0),
     sizeDownFrames: manuelinUltimate ? 20 * 60 : 0,
     damageBoostFrames: manuelinUltimate ? 20 * 60 : 0,
@@ -1247,11 +1251,12 @@ function buildMoves(bank) {
       level: 'low', pierce: 0, unblockable: true, art: 'craterCow',
       renderW: 72, renderH: 49, artYOffset: -42,
     } : undefined,
-    label: weroUltimate ? 'WERO · GÜEREJA GIGANTE · 40% DE DAÑO · 3 BOTONES · 3 SEGUNDOS'
-      : (craterUltimate ? 'CRATER · VACA · 35% DE DAÑO · DOBLE ↓↘→ + P·P (Nv.2)'
-        : (manuelinUltimate ? 'MANUELÍN · -30% TAMAÑO · +15% DAÑO · 20 SEGUNDOS (Nv.2)'
-          : (signatureUltimate ? 'DOBLE ↓↘→ + P·P (Nv.2)'
-            : (totoUltimate ? 'TOTO · +25% TAMAÑO · 20 SEGUNDOS (Nv.2)' : '↓↘→↓↘→ + P (Nv.3)')))),
+    label: adrianUltimate ? 'ADRIÁN · CHARIZARD · 3 BOTONES · VUELO Y FUEGO HACIA ABAJO · 6 SEGUNDOS'
+      : weroUltimate ? 'WERO · GÜEREJA GIGANTE · 40% DE DAÑO · 3 BOTONES · 3 SEGUNDOS'
+      : craterUltimate ? 'CRATER · VACA · 35% DE DAÑO · DOBLE ↓↘→ + P·P (Nv.2)'
+      : manuelinUltimate ? 'MANUELÍN · -30% TAMAÑO · +15% DAÑO · 20 SEGUNDOS (Nv.2)'
+      : signatureUltimate ? 'DOBLE ↓↘→ + P·P (Nv.2)'
+      : totoUltimate ? 'TOTO · +25% TAMAÑO · 20 SEGUNDOS (Nv.2)' : '↓↘→↓↘→ + P (Nv.3)',
     reveal: true, knockdown: true, cinematic: false,
   });
   set.hyDuo = hyper({
@@ -1826,6 +1831,24 @@ class Fighter {
         const direction = Number(!!d.right) - Number(!!d.left);
         this.vx = direction * MORGAN_MOVE_SPEED;
         this.updateAttack(world);
+      } else if (this.move?.adrianFlight && input) {
+        const d = input.dir || {};
+        const direction = Number(!!d.right) - Number(!!d.left);
+        this.onGround = false;
+        this.y = GROUND_Y - 260;
+        this.vy = 0;
+        this.vx = direction ? direction * 6.2 : 0;
+        const fireTap = BTN.some((button) => input.tap?.[button]);
+        if (fireTap && this.moveFrame > this.move.startup) {
+          world.spawnProjectile(this, {
+            vx: 0, vy: 10.5, vertical: true, w: 24, h: 38,
+            spawnX: this.x, spawnY: this.y + 18, damage: 12,
+            hitstun: 20, blockstun: 12, hitstop: 5, color: '#ff6a00',
+            forceColor: '#ff6a00', life: 90, level: 'mid', pierce: 0,
+          }, this.move);
+          spawnSpark(this.x, this.y + 28, '#ffd24a', 10, 0.8);
+        }
+        this.updateAttack(world);
       } else if (this.move?.mobileSpecial && input) {
         const d = input.dir || {};
         const direction = Number(!!d.right) - Number(!!d.left);
@@ -2180,6 +2203,12 @@ class Fighter {
      * Se conserva el costo del hiper para que el atajo no sea gratuito. */
     const tripleButtonTap = BTN.filter((button) => tap[button]).length >= 3;
     if (!input._ai && this.charId === 'wero' && onGround && tripleButtonTap
+      && m.hyUlt && team && team.gauge >= (m.hyUlt.cost || 3) * SUPER_LEVEL) {
+      mb.clear();
+      return { id: 'hyUlt' };
+    }
+    /* Adrián: tres botones simultáneos activan su transformación Charizard. */
+    if (!input._ai && this.charId === 'adrian' && onGround && tripleButtonTap
       && m.hyUlt && team && team.gauge >= (m.hyUlt.cost || 3) * SUPER_LEVEL) {
       mb.clear();
       return { id: 'hyUlt' };
@@ -2828,6 +2857,21 @@ class Fighter {
     g.ellipse(this.x, GROUND_Y + 6, 62 * shadowScale, 12 * shadowScale, 0, 0, Math.PI * 2);
     g.fill();
     g.restore();
+    const adrianCharizard = this.charId === 'adrian' && this.state === STATE.ATTACK
+      && this.move?.adrianFlight && SpecialArt.adrian?.complete && SpecialArt.adrian.naturalWidth > 0;
+    if (adrianCharizard) {
+      const image = SpecialArt.adrian;
+      const h = 280;
+      const w = (image.naturalWidth / image.naturalHeight) * h;
+      g.save();
+      g.translate(this.x, this.y);
+      if (this.facing < 0) g.scale(-1, 1);
+      g.globalAlpha = this.invuln > 0 ? 0.72 : 1;
+      g.filter = 'drop-shadow(0 0 18px #ff6a00)';
+      g.drawImage(image, -w / 2, -h, w, h);
+      g.restore();
+      return;
+    }
     if (this.blocking || this.state === STATE.BLOCKSTUN) {
       g.save();
       const low = this.blockingLow || this.currentPoseIndex() === (POSE[this.char.bank]?.blockLow);
