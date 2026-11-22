@@ -1865,17 +1865,16 @@ class Fighter {
         this.vx = direction ? direction * 6.2 : 0;
         const fireTap = BTN.some((button) => input.tap?.[button]);
         if (fireTap && this.moveFrame > this.move.startup) {
-          // Cada pulsación de botón crea una salva de tres bolas grandes.
-          // Son proyectiles del equipo de Adrián y nunca pueden golpearlo.
-          for (const [offsetX, speed] of [[-28, 9.8], [0, 11.2], [28, 9.8]]) {
-            world.spawnProjectile(this, {
-              vx: 0, vy: speed, vertical: true, w: 34, h: 52,
-              spawnX: this.x + offsetX, spawnY: this.y + 24, damage: 12,
-              hitstun: 20, blockstun: 12, hitstop: 5, color: '#ff6a00',
-              forceColor: '#ff6a00', life: 90, level: 'mid', pierce: 0,
-            }, this.move);
-          }
-          spawnSpark(this.x, this.y + 28, '#ffd24a', 18, 0.8);
+          // Una bola grande cae lentamente y explota visualmente en el piso.
+          // Es inocua: no puede dañar ni a Adrián ni al contrincante.
+          world.spawnProjectile(this, {
+            vx: 0, vy: 2.6, vertical: true, w: 34, h: 52,
+            spawnX: this.x, spawnY: this.y + 24, damage: 0,
+            hitstun: 0, blockstun: 0, hitstop: 0, color: '#ff6a00',
+            forceColor: '#ff6a00', life: 180, level: 'mid', pierce: 0,
+            adrianFireball: true,
+          }, this.move);
+          spawnSpark(this.x, this.y + 28, '#ffd24a', 12, 0.8);
         }
         this.updateAttack(world);
       } else if (this.move?.mobileSpecial && input) {
@@ -3092,6 +3091,7 @@ class Projectile {
     this.artYOffset = spec.artYOffset || 0;
     this.dmg = spec.damage; this.percentMaxHp = spec.percentMaxHp || 0; this.unblockable = !!spec.unblockable;
     this.isDogSupport = !!spec.dogSupport;
+    this.adrianFireball = !!spec.adrianFireball;
     // Un perro solo puede hacer un impacto de 10%; al adherirse deja de ser dañino.
     this.dogHasHit = false;
     this.hitstun = spec.hitstun; this.blockstun = spec.blockstun;
@@ -3120,6 +3120,12 @@ class Projectile {
     this.x += this.vx;
     this.y += this.vy + (this.spiral ? Math.sin(this.age * this.spiralFrequency) * this.spiralStrength : 0);
     this.age++;
+    if (this.adrianFireball && this.y >= GROUND_Y - 18) {
+      spawnRing(this.x, GROUND_Y - 12, '#ff8a35', 120, 0.34);
+      spawnSpark(this.x, GROUND_Y - 22, '#ffd24a', 28, 1.15);
+      this.dead = true;
+      return;
+    }
     this.reflectCooldown = Math.max(0, this.reflectCooldown - 1);
     this.trailT++;
     if (this.trailT % 2 === 0) {
@@ -3808,6 +3814,8 @@ class World {
         if (d.invuln > 0) continue;
         // El perro adherido se dibuja y sigue al objetivo, pero no vuelve a golpear.
         if (pr.isDogSupport && pr.dogHasHit) continue;
+        // La bola de Adrián atraviesa al rival: solo explota al llegar al piso.
+        if (pr.adrianFireball) continue;
         const hurt = fighterHurtboxes(d);
         if (hurt.some((h) => overlap(pbox, h))) {
           const point = { x: pr.x, y: pr.y };
