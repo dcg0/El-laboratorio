@@ -3117,6 +3117,25 @@ class Projectile {
       if (this.age >= this.life) this.dead = true;
       return;
     }
+    if (this.isDogSupport && !this.dogCrossedField && this.target?.alive) {
+      // Primero cruza toda la arena; solo al tocar el extremo opuesto empieza a buscar.
+      const reachedOppositeEnd = this.dogCrossDirection > 0
+        ? this.x >= WALL_R - 24
+        : this.x <= WALL_L + 24;
+      if (reachedOppositeEnd) {
+        this.dogCrossedField = true;
+        this.facing = this.target.x >= this.x ? 1 : -1;
+        this.vx = 0.45 * this.facing;
+      } else {
+        this.vx = 0.45 * this.dogCrossDirection;
+        this.facing = this.dogCrossDirection;
+      }
+    } else if (this.isDogSupport && this.dogCrossedField && this.target?.alive) {
+      // Después del cruce, corrige el rumbo lentamente hacia el rival.
+      const seekDirection = Math.sign(this.target.x - this.x) || this.facing || 1;
+      this.vx = 0.45 * seekDirection;
+      this.facing = seekDirection;
+    }
     this.x += this.vx;
     this.y += this.vy + (this.spiral ? Math.sin(this.age * this.spiralFrequency) * this.spiralStrength : 0);
     this.age++;
@@ -3621,17 +3640,19 @@ class World {
     const targetTeam = owner.team === this.teams[1] ? this.teams[2] : this.teams[1];
     const target = targetTeam?.active;
     if (!target?.alive) return false;
-    const facing = target.x >= owner.x ? 1 : -1;
+    // El perro sale del lado donde está su aliado y primero cruza toda la arena.
+    const crossDirection = owner.x < VW / 2 ? 1 : -1;
+    const facing = crossDirection;
     owner.facing = facing;
     this.dogSupportTriggered = true;
-    const spawnX = clamp(owner.x + facing * 72, WALL_L, WALL_R);
+    const spawnX = clamp(owner.x + crossDirection * 72, WALL_L + 24, WALL_R - 24);
     const spawnY = GROUND_Y - 28;
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
-      spawnX, spawnY, vx: 0.45, vy: 0, w: 11, h: 9, renderW: 96, renderH: 70,
+      spawnX, spawnY, vx: 0.45 * crossDirection, vy: 0, w: 11, h: 9, renderW: 96, renderH: 70,
       damage: 0, percentMaxHp: 0, hitstun: 0, blockstun: 0, hitstop: 0,
-      color: '#d59a63', forceColor: '#d59a63', life: 600, level: 'low', pierce: 0,
+      color: '#d59a63', forceColor: '#d59a63', life: 3600, level: 'low', pierce: 0,
       dogSupport: true,
     }, { id: 'dogSupport' }));
     const dog = this.projectiles[this.projectiles.length - 1];
@@ -3639,8 +3660,10 @@ class World {
     /* Cada pelea empieza con una raza/fotograma distinto y luego rota los
        tres perros para que la ayuda no sea siempre la misma. */
     dog.frameOffset = Math.floor(rand(0, 3));
-    dog.stickDuration = 480;
+    dog.stickDuration = 300;
     dog.target = target;
+    dog.dogCrossDirection = crossDirection;
+    dog.dogCrossedField = false;
     this.dogSupport = dog;
     this.announce('¡AYUDA PERRUNA!', 1.35, 'special');
     spawnRing(spawnX, spawnY - 12, '#d59a63', 82, 0.3);
@@ -3860,12 +3883,12 @@ class World {
 
           if (pr.isDogSupport) {
             /* El perro no hace daño: al tocar al rival solo se adhiere.
-               Los tres perros comparten exactamente 8 segundos (480 frames). */
+               Tras cruzar la arena, se adhiere exactamente 5 segundos (300 frames). */
             pr.dogHasHit = true;
             pr.attachedTo = d;
             pr.attachOffsetX = point.x - d.x;
             pr.attachOffsetY = point.y - d.y;
-            pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 480;
+            pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 300;
             pr.prevX = pr.x; pr.prevY = pr.y;
             pr.target = d;
             break;
