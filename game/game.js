@@ -3599,6 +3599,7 @@ class World {
     /* Cada pelea empieza con una raza/fotograma distinto y luego rota los
        tres perros para que la ayuda no sea siempre la misma. */
     dog.frameOffset = Math.floor(rand(0, 3));
+    dog.stickDuration = [120, 180, 240][dog.frameOffset];
     dog.target = target;
     this.dogSupport = dog;
     this.announce('¡AYUDA PERRUNA!', 1.35, 'special');
@@ -3827,7 +3828,7 @@ class World {
               pr.attachedTo = d;
               pr.attachOffsetX = point.x - d.x;
               pr.attachOffsetY = point.y - d.y;
-              pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 120;
+              pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = pr.stickDuration || 120;
               pr.prevX = pr.x; pr.prevY = pr.y;
               pr.target = d;
             } else if (pr.pierce > 0) pr.pierce--;
