@@ -508,7 +508,7 @@ const Miguel1MoveArt = { attack: new Image() };
 Miguel1MoveArt.attack.src = 'assets/specials/miguel1-can-attack.png';
 const MIGUEL1_AIR_ART = new Image();
 MIGUEL1_AIR_ART.src = 'assets/sprites/miguel1/miguel1-air-impact.png';
-const ProjectileArt = { miguel1: new Image(), miguel1Can: new Image(), craterCow: new Image(), weroProjectile: new Image(), verde: new Image(), angelShark: new Image(), morganHeart: new Image() };
+const ProjectileArt = { miguel1: new Image(), miguel1Can: new Image(), craterCow: new Image(), weroProjectile: new Image(), verde: new Image(), angelShark: new Image(), morganHeart: new Image(), dog1: new Image(), dog2: new Image(), dog3: new Image() };
 ProjectileArt.miguel1.src = 'assets/projectiles/miguel-indio-bottle.png';
 ProjectileArt.miguel1Can.src = 'assets/projectiles/miguel-tecate-can.png';
 ProjectileArt.craterCow.src = 'assets/projectiles/crater-cow-skateboard.png';
@@ -516,6 +516,9 @@ ProjectileArt.weroProjectile.src = 'assets/projectiles/wero-projectile.png';
 ProjectileArt.verde.src = 'assets/projectiles/verde.png';
 ProjectileArt.angelShark.src = 'assets/projectiles/angel-shark.png';
 ProjectileArt.morganHeart.src = 'assets/projectiles/morgan-heart.png';
+ProjectileArt.dog1.src = 'assets/projectiles/dog-1.png';
+ProjectileArt.dog2.src = 'assets/projectiles/dog-2.png';
+ProjectileArt.dog3.src = 'assets/projectiles/dog-3.png';
 const MorganFightArt = new Image();
 MorganFightArt.src = 'assets/sprites/morgan.png';
 const STAGE_BG = new Image();
@@ -3085,22 +3088,18 @@ class Projectile {
   }
   draw(g) {
     if (this.isDogSupport) {
-      const w = this.renderW, h = this.renderH;
-      g.save();
-      g.translate(this.x, this.y);
-      g.scale(this.facing, 1);
-      g.globalAlpha = 0.98;
-      g.fillStyle = '#7a4528'; g.beginPath(); g.ellipse(0, 0, w * 0.34, h * 0.30, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#d59a63'; g.beginPath(); g.ellipse(w * 0.30, -h * 0.16, w * 0.25, h * 0.23, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#5b301f'; g.beginPath(); g.moveTo(w * 0.18, -h * 0.30); g.lineTo(w * 0.29, -h * 0.58); g.lineTo(w * 0.38, -h * 0.25); g.fill();
-      g.fillStyle = '#fff'; g.beginPath(); g.arc(w * 0.39, -h * 0.21, 2.1, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#151515'; g.beginPath(); g.arc(w * 0.41, -h * 0.21, 1.0, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = '#5b301f'; g.lineWidth = 3; g.lineCap = 'round';
-      const step = Math.sin(this.age * 0.42) * h * 0.15;
-      for (const lx of [-w * 0.18, w * 0.12]) { g.beginPath(); g.moveTo(lx, h * 0.18); g.lineTo(lx - w * 0.05, h * 0.48 + step); g.stroke(); }
-      g.beginPath(); g.moveTo(-w * 0.30, -h * 0.02); g.quadraticCurveTo(-w * 0.58, -h * 0.30, -w * 0.42, -h * 0.48); g.stroke();
-      g.restore();
-      return;
+      const frame = ProjectileArt[`dog${(Math.floor(this.age / 7) % 3) + 1}`];
+      if (frame?.complete && frame.naturalWidth > 0) {
+        const scale = Math.min(this.renderW / frame.naturalWidth, this.renderH / frame.naturalHeight);
+        const w = frame.naturalWidth * scale, h = frame.naturalHeight * scale;
+        g.save();
+        g.translate(this.x, this.y);
+        if (this.facing < 0) g.scale(-1, 1);
+        g.globalAlpha = 0.98;
+        g.drawImage(frame, -w / 2, -h, w, h);
+        g.restore();
+        return;
+      }
     }
     const customArt = this.artKey ? ProjectileArt[this.artKey] : null;
     if (customArt?.complete && customArt.naturalWidth > 0) {
