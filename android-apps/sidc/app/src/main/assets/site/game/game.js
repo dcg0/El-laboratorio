@@ -1865,13 +1865,17 @@ class Fighter {
         this.vx = direction ? direction * 6.2 : 0;
         const fireTap = BTN.some((button) => input.tap?.[button]);
         if (fireTap && this.moveFrame > this.move.startup) {
-          world.spawnProjectile(this, {
-            vx: 0, vy: 10.5, vertical: true, w: 24, h: 38,
-            spawnX: this.x, spawnY: this.y + 18, damage: 12,
-            hitstun: 20, blockstun: 12, hitstop: 5, color: '#ff6a00',
-            forceColor: '#ff6a00', life: 90, level: 'mid', pierce: 0,
-          }, this.move);
-          spawnSpark(this.x, this.y + 28, '#ffd24a', 10, 0.8);
+          // Cada pulsación de botón crea una salva de tres bolas grandes.
+          // Son proyectiles del equipo de Adrián y nunca pueden golpearlo.
+          for (const [offsetX, speed] of [[-28, 9.8], [0, 11.2], [28, 9.8]]) {
+            world.spawnProjectile(this, {
+              vx: 0, vy: speed, vertical: true, w: 34, h: 52,
+              spawnX: this.x + offsetX, spawnY: this.y + 24, damage: 12,
+              hitstun: 20, blockstun: 12, hitstop: 5, color: '#ff6a00',
+              forceColor: '#ff6a00', life: 90, level: 'mid', pierce: 0,
+            }, this.move);
+          }
+          spawnSpark(this.x, this.y + 28, '#ffd24a', 18, 0.8);
         }
         this.updateAttack(world);
       } else if (this.move?.mobileSpecial && input) {
@@ -3619,8 +3623,8 @@ class World {
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
-      spawnX, spawnY, vx: 1.15, vy: 0, w: 11, h: 9, renderW: 60, renderH: 44,
-      damage: 0, percentMaxHp: 0.10, hitstun: 18, blockstun: 8, hitstop: 5,
+      spawnX, spawnY, vx: 1.15, vy: 0, w: 11, h: 9, renderW: 80, renderH: 58,
+      damage: 0, percentMaxHp: 0, hitstun: 0, blockstun: 0, hitstop: 0,
       color: '#d59a63', forceColor: '#d59a63', life: 600, level: 'low', pierce: 0,
       dogSupport: true,
     }, { id: 'dogSupport' }));
@@ -3629,7 +3633,7 @@ class World {
     /* Cada pelea empieza con una raza/fotograma distinto y luego rota los
        tres perros para que la ayuda no sea siempre la misma. */
     dog.frameOffset = Math.floor(rand(0, 3));
-    dog.stickDuration = [120, 180, 240][dog.frameOffset];
+    dog.stickDuration = 180;
     dog.target = target;
     this.dogSupport = dog;
     this.announce('¡AYUDA PERRUNA!', 1.35, 'special');
@@ -3846,6 +3850,18 @@ class World {
             break;
           }
 
+          if (pr.isDogSupport) {
+            /* El perro no hace daño: al tocar al rival solo se adhiere.
+               Los tres perros comparten exactamente 3 segundos (180 frames). */
+            pr.dogHasHit = true;
+            pr.attachedTo = d;
+            pr.attachOffsetX = point.x - d.x;
+            pr.attachOffsetY = point.y - d.y;
+            pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 180;
+            pr.prevX = pr.x; pr.prevY = pr.y;
+            pr.target = d;
+            break;
+          }
           const hit = {
             damage: pr.dmg, percentMaxHp: pr.percentMaxHp, unblockable: pr.unblockable,
             hitstun: pr.hitstun, blockstun: pr.blockstun, hitstop: pr.hitstop,
@@ -3854,17 +3870,7 @@ class World {
           };
           const res = this.applyHit(d, pr.owner, hit, point, pr.color);
           if (res) {
-            if (pr.isDogSupport) {
-              /* Un único impacto de 10%; después solo queda visualmente pegado
-                 durante 2, 3 o 4 segundos sin volver a causar daño. */
-              pr.dogHasHit = true;
-              pr.attachedTo = d;
-              pr.attachOffsetX = point.x - d.x;
-              pr.attachOffsetY = point.y - d.y;
-              pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = pr.stickDuration || 120;
-              pr.prevX = pr.x; pr.prevY = pr.y;
-              pr.target = d;
-            } else if (pr.pierce > 0) pr.pierce--;
+            if (pr.pierce > 0) pr.pierce--;
             else pr.dead = true;
             break;
           }
