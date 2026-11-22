@@ -3629,7 +3629,7 @@ class World {
     const dogOwner = { team: owner.team, charId: 'dogSupport', char: { id: 'dogSupport' },
       x: spawnX, y: spawnY, facing };
     this.projectiles.push(new Projectile(dogOwner, {
-      spawnX, spawnY, vx: 0.75, vy: 0, w: 11, h: 9, renderW: 96, renderH: 70,
+      spawnX, spawnY, vx: 0.45, vy: 0, w: 11, h: 9, renderW: 96, renderH: 70,
       damage: 0, percentMaxHp: 0, hitstun: 0, blockstun: 0, hitstop: 0,
       color: '#d59a63', forceColor: '#d59a63', life: 600, level: 'low', pierce: 0,
       dogSupport: true,
@@ -3639,7 +3639,7 @@ class World {
     /* Cada pelea empieza con una raza/fotograma distinto y luego rota los
        tres perros para que la ayuda no sea siempre la misma. */
     dog.frameOffset = Math.floor(rand(0, 3));
-    dog.stickDuration = 300;
+    dog.stickDuration = 480;
     dog.target = target;
     this.dogSupport = dog;
     this.announce('¡AYUDA PERRUNA!', 1.35, 'special');
@@ -3860,12 +3860,12 @@ class World {
 
           if (pr.isDogSupport) {
             /* El perro no hace daño: al tocar al rival solo se adhiere.
-               Los tres perros comparten exactamente 5 segundos (300 frames). */
+               Los tres perros comparten exactamente 8 segundos (480 frames). */
             pr.dogHasHit = true;
             pr.attachedTo = d;
             pr.attachOffsetX = point.x - d.x;
             pr.attachOffsetY = point.y - d.y;
-            pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 300;
+            pr.vx = 0; pr.vy = 0; pr.age = 0; pr.life = 480;
             pr.prevX = pr.x; pr.prevY = pr.y;
             pr.target = d;
             break;
