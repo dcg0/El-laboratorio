@@ -592,7 +592,7 @@ const BANKS = {
   raul: { spriteFacesRight: true, frames: Array.from({length: 9}, (_, i) => `assets/sprites/newchars/raul/raul-${String(i + 1).padStart(2, '0')}.png`), drawH: 306, feetPad: 6, recolor: [] },
   adrian: { spriteFacesRight: false, frames: Array.from({length: 8}, (_, i) => `assets/sprites/adrian/adrian-0${i + 1}.png`), drawH: 330, feetPad: 6, recolor: [] },
   angel: { spriteFacesRight: true, frames: [
-    'assets/sprites/newchars/angel/angel-01.png',
+    'assets/sprites/newchars/angel/angel-01.png?v=angel-pose-20261122',
     'assets/sprites/newchars/angel/angel-02.png',
     'assets/sprites/newchars/angel/angel-03.png',
     'assets/sprites/newchars/angel/angel-04.png',
