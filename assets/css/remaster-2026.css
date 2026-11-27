@@ -1,0 +1,340 @@
+/* Remasterización visual 2026 de El laboratorio.
+   Conserva la estructura, el texto, los destinos y las interacciones existentes. */
+:root {
+  --panel: #0b111a;
+  --line: #24354a;
+  --radius: 18px;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 118px;
+}
+
+body {
+  background-color: #05070b;
+  background-image:
+    radial-gradient(ellipse at 13% 8%, rgba(0, 204, 255, .09), transparent 31rem),
+    radial-gradient(ellipse at 88% 31%, rgba(255, 49, 84, .055), transparent 34rem);
+  background-attachment: fixed;
+}
+
+.site-header {
+  height: 106px;
+  padding: 0 max(24px, calc((100vw - 1180px) / 2));
+  background: rgba(5, 8, 14, .72);
+  border-bottom: 1px solid rgba(43, 61, 83, .7);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.site-header.scrolled {
+  background: rgba(5, 8, 14, .94);
+  border-color: var(--line);
+}
+
+.brand img {
+  width: 104px;
+  height: 98px;
+}
+
+.nav a {
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+}
+
+.nav a:hover,
+.nav a:focus-visible {
+  color: #e9fbff;
+  background: rgba(0, 204, 255, .08);
+}
+
+.nav .nav-cta {
+  border: 1px solid rgba(0, 204, 255, .44);
+  background: rgba(0, 204, 255, .08);
+}
+
+.nav .nav-cta:hover,
+.nav .nav-cta:focus-visible {
+  border-color: var(--cyan, #00ccff);
+  background: rgba(0, 204, 255, .15);
+}
+
+.shell {
+  width: min(100% - 48px, 1180px);
+}
+
+.hero {
+  min-height: 620px;
+  gap: clamp(32px, 5vw, 72px);
+  padding: 76px 0 88px;
+}
+
+.hero-copy > p:not(.eyebrow) {
+  max-width: 54ch;
+  line-height: 1.8;
+}
+
+.hero-card {
+  transform: none;
+  border-radius: 22px;
+}
+
+.hero-card img {
+  border-radius: 14px;
+}
+
+.hero .btn,
+.project-link,
+.download-actions .btn {
+  min-height: 44px;
+  border-radius: 10px;
+  transition: transform .2s ease, border-color .2s ease, background-color .2s ease;
+}
+
+.hero .btn:hover,
+.project-link:hover,
+.download-actions .btn:hover {
+  transform: translateY(-2px);
+}
+
+section[id] {
+  scroll-margin-top: 118px;
+}
+
+#proyectos,
+#descargas,
+#servicios,
+#contacto {
+  padding-top: 96px;
+  padding-bottom: 96px;
+}
+
+.section-head {
+  gap: 28px;
+  margin-bottom: 42px;
+}
+
+.section-head > p {
+  max-width: 48ch;
+  line-height: 1.8;
+}
+
+.project-grid {
+  gap: 17px;
+}
+
+.project-grid .project-card {
+  border-color: rgba(65, 87, 112, .72);
+  border-radius: 18px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .22);
+}
+
+.project-grid .project-card:hover {
+  border-color: rgba(0, 204, 255, .55);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, .35), 0 0 24px rgba(0, 204, 255, .07);
+}
+
+.project-card .project-content {
+  padding: 22px;
+}
+
+.project-card .project-content p {
+  line-height: 1.75;
+}
+
+.project-card .project-link {
+  min-height: 44px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(65, 87, 112, .55);
+}
+
+/* Se recupera el contenido y los botones que el estilo compacto ocultaba.
+   Los elementos y sus href siguen siendo los mismos del HTML existente. */
+.download-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch;
+  gap: 18px !important;
+}
+
+.download-grid .download-card {
+  display: flex !important;
+  flex-direction: column;
+  width: auto !important;
+  min-height: 350px !important;
+  padding: 22px !important;
+  border: 1px solid rgba(65, 87, 112, .72) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(145deg, rgba(16, 27, 40, .96), rgba(8, 12, 19, .98)) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .24) !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+.download-grid .download-card:hover {
+  border-color: rgba(0, 204, 255, .58) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .36), 0 0 22px rgba(0, 204, 255, .07) !important;
+  transform: translateY(-3px) !important;
+}
+
+.download-card > :not(.download-icon) {
+  display: block !important;
+}
+
+.download-card .download-icon {
+  width: 62px !important;
+  height: 62px !important;
+  margin: 0 0 12px !important;
+  border-radius: 14px !important;
+  animation: none !important;
+}
+
+.download-card .tag {
+  align-self: flex-start;
+  margin-bottom: 2px;
+}
+
+.download-card h3 {
+  margin: 12px 0 8px;
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.05;
+}
+
+.download-card p {
+  max-width: 54ch;
+  line-height: 1.75;
+}
+
+.download-card .download-actions {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.download-card .download-actions .btn {
+  display: inline-flex !important;
+  flex: 1 1 130px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cyan, #00ccff);
+  outline-offset: 4px;
+}
+
+@media (max-width: 980px) {
+  .download-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  html {
+    scroll-padding-top: 96px;
+  }
+
+  .site-header {
+    height: 88px;
+    padding: 0 19px;
+  }
+
+  .brand img {
+    width: 92px;
+    height: 84px;
+  }
+
+  .nav {
+    top: 88px;
+  }
+
+  .nav a {
+    min-height: 46px;
+    padding: 14px 8px;
+  }
+
+  .shell {
+    width: min(100% - 38px, 560px);
+  }
+
+  .hero {
+    min-height: 0;
+    padding: 48px 0 64px;
+    gap: 30px;
+  }
+
+  .hero h1 {
+    font-size: clamp(62px, 15vw, 82px);
+  }
+
+  .hero-card {
+    margin: 0 8px 8px 0;
+  }
+
+  #proyectos,
+  #descargas,
+  #servicios,
+  #contacto {
+    padding-top: 72px;
+    padding-bottom: 72px;
+  }
+
+  .section-head {
+    display: block;
+    margin-bottom: 30px;
+  }
+
+  .section-head > p {
+    margin-top: 14px;
+  }
+
+  .project-grid {
+    gap: 14px;
+  }
+
+  .project-grid .project-card {
+    min-height: 0;
+  }
+
+  .project-card .project-content {
+    padding: 19px;
+  }
+
+  .download-grid {
+    grid-template-columns: 1fr !important;
+    gap: 13px !important;
+  }
+
+  .download-grid .download-card {
+    min-height: 0 !important;
+    padding: 19px !important;
+  }
+
+  .download-card .download-actions .btn {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
